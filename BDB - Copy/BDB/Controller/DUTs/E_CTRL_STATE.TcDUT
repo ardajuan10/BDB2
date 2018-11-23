@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.0.36">
+  <DUT Name="E_CTRL_STATE" Id="{e564592e-07de-45e4-9b11-6636a6a00fdf}">
+    <Declaration><![CDATA[TYPE E_CTRL_STATE :
+(
+   eCTRL_STATE_IDLE      := 0, 
+   eCTRL_STATE_PASSIVE := 1, 
+   eCTRL_STATE_ACTIVE := 2, 
+   eCTRL_STATE_RESET    := 3, 
+   eCTRL_STATE_MANUAL := 4, 
+   eCTRL_STATE_TUNING := 5, 
+   eCTRL_STATE_TUNED    := 6, 
+   eCTRL_STATE_SELFTEST := 7, 
+   eCTRL_STATE_ERROR    := 8, 
+   eCTRL_STATE_SYNC_MOVEMENT := 9 
+);
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,841 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <POU Name="FB_Pusher" Id="{36e33e78-1ebc-4d07-bdf3-4dd4d01880b2}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Pusher
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+
+PusherServo        			:FB_AxisControl;
+
+_Pusher_param				:recipe;
+
+
+
+ToolPositioningSpeed	: LREAL := 20;
+ToolPositioningAccel	: LREAL := 100;
+ToolPositioningJerk		: LREAL := 1000;
+ToolHomingSpeed			: LREAL := 2;
+
+PusherServoEnable			:BOOL;
+PusherServoEnabled			:BOOL;
+
+_ExecutedHome				:BOOL:=FALSE;
+_ExecutedStage2				:BOOL:=FALSE;
+_ExecutedStage4				:BOOL:=FALSE;
+_ExecutedStage5				:BOOL:=FALSE;
+_ExecutedOffset				:BOOL:=FALSE;
+_ExecutedTamp				:BOOL:=FALSE;
+
+tickcounter_pusher: 		INT :=0;
+State: 						INT:= 0;
+StateNext: 					INT:= 0;
+
+pusher_old_position			:LREAL;
+
+
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Folder Name="Executed" Id="{7a10ea65-564e-4af0-9fe0-b64a71cccc00}" />
+    <Folder Name="param" Id="{78515c04-73b4-4e21-a577-974d1bbadc16}" />
+    <Method Name="_Enable" Id="{6bb019dc-8171-4b90-aa60-df783a0d8ed1}">
+      <Declaration><![CDATA[METHOD _Enable 
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+PusherServoEnable := TRUE;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_Halt" Id="{6dffbb07-095b-46ed-992a-d66a25d3d5b1}">
+      <Declaration><![CDATA[METHOD _Halt : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[PusherServo.xHalt:=TRUE;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_Halt_false" Id="{dc9dee2e-fbf9-425f-97da-465ec9996c5c}">
+      <Declaration><![CDATA[METHOD _Halt_false : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[PusherServo.xHalt:=FALSE;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_Home" Id="{6f7955b9-e0ab-4bc1-b9ef-99b4a74065aa}">
+      <Declaration><![CDATA[METHOD _Home 
+VAR_INPUT
+	
+END_VAR
+
+
+VAR
+
+
+END_VAR
+
+VAR_OUTPUT
+	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+
+CASE State OF //you are here
+
+
+
+0:	
+	_ExecutedHome := FALSE;
+	PusherServo.fVelocity := ToolPositioningSpeed;
+	PusherServo.fAxisAcceleration := ToolPositioningAccel;
+	PusherServo.fAxisDeceleration := ToolPositioningAccel;
+	PusherServo.fAxisJerk := ToolPositioningJerk;
+
+	IF ixPusherHomeSwitch THEN
+		PusherServo.xPositiveDirection := FALSE;
+		IF  tickcounter_pusher < 10 THEN
+			tickcounter_pusher := tickcounter_pusher + 1;  // can be put in onditional
+		
+		ELSE
+		//IF tickcounter_compress >= 10 THEN
+			PusherServo.xMoveV := TRUE;
+		END_IF
+	ELSE
+	
+		//CompressServo.xHalt := NOT CompressServo.xHalt;
+		PusherServo.xMoveV := FALSE;
+		//CompressServo.xHalt := NOT CompressServo.xHalt;
+		PusherServo.xHalt := TRUE;
+		IF PusherServo.xHalted THEN
+			tickcounter_pusher:=0;
+			StateNext := 5;
+		END_IF
+	
+	END_IF
+	
+5:
+	
+	PusherServo.xHalt := FALSE;
+	tickcounter_Pusher := tickcounter_Pusher + 1;
+	IF tickcounter_Pusher >= 10 THEN
+		tickcounter_Pusher := 0;
+		StateNext := 10;
+	END_IF
+	
+10:
+	PusherServo.fVelocity := ToolHomingSpeed;
+	
+	IF NOT ixPusherHomeSwitch THEN
+		PusherServo.xPositiveDirection := TRUE;
+		IF tickcounter_Pusher < 10 THEN
+			tickcounter_Pusher := tickcounter_Pusher + 1;
+		ELSE
+		//IF tickcounter >= 10 THEN
+			PusherServo.xMoveV := TRUE;
+		END_IF
+	ELSE
+		PusherServo.xMoveV := FALSE;
+		PusherServo.xHalt := TRUE;
+		IF PusherServo.xHalted THEN
+			tickcounter_Pusher := 0;
+			StateNext := 15;
+		END_IF
+	END_IF
+
+15:
+	
+	PusherServo.xHalt := FALSE;
+	tickcounter_Pusher := tickcounter_Pusher + 1;
+	IF tickcounter_Pusher >= 10 THEN
+		tickcounter_Pusher := 0;
+		StateNext := 20;
+		//Executed := TRUE;
+	END_IF
+20:
+	PusherServo.fHomeOffset := 0;
+	PusherServo.xZero := TRUE;
+	StateNext := 25;	
+	
+25:
+	IF PusherServo.xZeroed THEN
+		PusherServo.xZero := FALSE;
+		_ExecutedHome := TRUE;
+		StateNext := 0;
+	END_IF
+	
+
+END_CASE
+
+State := StateNext;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_mc_stop" Id="{7e9e7bd5-2c2f-4617-90fa-1a4a9040aed4}">
+      <Declaration><![CDATA[METHOD _mc_stop : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[PusherServo.xStop:=TRUE;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_Reset" Id="{13afff2a-b85d-41c3-909c-3571ef832fac}">
+      <Declaration><![CDATA[METHOD _Reset
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[	tickcounter_Pusher:=0;
+	PusherServoEnable := FALSE;
+	PusherServo.xZero := FALSE;
+	PusherServo.xMoveV := FALSE;
+	PusherServo.xMoveA := FALSE;
+	PusherServo.xMoveR := FALSE;
+	PusherServo.xHalt:=FALSE;
+	PusherServo.xStop:=FALSE;
+	PusherServo.GearIn := FALSE;
+	state:=0;
+	statenext:=0;
+	tickcounter_pusher     :=0;
+	
+	Stage2Executed:=FALSE;
+	Stage4Executed:=FALSE;
+	Stage5Executed:=FALSE;
+	_ExecutedHome:=FALSE;
+	_ExecutedOffset:=FALSE;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_Reset_medium" Id="{d0af1c72-badd-4f28-b191-8a590c1ea4f5}">
+      <Declaration><![CDATA[METHOD _Reset_medium
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[	tickcounter_Pusher:=0;
+	PusherServoEnable := FALSE;
+	PusherServo.xZero := FALSE;
+	PusherServo.xMoveV := FALSE;
+	PusherServo.xMoveA := FALSE;
+	PusherServo.xMoveR := FALSE;
+	PusherServo.xHalt:=FALSE;
+	PusherServo.xStop:=FALSE;
+	PusherServo.GearIn := FALSE;
+	state:=0;
+	statenext:=0;
+	tickcounter_pusher     :=0;
+	
+	Stage2Executed:=FALSE;
+	Stage4Executed:=FALSE;
+	Stage5Executed:=FALSE;
+	//_ExecutedHome:=FALSE;
+	//_ExecutedOffset:=FALSE;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_Soft_Reset" Id="{6dfb29ba-6c3e-40e5-9d3b-23a15f2e4bb6}">
+      <Declaration><![CDATA[METHOD _Soft_Reset
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+tickcounter_Pusher:=0;
+PusherServo.xZero := FALSE;
+PusherServo.xMoveV := FALSE;
+PusherServo.xMoveA := FALSE;
+PusherServo.xHalt := FALSE;
+PusherServo.GearIn := FALSE;
+PusherServo.xStop:=FALSE;
+state:=0;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_Stage2" Id="{1b8351ec-3227-4b1f-a7ef-e2697ae50808}">
+      <Declaration><![CDATA[METHOD _Stage2 : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CASE State OF
+	
+0:	
+	_ExecutedStage2:=FALSE;
+	PusherServo.fPosition:= _Pusher_Param.Pusher.Initial_Distance;
+	PusherServo.fVelocity:= _Pusher_Param.Pusher.Initial_Speed; //mm/s
+	PusherServo.xMoveA:=TRUE;
+	StateNext:=5;
+5:	
+	IF PusherServo.xInPosition = TRUE THEN
+		
+		PusherServo.xMoveA := FALSE;
+		StateNext:=0;
+		_ExecutedStage2:=TRUE;
+		
+	END_IF
+
+
+END_CASE
+
+State:=StateNext;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_Stage4" Id="{0531ebe1-b89b-4063-a997-8baed7a67882}">
+      <Declaration><![CDATA[METHOD _Stage4
+VAR_INPUT
+END_VAR
+
+VAR
+	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CASE State OF
+	
+0:	
+	
+	
+	_ExecutedStage4:=FALSE;
+	PusherServo.fPosition:= _Pusher_Param.Pusher.Eject_Distance;
+	PusherServo.fVelocity:= _Pusher_Param.Pusher.Eject_Speed; //mm/s
+	
+	_Pusher_Param.Clamp.Release_Instance := _Pusher_Param.Clamp.Release_Instance - _Pusher_Param.Pusher.tamp_final_distance;
+		
+	IF _Pusher_Param.Clamp.Release_Instance <= 0 THEN
+		IF qxClamp = TRUE THEN
+			qxClamp:=FALSE;
+		
+			
+			PRG_Machine.StopClampTimer();
+	
+		END_IF
+	END_IF
+	
+	pusher_old_position:= PusherServo.fActualPosition;
+	PusherServo.xMoveA:=TRUE;
+	StateNext:=5;
+	
+5:	
+	IF PusherServo.xInPosition = TRUE THEN
+		
+		PusherServo.xMoveA := FALSE;
+		StateNext:=0;
+		_ExecutedStage4:=TRUE;
+		
+		IF qxClamp = TRUE THEN
+			qxClamp:=FALSE;
+		
+			PRG_Machine.StopClampTimer();
+	
+		END_IF
+		
+	END_IF
+	
+	IF (PusherServo.fActualPosition-pusher_old_position) >= (_Pusher_Param.Clamp.Release_Instance) THEN
+		IF qxClamp = TRUE THEN
+			qxClamp:=FALSE;
+		
+			PRG_Machine.StopClampTimer();
+	
+		END_IF
+	END_IF
+
+
+END_CASE
+
+State:=StateNext;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_Stage5" Id="{a4ed0cb5-2786-4aab-b82d-9d2e31076ef4}">
+      <Declaration><![CDATA[METHOD _Stage5
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CASE State OF
+	
+0:	
+	_ExecutedStage5:=FALSE;
+	PusherServo.fPosition:= 0;
+	PusherServo.fVelocity:= _Pusher_Param.Pusher.Retract_Speed; //mm/s
+	
+	PusherServo.xMoveA:=TRUE;
+	StateNext:=5;
+5:	
+	IF PusherServo.xInPosition = TRUE THEN
+		
+		PusherServo.xMoveA := FALSE;
+		StateNext:=0;
+		_ExecutedStage5:=TRUE;
+		
+	END_IF
+
+
+END_CASE
+
+State:=StateNext;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_Update" Id="{c072dfad-6af6-4653-b890-372b04534df9}">
+      <Declaration><![CDATA[METHOD _Update
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[PusherServo(
+	xEnable:= PusherServoEnable, 
+	xZero:= , 
+	xMoveR:= , 
+	xMoveA:= , 
+	xMoveV:= , 
+	xPositiveDirection:= , 
+	fDistance:= , 
+	fPosition:= , 
+	fVelocity:= , 
+	xStop:= , 
+	xHome:= , 
+	xHomeFlag:= , 
+	homePosition:=0,
+	fActualPosition=> , 
+	fActualVelocity=> , 
+	fActModuloPos=> , 
+	xEnabled=> PusherServoEnabled, 
+	xMoveComplete=> , 
+	xInPosition=> , 
+	xAtSpeed=> , 
+	xStopped=> , 
+	xHomed=> ,
+	errorID=> PusherServoErrorID, 
+	Axis:= PusherAxis );]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="HomeExecuted" Id="{c4909d4e-7cc6-4c8a-a82b-5891d80aff66}" FolderPath="Executed\">
+      <Declaration><![CDATA[PROPERTY HomeExecuted : BOOL]]></Declaration>
+      <Get Name="Get" Id="{777dec52-37c9-4f1c-95e1-158ef6c4608a}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[HomeExecuted := _ExecutedHome;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{3302950f-7a49-4729-923a-16e7c9debbf0}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[_ExecutedHome := HomeExecuted;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Method Name="Offset" Id="{5325378a-0643-4adf-ae8c-e6670f1ec3b2}">
+      <Declaration><![CDATA[METHOD Offset
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CASE State OF
+	
+0:	
+	_ExecutedOffset:=FALSE;
+	PusherServo.fPosition:= _Pusher_Param.Other.Pusher_Home_Offset;
+	PusherServo.fVelocity:= 20; //mm/s
+	
+	IF PusherServo.fPosition<>0 THEN
+		PusherServo.xMoveA:=TRUE;
+		StateNext:=5;
+	ELSE
+		_ExecutedOffset:=TRUE;
+	END_IF	
+	
+	//StateNext:=5;
+5:	
+	IF PusherServo.xInPosition = TRUE THEN
+		
+		PusherServo.xMoveA := FALSE;
+		StateNext:=10;
+		//_ExecutedOffset:=TRUE;
+		
+	END_IF
+	
+10:
+	
+	pusherServo.fHomeOffset := 0;
+	pusherServo.xZero := TRUE;
+	StateNext := 15;	
+	
+15:
+	IF pusherServo.xZeroed THEN
+		pusherServo.xZero := FALSE;
+		_ExecutedOffset:=TRUE;
+		StateNext := 0;
+	END_IF
+
+
+END_CASE
+
+State:=StateNext;]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="OffsetExecuted" Id="{008d4b7a-397f-4e6a-89a4-4ea230bddc80}" FolderPath="Executed\">
+      <Declaration><![CDATA[PROPERTY OffsetExecuted : BOOL]]></Declaration>
+      <Get Name="Get" Id="{7199c352-dbae-48f9-ba6f-85d625beb146}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[OffsetExecuted := _ExecutedOffset;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{ce6c7ecb-29b5-49a1-b805-b11f3e4bfc24}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[_ExecutedOffset := OffsetExecuted;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="Pusher_Param" Id="{6122f36e-b405-439e-9b5e-88ea35c81274}" FolderPath="param\">
+      <Declaration><![CDATA[PROPERTY Pusher_Param : recipe]]></Declaration>
+      <Get Name="Get" Id="{4560b3aa-fa7b-487d-929f-959b9a24e9ca}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Pusher_param := _Pusher_Param;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{669869ab-c4ac-483b-a636-e778db41462a}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[_Pusher_param := Pusher_Param;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="Stage2Executed" Id="{f3289000-cd18-410c-b583-9cf1ce52a86d}" FolderPath="Executed\">
+      <Declaration><![CDATA[PROPERTY Stage2Executed : BOOL]]></Declaration>
+      <Get Name="Get" Id="{e6259f44-f305-4fbc-980e-4a546b857acd}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Stage2Executed := _ExecutedStage2;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{6653e3b4-31ed-433a-b44b-2b6b0932413c}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[_ExecutedStage2 := Stage2Executed;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="Stage4Executed" Id="{936c5c19-dc5f-4e08-a2fb-6dceba308d0a}" FolderPath="Executed\">
+      <Declaration><![CDATA[PROPERTY Stage4Executed : BOOL]]></Declaration>
+      <Get Name="Get" Id="{bd1e5a73-304d-4a37-9a10-215241e8b902}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Stage4Executed := _ExecutedStage4;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{5fc62e27-39c6-45f8-9f0b-96a190a876dc}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[_ExecutedStage4 := Stage4Executed;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="Stage5Executed" Id="{a1eb5161-5bff-4b17-87fa-374af998095e}" FolderPath="Executed\">
+      <Declaration><![CDATA[PROPERTY Stage5Executed : BOOL]]></Declaration>
+      <Get Name="Get" Id="{2a31c805-c50a-4d2c-9f85-38339fe591e8}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Stage5Executed := _ExecutedStage5;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{947fcb3d-3774-4aac-b373-d3e03a0a6d4e}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[_ExecutedStage5 := Stage5Executed;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Method Name="Tamp" Id="{350707ac-f4d4-4ca6-88ba-2c02f794a090}">
+      <Declaration><![CDATA[METHOD Tamp
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+CASE State OF
+	
+0:	
+	_ExecutedTamp:=FALSE;
+	PusherServo.fPosition:= _Pusher_Param.Pusher.tamp_initial_distance;
+	PusherServo.fVelocity:= _Pusher_Param.Pusher.tamp_initial_speed;
+	
+	
+	IF  _Pusher_Param.Pusher.tamp_initial_speed = 0 THEN
+		StateNext:=10;
+	ELSE
+		StateNext:=5;
+		PusherServo.xMoveA:=TRUE;
+	END_IF
+	
+5:	
+	IF PusherServo.xInPosition = TRUE THEN
+		
+		PusherServo.xMoveA := FALSE;
+		StateNext:=10;
+	END_IF
+
+10:
+	PusherServo.fVelocity:= _Pusher_Param.Pusher.tamp_final_speed;
+	PusherServo.fPosition:= _Pusher_Param.Pusher.tamp_final_distance;
+	
+	
+	IF _Pusher_Param.Pusher.tamp_final_speed = 0 THEN
+		StateNext:=0;
+		_ExecutedTamp:=TRUE;
+		
+	ELSE
+		StateNext:=15;
+		PusherServo.xMoveA := TRUE;
+	END_IF
+	
+	
+	
+	
+15:
+	IF PusherServo.xInPosition = TRUE THEN
+		
+		PusherServo.xMoveA := FALSE;
+		StateNext:=0;
+		_ExecutedTamp:=TRUE;
+	END_IF
+
+	
+
+END_CASE
+
+State:=StateNext;]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="TampExecuted" Id="{1ce40493-7a02-4274-b1ae-bfa4312519da}" FolderPath="Executed\">
+      <Declaration><![CDATA[PROPERTY TampExecuted : BOOL]]></Declaration>
+      <Get Name="Get" Id="{e2d4d081-fd02-496c-84ae-7dad4bc0c8ee}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[TampExecuted := _ExecutedTamp;
+]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{04c8e692-b6dc-4358-9473-827608e7f7f1}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[_ExecutedTamp := TampExecuted;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <LineIds Name="FB_Pusher">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pusher._Enable">
+      <LineId Id="7" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pusher._Halt">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pusher._Halt_false">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pusher._Home">
+      <LineId Id="121" Count="1" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="120" Count="0" />
+      <LineId Id="119" Count="0" />
+      <LineId Id="28" Count="66" />
+      <LineId Id="97" Count="3" />
+      <LineId Id="95" Count="0" />
+      <LineId Id="101" Count="2" />
+      <LineId Id="140" Count="0" />
+      <LineId Id="105" Count="0" />
+      <LineId Id="104" Count="0" />
+      <LineId Id="123" Count="1" />
+      <LineId Id="96" Count="0" />
+      <LineId Id="125" Count="1" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pusher._mc_stop">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pusher._Reset">
+      <LineId Id="47" Count="0" />
+      <LineId Id="10" Count="2" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="21" Count="2" />
+      <LineId Id="27" Count="4" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pusher._Reset_medium">
+      <LineId Id="47" Count="0" />
+      <LineId Id="10" Count="2" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="21" Count="2" />
+      <LineId Id="27" Count="4" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pusher._Soft_Reset">
+      <LineId Id="9" Count="5" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pusher._Stage2">
+      <LineId Id="6" Count="11" />
+      <LineId Id="40" Count="0" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="18" Count="2" />
+      <LineId Id="36" Count="2" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pusher._Stage4">
+      <LineId Id="6" Count="2" />
+      <LineId Id="29" Count="1" />
+      <LineId Id="9" Count="1" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="40" Count="0" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="47" Count="5" />
+      <LineId Id="44" Count="1" />
+      <LineId Id="53" Count="1" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="13" Count="5" />
+      <LineId Id="68" Count="6" />
+      <LineId Id="19" Count="1" />
+      <LineId Id="58" Count="2" />
+      <LineId Id="62" Count="2" />
+      <LineId Id="66" Count="1" />
+      <LineId Id="61" Count="0" />
+      <LineId Id="21" Count="4" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pusher._Stage5">
+      <LineId Id="6" Count="5" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="12" Count="13" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pusher._Update">
+      <LineId Id="6" Count="23" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pusher.HomeExecuted.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pusher.HomeExecuted.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pusher.Offset">
+      <LineId Id="6" Count="7" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="44" Count="1" />
+      <LineId Id="15" Count="9" />
+      <LineId Id="30" Count="12" />
+      <LineId Id="25" Count="4" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pusher.OffsetExecuted.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pusher.OffsetExecuted.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pusher.Pusher_Param.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pusher.Pusher_Param.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pusher.Stage2Executed.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pusher.Stage2Executed.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pusher.Stage4Executed.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pusher.Stage4Executed.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pusher.Stage5Executed.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pusher.Stage5Executed.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pusher.Tamp">
+      <LineId Id="6" Count="7" />
+      <LineId Id="40" Count="1" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="58" Count="0" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="15" Count="10" />
+      <LineId Id="49" Count="0" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="56" Count="0" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="52" Count="1" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="50" Count="0" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="26" Count="13" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pusher.TampExecuted.Get">
+      <LineId Id="3" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pusher.TampExecuted.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

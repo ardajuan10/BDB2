@@ -1,0 +1,136 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <GVL Name="GVL_ZenOn" Id="{f8f29c4e-7921-42cb-aae9-025b5e5c47c2}">
+    <Declaration><![CDATA[VAR_GLOBAL
+	
+	
+	overtorque_alarm							:BOOL;
+
+	limits_screen								:Limits;
+	limits_save									:Limits;
+	save_limits									:BOOL:=FALSE;
+	parameter_violation							:BOOL:=FALSE;
+
+	//Mode
+	Debug_Mode									:BOOL;
+	
+	//Recipe on the screen (current one)
+	Recipe_Visibility							:ARRAY[1..10] OF BOOL:=[10(FALSE)];  //u are here
+	
+
+	
+	Recipe_Screen								:Recipe;
+	Default_Recipe_Visibility					:BOOL :=FALSE;
+		
+	//end_of_recipe_on_the_screen
+	
+	//Maintenance
+	Maintenance_Visibility						:BOOL;
+	Mode_String									:STRING;
+	Stage_Name									:STRING;
+	Step_Next									:BOOL;
+	Toggle_Clamp								:BOOL;
+	Force_Home									:BOOL;
+	//end of maintenance
+	
+	//recipe functions
+	SaveRecipe									:BOOL :=FALSE;
+	SaveasRecipe								:BOOL :=FALSE;	
+	
+	
+	
+	LoadRecipe									:ARRAY[1..10] OF BOOL :=[10(FALSE)];
+	Load_Request								:BOOL :=FALSE;
+	Save_before_load							:BOOL :=FALSE;
+	
+	DeleteRecipe								:ARRAY[1..10] OF BOOL :=[10(FALSE)];
+	Delete_Request								:BOOL :=FALSE;
+	
+	
+
+	Saveas_name									:STRING;
+	Message										:STRING(300);
+	alarm_message								:STRING(300);	
+	question									:STRING(300);
+	current_recipe_message						:STRING;
+	
+	//end of recipe functions
+	
+	sc_CompressServoErrorID: UDINT;
+	sc_PusherServoErrorID: UDINT;
+	sc_ShieldServoErrorID: UDINT;
+	sc_sSystemStateHi: STRING;
+	sc_sSystemStateMed: STRING;
+	sc_sSystemStateLo: STRING;
+	
+
+	
+	// Servo Analogue Inputs 1- Device 2, Term 2
+	CompressServoTorque          	: INT;
+	CompressServoFollowingError		: DINT;
+	CompressServoTorqueLimit		: UINT;
+	
+	// Servo Analogue Inputs 1- Device 2, Term 3
+	PusherServoTorque				: INT;
+	PusherServoFollowingError		: DINT;
+	PusherServoTorqueLimit			: UINT;
+	
+	// Servo Analogue Inputs 1- Device 2, Term 3
+	ShieldServoTorque				: INT;
+	ShieldServoFollowingError		: DINT;
+	ShieldServoTorqueLimit			: UINT;
+		
+
+	
+	(* Data For the Main Screen *)
+	CurrentProcessState				: STRING;			//Main Screen
+
+	
+
+	
+	(* Data For the Settings Screen *)
+	CompressDisplay					: LREAL;		//Settings Screen
+	PusherDisplay					: LREAL;		//Settings Screen
+	ShieldDisplay					: LREAL;
+	
+	Zenon_Offset_Compress			:BOOL;
+	Zenon_Offset_Shield				:BOOL;
+	Zenon_Offset_Pusher				:BOOL;
+				
+	
+	(* Digital IO *)
+	CabinetE_StopButtonOkay			: BOOL;
+	E_StopRelayOkay					: BOOL;
+	GuardRelayOkay					: BOOL;
+	ResetButton                     : BOOL;
+	EnableE_Stop					: BOOL;
+	StartButtonLamp					: BOOL;
+	ResetButtonLamp					: BOOL;
+	
+	Clamp_Alarm						:BOOL;
+	Clamp_Cooling					:BOOL;
+	Clamp_State						:BOOL;
+	
+	CompressHomeSwitch  			:BOOL;
+	PusherHomeSwitch 				:BOOL;
+	ShieldHomeSwitch 				:BOOL;
+	StartButton 					:BOOL;
+
+	GuardOkay 						:BOOL;
+	MachineE_StopButtonOkay 		:BOOL;
+	FanCartridgeDiagnostics 		:BOOL;
+
+	ResetLamp						: BOOL;			//Digital IO Screen
+	
+	LampTest						: BOOL;			//Digital IO Screen
+
+	CompressAxisPosition			: LREAL;		//IO Screen
+	PusherAxisPosition				: LREAL;
+	ShieldAxisPosition				: LREAL;
+	
+	(* Top Bar *)
+	sSystemState					: STRING;		//Top Bar
+
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

@@ -1,0 +1,162 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <POU Name="FB_Retain" Id="{8a02f813-c877-4701-ae53-69e1ca2f3a43}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Retain
+VAR_INPUT
+	bEnable							: BOOL;				(* Turns on the autosave function *)
+	bRead							: BOOL;				(* forces a read of the data from disk *)
+	bForceWrite						: BOOL;				(* Ignores wait timer and checksum to save the data now *)
+	tDelayTime						: TIME;				(* minimum time between data writes to disk *)
+	pData							: pvoid;			(* pointer to the data *)
+	nDataSize						: DWORD;			(* size of the data *)
+	xPath							: STRING;			(* XML path for the data file *)
+	sfilename						: STRING;			(* Filename and path *)
+END_VAR
+VAR_OUTPUT
+		bBusy						: BOOL;				(* Block is busy *)
+	bReadDone						: BOOL;				(* Block has finshed reading *)
+	bWriteDone						: BOOL;				(* Block has finished writing *)
+	bError							: BOOL;				(* Block has finished with an error *)
+	nErrorID						: DWORD;			(* Error code *)
+	bReadOnce						: BOOL;				(* Initial read complete *)
+END_VAR
+VAR
+		eState						: eXMLState;
+	nCurrentCheckSum				: DWORD;
+	nLastCheckSum					: DWORD;
+	fbTrig							: R_TRIG;
+	fbForceWriteTrig				: R_TRIG;
+	fbWaitTimer						: TON;
+	fbXmlSrvWrite					: FB_XmlSrvWrite;
+	fbXmlSrvRead					: FB_XmlSrvRead;
+	PreviousRecipe: WORD;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[CASE eState OF
+	eXMLState.eWait: (* Wait for the timer *)
+		fbForceWriteTrig(CLK := bForceWrite);
+		//fbWaitTimer(IN := bEnable AND bReadOnce, PT := tDelayTime);
+		//IF fbWaitTimer.Q OR fbForceWriteTrig.Q THEN
+		IF fbForceWriteTrig.Q THEN 	//JT added
+			nCurrentCheckSum := F_CheckSum16(dwSrcAddr := pData, cbLen := nDataSize, wChkSum := 1);
+			IF (nCurrentCheckSum <> nLastCheckSum) OR fbForceWriteTrig.Q THEN
+				//SavingRecipeChanges	:= TRUE;
+				nLastCheckSum := nCurrentCheckSum;
+				eState := eResetWrite;
+				bBusy := TRUE;
+				bWriteDone := FALSE;
+				bError := FALSE;
+				nErrorID := 0;
+			END_IF
+			fbWaitTimer(IN := FALSE);
+		END_IF
+		fbTrig(CLK := bRead);
+		IF fbTrig.Q THEN
+			bBusy := TRUE;
+			bReadDone := FALSE;
+			bError := FALSE;
+			bReadOnce := FALSE;
+			eState := eResetRead;
+			nErrorID := 0;
+		END_IF
+	(* -------------------------------- *)
+
+	eResetWrite: (* Reset XML Server *)
+		fbXmlSrvWrite(
+			sNetId:= '',
+			ePath:= PATH_GENERIC,
+			nMode:= XMLSRV_ADDMISSING,
+			pSymAddr:= pData,
+			cbSymSize:= nDataSize,
+			sFilePath:= sfilename,
+			sXPath:= xPath,
+			bExecute:= FALSE,
+			tTimeout:= T#10S,
+			bBusy=> ,
+			bError=> ,
+			nErrId=> nErrorID);
+		eState := eWriteData;
+	(* -------------------------------- *)
+
+	eWriteData: (* Write XML Data *)
+		fbXmlSrvWrite(
+			sNetId:= '',
+			ePath:= PATH_GENERIC,
+			nMode:= XMLSRV_ADDMISSING,
+			pSymAddr:= pData,
+			cbSymSize:= nDataSize,
+			sFilePath:= sfilename,
+			sXPath:= xPath,
+			bExecute:= TRUE,
+			tTimeout:= T#10S,
+			bBusy=> ,
+			bError=> ,
+			nErrId=> nErrorID);
+		IF NOT fbXmlSrvWrite.bBusy AND NOT fbXmlSrvWrite.bError THEN
+			eState := eXMLState.eWait;
+			//SavingRecipeChanges := false;
+			bBusy := FALSE;
+			bError := FALSE;
+			bWriteDone := TRUE;
+		ELSIF NOT fbXmlSrvWrite.bBusy AND fbXmlSrvWrite.bError THEN
+			eState := eXMLState.eWait;
+			sSystemStateHi := F_DisplayText("Data Not Saved",0);
+			bBusy := FALSE;
+			bError := TRUE;
+		END_IF
+	(* -------------------------------- *)
+
+	eResetRead: (* Reset Read *)
+		fbXmlSrvRead(
+			sNetId:= '',
+			ePath:= PATH_GENERIC,
+			nMode:= XMLSRV_ADDMISSING,
+			pSymAddr:= pData,
+			cbSymSize:= nDataSize,
+			sFilePath:= sfilename,
+			sXPath:= xPath,
+			bExecute:= FALSE,
+			tTimeout:= T#10S,
+			bBusy=> ,
+			bError=> ,
+			nErrId=> nErrorID);
+		eState := eReadData;
+	(* -------------------------------- *)
+
+	eReadData: (* Read *)
+		fbXmlSrvRead(
+			sNetId:= '',
+			ePath:= PATH_GENERIC,
+			nMode:= XMLSRV_ADDMISSING,
+			pSymAddr:= pData,
+			cbSymSize:= nDataSize,
+			sFilePath:= sfilename,
+			sXPath:= xPath,
+			bExecute:= TRUE,
+			tTimeout:= T#100S,
+			bBusy=> ,
+			bError=> ,
+			nErrId=> nErrorID);
+		IF NOT fbXmlSrvRead.bBusy AND NOT fbXmlSrvRead.bError THEN
+			eState := eXMLState.eWait;
+			bBusy := FALSE;
+			bError := FALSE;
+			bReadDone := TRUE;
+			bReadOnce := TRUE;
+		ELSIF NOT fbXmlSrvRead.bBusy AND fbXmlSrvRead.bError THEN
+			eState := eXMLState.eWait;
+			bBusy := FALSE;
+			bError := TRUE;
+			bReadOnce := TRUE;
+		END_IF
+	(* -------------------------------- *)
+END_CASE]]></ST>
+    </Implementation>
+    <LineIds Name="FB_Retain">
+      <LineId Id="3" Count="14" />
+      <LineId Id="19" Count="102" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

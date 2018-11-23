@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <DUT Name="Rec_Shield" Id="{2f0346e2-d547-48f0-9d70-fa3842f49d32}">
+    <Declaration><![CDATA[TYPE Rec_Shield :
+	STRUCT
+		//Initial_Speed			:LREAL;
+		//Initial_Distance		:LREAL;
+		//Retract_Speed			:LREAL;
+		Speed					:ARRAY[1..6] OF LREAL;
+		Distance				:ARRAY[1..6] OF LREAL;
+		retract_speed			:LREAL;
+		
+	END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

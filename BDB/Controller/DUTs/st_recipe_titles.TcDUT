@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <DUT Name="st_recipe_titles" Id="{4441526d-c07f-4a00-9bc6-8fc215be5d72}">
+    <Declaration><![CDATA[TYPE st_recipe_titles :
+	STRUCT
+		pusher					:STRING;
+		compress				:STRING;
+		shield					:STRING;
+		clamp					:STRING;
+		offset					:STRING;
+		
+	END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

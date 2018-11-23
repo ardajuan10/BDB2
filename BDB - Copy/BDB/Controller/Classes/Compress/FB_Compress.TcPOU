@@ -1,0 +1,654 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <POU Name="FB_Compress" Id="{1387e703-0f2f-420b-9688-f5e285bf0198}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Compress
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+
+CompressServo: 				FB_AxisControl;
+
+_Compress_param				:recipe;
+
+
+ToolPositioningSpeed	: LREAL := 20;
+ToolPositioningAccel	: LREAL := 100;
+ToolPositioningJerk		: LREAL := 1000;
+ToolHomingSpeed			: LREAL := 2;
+
+CompressServoEnable:		BOOL;
+CompressServoEnabled:		BOOL;
+
+_ExecutedHome:				BOOL:=FALSE;
+_ExecutedStage1:			BOOL:=FALSE;
+_ExecutedStage5:			BOOL:=FALSE;
+_ExecutedOffset:			BOOL:=FALSE;				
+
+tickcounter_compress: 		INT :=0;
+State: 						INT:= 0;
+StateNext: 					INT:= 0;
+			
+	
+
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Folder Name="Executed" Id="{13d6dec4-6f67-45e5-9736-98bab2c056c6}" />
+    <Folder Name="param" Id="{769364a5-1522-4744-812f-02965a0c0085}" />
+    <Method Name="_Enable" Id="{6fe883de-dd60-4407-92d1-139759124ee9}">
+      <Declaration><![CDATA[METHOD _Enable 
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+CompressServoEnable := TRUE;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_Halt" Id="{103a9086-5ea0-4fcb-8cb4-f267456965f3}">
+      <Declaration><![CDATA[METHOD _Halt : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CompressServo.xHalt:=TRUE;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_Halt_false" Id="{bb715725-a998-4270-9e3f-93c5fa00f54f}">
+      <Declaration><![CDATA[METHOD _Halt_false : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CompressServo.xHalt:=FALSE;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_Home" Id="{37ee7919-2571-48c3-a803-e17f5f5aa356}">
+      <Declaration><![CDATA[METHOD _Home : BOOL
+VAR_INPUT
+	
+END_VAR
+
+
+VAR
+
+	
+	
+END_VAR
+
+VAR_OUTPUT
+	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CASE State OF //you are here
+
+0:	
+	_ExecutedHome := FALSE;
+	CompressServo.fVelocity := ToolPositioningSpeed;
+	CompressServo.fAxisAcceleration := ToolPositioningAccel;
+	CompressServo.fAxisDeceleration := ToolPositioningAccel;
+	CompressServo.fAxisJerk := ToolPositioningJerk;
+
+	IF ixCompressHomeSwitch THEN
+		CompressServo.xPositiveDirection := FALSE;
+		IF  tickcounter_compress < 10 THEN
+			tickcounter_compress := tickcounter_compress + 1;  // can be put in onditional
+		
+		ELSE
+		//IF tickcounter_compress >= 10 THEN
+			CompressServo.xMoveV := TRUE;
+		END_IF
+	ELSE
+	
+		//CompressServo.xHalt := NOT CompressServo.xHalt;
+		CompressServo.xMoveV := FALSE;
+		//CompressServo.xHalt := NOT CompressServo.xHalt;
+		CompressServo.xHalt := TRUE;
+		IF CompressServo.xHalted THEN
+			tickcounter_compress:=0;
+			StateNext := 5;
+		END_IF
+	
+	END_IF
+	
+5:
+	
+	CompressServo.xHalt := FALSE;
+	tickcounter_compress := tickcounter_compress + 1;
+	IF tickcounter_compress >= 10 THEN
+		tickcounter_compress := 0;
+		StateNext := 10;
+	END_IF
+	
+10:
+	CompressServo.fVelocity := ToolHomingSpeed;
+	
+	IF NOT ixCompressHomeSwitch THEN
+		CompressServo.xPositiveDirection := TRUE;
+		IF tickcounter_compress < 10 THEN
+			tickcounter_compress := tickcounter_compress + 1;
+		ELSE
+		//IF tickcounter >= 10 THEN
+			CompressServo.xMoveV := TRUE;
+		END_IF
+	ELSE
+		CompressServo.xMoveV := FALSE;
+		CompressServo.xHalt := TRUE;
+		IF CompressServo.xHalted THEN
+			tickcounter_compress := 0;
+			StateNext := 15;
+		END_IF
+	END_IF
+
+15:
+	
+	CompressServo.xHalt := FALSE;
+	tickcounter_compress := tickcounter_compress + 1;
+	IF tickcounter_compress >= 10 THEN
+		tickcounter_compress := 0;
+		StateNext := 20;
+		//Executed := TRUE;
+	END_IF	
+
+20:
+	CompressServo.fHomeOffset := 0;
+	CompressServo.xZero := TRUE;
+	StateNext := 25;	
+	
+25:
+	IF CompressServo.xZeroed THEN
+		CompressServo.xZero := FALSE;
+		_ExecutedHome := TRUE;
+		StateNext := 0;
+	END_IF
+
+END_CASE
+
+State := StateNext;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_mc_stop" Id="{ae0c2dcf-26f8-44f8-bb66-c53e47d334a3}">
+      <Declaration><![CDATA[METHOD _mc_stop : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CompressServo.xStop:=TRUE;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_Reset" Id="{4a6fb10a-dac8-4f6a-8c63-a7f0770390f5}">
+      <Declaration><![CDATA[METHOD _Reset
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[	tickcounter_compress:=0;
+	CompressServoEnable := FALSE;
+	CompressServo.xZero := FALSE;
+	CompressServo.xMoveV := FALSE;
+	CompressServo.xMoveA := FALSE;
+	CompressServo.xHALT:=FALSE;
+	CompressServo.xStop:=FALSE;
+	CompressServo.GearIn := FALSE;
+	state:=0;
+	statenext:=0;
+	tickcounter_compress     :=0;
+	
+	Stage1Executed:=FALSE;
+	Stage5Executed:=FALSE;
+	_ExecutedHome:=FALSE;
+	_ExecutedOffset:=FALSE;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_Reset_medium" Id="{ae558e08-c0df-4390-8d12-b017ed0d217a}">
+      <Declaration><![CDATA[METHOD _Reset_medium
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[	tickcounter_compress:=0;
+	CompressServoEnable := FALSE;
+	CompressServo.xZero := FALSE;
+	CompressServo.xMoveV := FALSE;
+	CompressServo.xMoveA := FALSE;
+	CompressServo.xHALT:=FALSE;
+	CompressServo.xStop:=FALSE;
+	CompressServo.GearIn := FALSE;
+	state:=0;
+	statenext:=0;
+	tickcounter_compress     :=0;
+	
+	Stage1Executed:=FALSE;
+	Stage5Executed:=FALSE;
+	//_ExecutedHome:=FALSE;
+	//_ExecutedOffset:=FALSE;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_Soft_Reset" Id="{57c3563d-defa-4522-a230-53512a3e89e9}">
+      <Declaration><![CDATA[METHOD _Soft_Reset
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+tickcounter_compress:=0;
+CompressServo.xZero := FALSE;
+CompressServo.xMoveV := FALSE;
+CompressServo.xMoveA := FALSE;
+CompressServo.xHalt := FALSE;
+CompressServo.GearIn := FALSE;
+CompressServo.xStop:=FALSE;
+state:=0;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_Stage1" Id="{c37e4c16-01e9-4cf7-b2b1-224437f291c0}">
+      <Declaration><![CDATA[METHOD _Stage1 
+VAR_INPUT
+END_VAR
+VAR
+
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+CASE State OF
+	
+0:	
+	_ExecutedStage1:=FALSE;
+	CompressServo.fPosition:= _Compress_Param.Compress.Initial_Distance;
+	CompressServo.fVelocity:= _Compress_Param.Compress.Initial_Speed;
+	CompressServo.xMoveA:=TRUE;
+	StateNext:=5;
+5:	
+	IF CompressServo.xInPosition = TRUE THEN
+		
+		CompressServo.xMoveA := FALSE;
+		StateNext:=10;
+	END_IF
+
+10:
+	CompressServo.fVelocity:= _Compress_Param.Compress.Initial_Speed;
+	CompressServo.fPosition:= _Compress_Param.Compress.Relax_Distance;
+	CompressServo.xMoveA := TRUE;
+	StateNext:=15;
+	
+15:
+	IF CompressServo.xInPosition = TRUE THEN
+		
+		CompressServo.xMoveA := FALSE;
+		StateNext:=0;
+		_ExecutedStage1:=TRUE;
+	END_IF
+
+	
+
+END_CASE
+
+State:=StateNext;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_Stage5" Id="{695cb3ac-d912-4d75-92f9-28efbcc38ed0}">
+      <Declaration><![CDATA[METHOD _Stage5
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CASE State OF
+	
+0:	
+	_ExecutedStage5:=FALSE;
+	CompressServo.fPosition:= 0;
+	CompressServo.fVelocity:= _Compress_Param.Compress.Retract_Speed; //mm/s
+	CompressServo.xMoveA:=TRUE;
+	StateNext:=5;
+5:	
+	IF CompressServo.xInPosition = TRUE THEN
+		
+		CompressServo.xMoveA := FALSE;
+		StateNext:=0;
+		_ExecutedStage5:=TRUE;
+		
+	END_IF
+
+
+END_CASE
+
+State:=StateNext;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_Update" Id="{04bfe410-c633-4d72-8469-c7e5dc86dcfb}">
+      <Declaration><![CDATA[METHOD _Update
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CompressServo(
+	xEnable:= CompressServoEnable, 
+	xZero:= , 
+	xMoveR:= , 
+	xMoveA:= , 
+	xMoveV:= , 
+	xPositiveDirection:= , 
+	fDistance:= , 
+	fPosition:= , 
+	fVelocity:= , 
+	xStop:= , 
+	xHome:= , 
+	xHomeFlag:= , 
+	homePosition:=0,
+	fActualPosition=> , 
+	fActualVelocity=> , 
+	fActModuloPos=> , 
+	xEnabled=> CompressServoEnabled, 
+	xMoveComplete=> , 
+	xInPosition=> , 
+	xAtSpeed=> , 
+	xStopped=> , 
+	xHomed=> ,
+	errorID=> CompressServoErrorID, 
+	Axis:= CompressAxis );]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="Compress_Param" Id="{bcdde077-9f58-474f-8c8f-266cf43e8000}" FolderPath="param\">
+      <Declaration><![CDATA[PROPERTY Compress_Param : recipe]]></Declaration>
+      <Get Name="Get" Id="{e8fab6d7-8b8d-4fe5-9973-237b245f0325}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Compress_param := _Compress_Param;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{7b053213-3e6e-4d60-9cae-ba5e81bf9498}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[_Compress_param := Compress_Param;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="HomeExecuted" Id="{66c47c8a-d10c-4730-a174-385b066524dc}" FolderPath="Executed\">
+      <Declaration><![CDATA[PROPERTY HomeExecuted : BOOL]]></Declaration>
+      <Get Name="Get" Id="{7464a099-410d-4d17-8d3b-2db226725489}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[HomeExecuted := _ExecutedHome;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{8dadb09a-4b8f-4614-a056-63a8f0b85acc}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[_ExecutedHome := HomeExecuted;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Method Name="Offset" Id="{4dcb4480-f059-4978-babb-cdd55ba92857}">
+      <Declaration><![CDATA[METHOD Offset
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CASE State OF
+	
+0:	
+	_ExecutedOffset:=FALSE;
+	CompressServo.fPosition:= _Compress_Param.Other.Compress_Home_Offset;
+	CompressServo.fVelocity:= 20; //mm/s
+	
+	IF CompressServo.fPosition<>0 THEN
+		CompressServo.xMoveA:=TRUE;
+		StateNext:=5;
+	ELSE
+		_ExecutedOffset:=TRUE;
+	END_IF
+	
+	//StateNext:=5;
+5:	
+	IF CompressServo.xInPosition = TRUE THEN
+		
+		CompressServo.xMoveA := FALSE;
+		StateNext:=10;
+		//_ExecutedOffset:=TRUE;
+		
+	END_IF
+10:
+	
+	compressServo.fHomeOffset := 0;
+	compressServo.xZero := TRUE;
+	StateNext := 15;	
+	
+15:
+	IF compressServo.xZeroed THEN
+		compressServo.xZero := FALSE;
+		_ExecutedOffset:=TRUE;
+		StateNext := 0;
+	END_IF
+
+END_CASE
+
+State:=StateNext;]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="OffsetExecuted" Id="{8205ff45-b334-411d-b2df-b273e844498e}" FolderPath="Executed\">
+      <Declaration><![CDATA[PROPERTY OffsetExecuted : BOOL]]></Declaration>
+      <Get Name="Get" Id="{bafc1193-74e1-4068-b0c5-cd96d325a488}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[OffsetExecuted := _ExecutedOffset;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{31740d7e-5681-42d0-8a4c-15b687fdd0a9}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[_ExecutedOffset := OffsetExecuted;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="Stage1Executed" Id="{368c6904-17a8-4220-939a-e427e1368381}" FolderPath="Executed\">
+      <Declaration><![CDATA[PROPERTY Stage1Executed : BOOL]]></Declaration>
+      <Get Name="Get" Id="{04063414-c032-4c62-b6b0-29f9f3742181}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Stage1Executed := _ExecutedStage1;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{3190afd9-ab70-426e-bdae-13f0ac4ec26f}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[_ExecutedStage1 := Stage1Executed;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="Stage5Executed" Id="{0a1a9824-734b-4d9d-b96f-726a93fcfe0c}" FolderPath="Executed\">
+      <Declaration><![CDATA[PROPERTY Stage5Executed : BOOL]]></Declaration>
+      <Get Name="Get" Id="{8ae4d099-814f-42b4-bd94-68fd4d3e04d8}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Stage5Executed := _ExecutedStage5;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{b5d09b72-ae41-43ea-803b-b055856bde2f}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[_ExecutedStage5 := Stage5Executed;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <LineIds Name="FB_Compress">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Compress._Enable">
+      <LineId Id="7" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Compress._Halt">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Compress._Halt_false">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Compress._Home">
+      <LineId Id="34" Count="1" />
+      <LineId Id="82" Count="0" />
+      <LineId Id="81" Count="0" />
+      <LineId Id="6" Count="8" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="15" Count="4" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="21" Count="4" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="38" Count="1" />
+      <LineId Id="41" Count="0" />
+      <LineId Id="43" Count="5" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="49" Count="0" />
+      <LineId Id="51" Count="17" />
+      <LineId Id="70" Count="2" />
+      <LineId Id="78" Count="0" />
+      <LineId Id="73" Count="3" />
+      <LineId Id="79" Count="0" />
+      <LineId Id="77" Count="0" />
+      <LineId Id="50" Count="0" />
+      <LineId Id="88" Count="7" />
+      <LineId Id="128" Count="0" />
+      <LineId Id="96" Count="1" />
+      <LineId Id="87" Count="0" />
+      <LineId Id="40" Count="0" />
+      <LineId Id="112" Count="1" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Compress._mc_stop">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Compress._Reset">
+      <LineId Id="38" Count="0" />
+      <LineId Id="6" Count="3" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="17" Count="2" />
+      <LineId Id="23" Count="3" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Compress._Reset_medium">
+      <LineId Id="38" Count="0" />
+      <LineId Id="6" Count="3" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="17" Count="2" />
+      <LineId Id="23" Count="3" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Compress._Soft_Reset">
+      <LineId Id="9" Count="5" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Compress._Stage1">
+      <LineId Id="8" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="15" Count="1" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="20" Count="1" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="29" Count="1" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="39" Count="3" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="37" Count="1" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="45" Count="1" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Compress._Stage5">
+      <LineId Id="6" Count="19" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Compress._Update">
+      <LineId Id="6" Count="23" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Compress.Compress_Param.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Compress.Compress_Param.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Compress.HomeExecuted.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Compress.HomeExecuted.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Compress.Offset">
+      <LineId Id="24" Count="5" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="60" Count="1" />
+      <LineId Id="47" Count="0" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="31" Count="8" />
+      <LineId Id="48" Count="10" />
+      <LineId Id="40" Count="3" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Compress.OffsetExecuted.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Compress.OffsetExecuted.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Compress.Stage1Executed.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Compress.Stage1Executed.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Compress.Stage5Executed.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Compress.Stage5Executed.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <POU Name="Config_Slow" Id="{68820ce0-f190-48fe-919d-63c0e6e8e6eb}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM Config_Slow
+VAR
+	
+	
+	Once				:BOOL :=TRUE;
+	saving_config		:BOOL :=FALSE;		
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF Clock.DateTimeInitialised THEN
+   	//Config_Counter:=Config_Counter+1;
+	//config_count:=config_count+1;
+	//IF config_count = 30 THEN
+	//	Config();
+	//	config_count:=0;
+	//END_IF
+	IF Config.Initialised() = FALSE THEN
+		Config();
+	ELSIF Once = TRUE THEN
+		Message := 'Data Loaded';
+		Once := FALSE;
+	END_IF
+	
+	
+	IF Config_Request = TRUE AND saving_config = FALSE THEN
+		Config_Request:=FALSE;
+		saving_config:=TRUE;
+		config_count:=0;
+
+	END_IF
+	
+	IF saving_config AND config_count <=2500 THEN
+		Config();
+		config_count:=config_count+1;
+	END_IF
+	
+	IF config_count = 2500 THEN
+		saving_config:= FALSE;
+		config_count :=0;
+		IF config_request = FALSE THEN
+			Message := 'Operation Configured';
+		END_IF
+	END_IF	
+
+END_IF]]></ST>
+    </Implementation>
+    <LineIds Name="Config_Slow">
+      <LineId Id="6" Count="1" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="53" Count="0" />
+      <LineId Id="19" Count="1" />
+      <LineId Id="40" Count="1" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="42" Count="2" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="55" Count="1" />
+      <LineId Id="47" Count="0" />
+      <LineId Id="49" Count="3" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

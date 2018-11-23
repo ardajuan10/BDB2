@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <DUT Name="Recipe" Id="{f733e535-52e7-4344-a528-8936b7f07c88}">
+    <Declaration><![CDATA[TYPE Recipe :
+	STRUCT
+		Name        	:STRING(20);
+		Shield      	:Rec_Shield;
+		Compress		:Rec_Compress;
+		Pusher			:Rec_Pusher;
+		Clamp			:Rec_Clamp;
+		Other			:Rec_Other;
+		Memory_Free		:BOOL := TRUE;
+	END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

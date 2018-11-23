@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <DUT Name="St_Compress_Settings" Id="{55ee4e13-f252-4a34-b244-e8c43c9d5a01}">
+    <Declaration><![CDATA[TYPE St_Compress_Settings :
+STRUCT
+	
+	//compress setting
+	button					:BOOL;
+	plus					:BOOL;
+	minus					:BOOL;
+	find					:BOOL;
+	speed					:LREAL:=2;
+	distance				:LREAL;
+	old_distance			:LREAL;
+	distance_vis			:BOOL;
+	done					:BOOL;
+	
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.0.38">
+  <DUT Name="eXMLState" Id="{c9357433-fb9d-440a-9985-38682bdb1d74}">
+    <Declaration><![CDATA[TYPE eXMLState :
+(
+	
+	eWait,
+eResetWrite, 
+eWriteData, 
+eResetRead, 
+eReadData
+);
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

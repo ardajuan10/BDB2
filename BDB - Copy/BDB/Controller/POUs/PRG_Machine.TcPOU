@@ -1,0 +1,1324 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <POU Name="PRG_Machine" Id="{4059ff51-9b15-4d7b-8b65-432c3cf02eab}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM PRG_Machine
+VAR
+	
+
+	
+	//Forced Home
+	Forced_Home_State						:INT:=0;
+	Forced_Home_State_Next					:INT:=0;
+	Forced_Home_Executed					:BOOL:=FALSE;
+
+	//RepetitionCounter: INT;
+	
+	Pusher :FB_Pusher;
+	Compress: FB_Compress;
+	Shield: FB_Shield;
+
+	ZenonStart: NT_StartProcess;
+	//nameString: STRING;
+	
+	debug: INT;
+	tickcounter: INT;
+	tickcounter2: INT;
+
+	State: INT:= 0;
+	state_old: INT:=0;
+	StateNext: INT:= 0;
+	
+	SM_StepRequest: BOOL:=FALSE;
+	singleStep: BOOL:=FALSE;
+		
+	Clamp_Security_Time: TIME := T#30S;
+	ClampTimer: TON;
+	//DwellTimer: TON;
+	//SaveTickCounter: INT := 0;
+
+	DatumTaught: BOOL;
+	//test: BOOL;
+	//ReTeachOffsets: BOOL;
+	//StopRequest: BOOL;
+	//random: STRING(INT#4);
+	rec_temp1: recipe;
+	rec_temp2: recipe;
+	rec_temp3: recipe;
+	
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF TRUE THEN
+	debug := debug+1;
+END_IF
+
+
+
+qbCompressServoTorqueLimit := 1000;
+qbPusherServoTorqueLimit := 1000;
+qbShieldServoTorqueLimit := 1000;
+
+
+//The state-machine
+CASE State OF
+	
+0: //Copy config .txt file into machine settings
+	
+
+
+	//Zenon start process function call - appears to never generate errors
+	
+	//IF ZenonStart.Busy=FALSE THEN
+	ZenonStart (
+		NETID :=,
+		//PATHSTR := 'Hard Disk\CP6606_Runtime\zenonRCE.exe', //'C:\PROGRAM Files\COPA-DATA\zenon 7.20 SP0\Zenrt32.exe',
+		//DIRNAME := 'Hard Disk\CP6606_Runtime',  //'C:\Program Files\COPA-DATA\zenon 7.20 SP0',
+		PATHSTR := 'Hard Disk\ZenonRunTime\zenonRCE.exe', //'C:\PROGRAM Files\COPA-DATA\zenon 7.20 SP0\Zenrt32.exe',
+		DIRNAME := 'Hard Disk\ZenonRunTime',  //'C:\Program Files\COPA-DATA\zenon 7.20 SP0',
+		COMNDLINE := '',
+		START := TRUE,
+		TMOUT := DEFAULT_ADS_TIMEOUT
+		);
+	StateNext := 10;
+	//END_IF	
+	
+	//IF ZenonStart.BUSY = FALSE THEN
+	//	ZenonStart ( START := FALSE );
+	//	StateNext := 10;
+	//END_IF
+
+10: //When restarting state machine, ensure E-Stop relay is not set
+	//PRG_System.fbRecipeHandler.M_Next();
+	qxEnableE_Stop := FALSE;
+	tickcounter := 0;
+	StateNext := 15;
+	//qxEnableE_Stop:=TRUE;
+15: //Check E-Stop relay is not set then Enable and initialise stuff - disable drive to clear errors
+	//u are here
+	
+	//Shield._Reset();
+	//Compress._Reset();
+	//Pusher._Reset();
+	
+
+	//StartLoad := FALSE;
+	ResetLampController.State := off;
+	//RepetitionCounter := 0;
+	//qxEnableE_Stop := TRUE;
+	IF ixCabinetE_StopButtonOkay (*AND ixGuardRelayOkay*) THEN
+		qxEnableE_Stop := TRUE;
+		StateNext := 20;
+	END_IF	
+	
+20: // Look for E-Stop button reset
+	IF ixCabinetE_StopButtonOkay THEN
+		ResetLampController.State := steady;
+		sSystemStateMed := F_DisplayText("Press RESET button",0);	
+		StateNext := 30;
+	ELSE
+		IF ixCabinetE_StopButtonOkay AND ixMachineE_StopButtonOkay THEN 
+			ResetLampController.State := FastFlash;
+			sSystemStateMed := F_DisplayText("Guard Open",0);
+		ELSE
+			ResetLampController.State := off;
+			sSystemStateMed := F_DisplayText("E-Stop Depressed",0);
+		END_IF
+		CurrentProcessState	:= F_DisplayText("not ready",0);	//Main Screen	
+	END_IF
+
+30: // Wait for operator to hit reset button
+	
+	IF ixE_StopRelayOkay THEN
+		ResetLampController.State := off;
+		StateNext := 40;
+		tickcounter := 0;
+	ELSE
+		tickcounter := tickcounter + 1;
+		IF tickcounter >= 9800 THEN
+			ResetLampController.State := steady;
+			tickcounter := 0;
+		END_IF
+	END_IF
+
+40: // look for guard closed - disable drive to clear errors
+	sSystemStateMed := F_DisplayText("Guard Open",0);	
+	CurrentProcessState	:= F_DisplayText("not ready",0);	//Main Screen	
+
+	
+	IF NOT ixGuardRelayOkay THEN
+		ResetLampController.State := FastFlash;		
+	ELSE
+		ResetLampController.State := off;
+		sSystemStateMed := F_DisplayText("Initialising Axes",0);	
+		tickcounter := 0;
+		StateNext := 100;
+	END_IF
+	
+100: // wait 2 scans for power supply to drive to stabilise
+	tickcounter := tickcounter + 1;
+	IF tickcounter >= 2 THEN
+		tickcounter := 0;
+		StateNext := 110;
+	END_IF
+
+110: // prepare for Servo motion - enable drive
+//you are here!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	IF NOT ixResetButton THEN
+		
+		
+	
+		Shield._Enable();
+		Pusher._Enable();
+		Compress._Enable();
+		
+		tickcounter := tickcounter + 1;
+		IF tickcounter >= 100 THEN
+			tickcounter := 0;
+
+			StateNext := 115;
+		END_IF	
+	END_IF
+
+
+	
+115: 
+	
+	//IF Shield.HomeExecuted = FALSE OR Pusher.HomeExecuted = FALSE OR Compress.HomeExecuted = FALSE THEN
+	Stage_Name := 'Beginning';
+	Maintenance_Visibility:=TRUE;
+	qxStartButtonLamp:=TRUE;
+	IF (ixStartButton OR Step_Next OR ixStart_Button_Machine) THEN
+		IF (parameter_violation = FALSE) THEN
+			qxStartButtonLamp:=FALSE;
+			StateNext := 119;
+			Step_Next := FALSE;
+			Clamp_Alarm:=FALSE;
+			Maintenance_Visibility:=FALSE;
+			Stage_Name := 'Homing and Offsetting';
+
+			rec_temp1:=Shield.Shield_Param;     
+			rec_temp2:=Pusher.Pusher_Param;
+			rec_temp3:=Compress.Compress_Param; 
+		ELSE
+			Step_Next:=FALSE;
+		END_IF
+	END_IF
+
+	
+119:
+	IF rec_temp1.other.Shield_Home_Offset <> recipe_screen.Other.Shield_Home_Offset THEN
+		Shield.HomeExecuted:=FALSE;
+		Shield.OffsetExecuted:=FALSE;
+	END_IF
+	
+	IF rec_temp2.other.Pusher_Home_Offset <> recipe_screen.Other.Pusher_Home_Offset THEN
+		Pusher.HomeExecuted:=FALSE;
+		Pusher.OffsetExecuted:=FALSE;
+	END_IF
+	
+	IF rec_temp3.other.Compress_Home_Offset <> recipe_screen.Other.Compress_Home_Offset THEN
+		Compress.HomeExecuted:=FALSE;
+		Compress.OffsetExecuted:=FALSE;
+	END_IF
+	
+	Shield.Shield_param:=recipe_screen;
+	Compress.Compress_Param := recipe_screen;
+	Pusher.Pusher_Param := recipe_screen;
+	
+	
+
+	IF	Compress.HomeExecuted=FALSE OR Shield.HomeExecuted = FALSE OR Pusher.HomeExecuted = FALSE THEN
+		statenext:=120;
+	ELSE
+		StateNext:=129;
+	END_IF
+		
+120: //you are here!!!!!!!!!!!!
+
+	
+	
+	IF Pusher.HomeExecuted = FALSE THEN 
+		Pusher._Home();
+	END_IF
+	
+	IF Compress.HomeExecuted = FALSE THEN
+		Compress._Home();
+	END_IF
+	
+	
+	IF Compress.HomeExecuted AND Pusher.HomeExecuted THEN
+		StateNext := 125;                //directly to end
+		//Compress.HomeExecuted:=FALSE;
+		//Pusher.HomeExecuted:=FALSE;
+		
+	END_IF
+	
+125:
+	//random:='arda';
+	IF Shield.HomeExecuted = FALSE THEN
+		Shield._Home();
+		
+	ELSE
+		StateNext := 128;
+		//Shield.HomeExecuted := FALSE;
+	END_IF
+128:
+		
+
+	IF Compress.OffsetExecuted = FALSE THEN
+		Compress.Offset();
+	END_IF
+	
+	IF Shield.OffsetExecuted = FALSE THEN
+		Shield.Offset();
+	END_IF
+	
+	IF Pusher.OffsetExecuted = FALSE THEN
+		Pusher.Offset();
+	END_IF
+	
+	IF Pusher.OffsetExecuted AND Shield.OffsetExecuted AND Compress.OffsetExecuted THEN
+		Maintenance_Visibility := TRUE;
+		qxStartButtonLamp:=TRUE;
+		IF (ixStartButton OR Step_Next OR ixStart_Button_Machine) THEN
+			IF (parameter_violation =FALSE) THEN
+				qxStartButtonLamp:=FALSE;
+				Shield.Shield_param:=recipe_screen;
+				Compress.Compress_Param := recipe_screen;
+				Pusher.Pusher_Param := recipe_screen;
+			
+				StateNext:=130;
+				Step_Next:=FALSE;
+				Maintenance_Visibility := FALSE;
+			ELSE
+				Step_Next:=FALSE;
+			END_IF
+		END_IF
+	END_IF
+	
+	
+
+129: //debug	
+	
+	IF Debug_Mode THEN
+		Maintenance_Visibility := TRUE;
+		IF Step_Next THEN
+			IF Parameter_Violation = FALSE THEN
+				Step_Next:=FALSE;
+				StateNext:=130;
+				Maintenance_Visibility := FALSE;
+			
+				Shield.Shield_param:=recipe_screen;
+				Compress.Compress_Param := recipe_screen;
+				Pusher.Pusher_Param := recipe_screen;
+			ELSE
+				Step_Next:=FALSE;
+			END_IF
+		END_IF
+	ELSE
+		StateNext:=130;
+		Maintenance_Visibility := FALSE;
+	END_IF
+		
+130: //stage 1
+	Stage_Name := 'Compress Tobacco';
+	IF qxClamp = FALSE THEN
+		qxClamp:=TRUE;
+		ClampTimer.IN:=TRUE;
+		ClampTimer.PT:=Clamp_Security_Time;
+
+	END_IF
+	
+	IF Compress.Stage1Executed = FALSE THEN
+		IF state_old = 130 THEN
+			Message:='I am trying to continue';
+		END_IF 
+		Compress._Stage1();
+		Compress.HomeExecuted:=FALSE;	
+	ELSE
+		//Compress.Stage1Executed := FALSE;
+		StateNext := 131;
+		DatumTaught := FALSE;
+	END_IF
+
+131: //debug
+
+	IF Debug_Mode THEN
+		Maintenance_Visibility := TRUE;
+		IF Step_Next THEN
+			IF Parameter_Violation = FALSE THEN
+				Step_Next:=FALSE;
+				StateNext:=135;
+				Maintenance_Visibility := FALSE;
+			
+				Shield.Shield_param:=recipe_screen;
+				Compress.Compress_Param := recipe_screen;
+				Pusher.Pusher_Param := recipe_screen;
+			ELSE
+				Step_Next:=FALSE;
+			END_IF
+		END_IF
+	ELSE
+		StateNext:=135;
+		Maintenance_Visibility := FALSE;
+	END_IF
+	
+135://stage2
+	Stage_Name := 'Load Tobacco';
+	Compress.Stage1Executed := FALSE;
+	
+	IF Pusher.Stage2Executed = FALSE THEN
+		Pusher._Stage2();
+		Pusher.HomeExecuted:=FALSE;
+	END_IF
+	
+	IF Shield.Stage2Executed = FALSE THEN
+		Shield._Stage2();
+		Shield.HomeExecuted:=FALSE;
+	END_IF
+	
+	IF Shield.Stage2Executed AND Pusher.Stage2Executed THEN
+		//Shield.Stage2Executed:=FALSE;
+		//Pusher.Stage2Executed:=FALSE;
+		//DatumTaught:=FALSE;
+		StateNext := 137;
+	END_IF
+137: //debug
+
+	IF Debug_Mode THEN
+		Maintenance_Visibility := TRUE;
+		IF Step_Next THEN
+			IF Parameter_Violation = FALSE THEN
+				Step_Next:=FALSE;
+				StateNext:=140;
+				Maintenance_Visibility := FALSE;
+			
+				Shield.Shield_param:=recipe_screen;
+				Compress.Compress_Param := recipe_screen;
+				Pusher.Pusher_Param := recipe_screen;
+			ELSE
+				Step_Next:=FALSE;
+			END_IF
+		END_IF
+	ELSE
+		StateNext:=140;
+		Maintenance_Visibility := FALSE;
+	END_IF
+	
+140: //stage3
+	
+	Stage_Name := 'Shield Retract';
+	
+	Shield.Stage2Executed:=FALSE;
+	Pusher.Stage2Executed:=FALSE;
+	
+	IF	Shield.Stage3Executed = FALSE THEN
+		Shield._Stage3();
+		Shield.HomeExecuted:=FALSE;	
+	ELSE
+		//Shield.Stage3Executed := FALSE;
+		StateNext := 141;
+		DatumTaught := FALSE;
+	END_IF
+
+141: //debug
+
+	IF Debug_Mode THEN
+		Maintenance_Visibility := TRUE;
+		IF Step_Next THEN
+			IF Parameter_Violation = FALSE THEN
+				Step_Next:=FALSE;
+				StateNext:=142;
+				Maintenance_Visibility := FALSE;
+			
+				Shield.Shield_param:=recipe_screen;
+				Compress.Compress_Param := recipe_screen;
+				Pusher.Pusher_Param := recipe_screen;
+			ELSE
+				Step_Next:=FALSE;
+			END_IF
+		END_IF
+	ELSE
+		StateNext:=142;
+		Maintenance_Visibility := FALSE;
+	END_IF	
+	
+142: //Tamp
+	
+	Stage_Name := 'Tamp';
+	
+	Shield.Stage3Executed := FALSE;
+	
+	IF	Pusher.TampExecuted = FALSE THEN
+		Pusher.Tamp();
+		Pusher.HomeExecuted:=FALSE;	
+	ELSE
+		StateNext := 143;
+	END_IF
+	
+143: //debug
+
+	IF Debug_Mode THEN
+		Maintenance_Visibility := TRUE;
+		IF Step_Next THEN
+			IF Parameter_Violation = FALSE THEN
+				Step_Next:=FALSE;
+				StateNext:=145;
+				Maintenance_Visibility := FALSE;
+			
+				Shield.Shield_param:=recipe_screen;
+				Compress.Compress_Param := recipe_screen;
+				Pusher.Pusher_Param := recipe_screen;
+			ELSE
+				Step_Next:=FALSE;
+			END_IF
+		END_IF
+	ELSE
+		StateNext:=145;
+		Maintenance_Visibility := FALSE;
+	END_IF
+	
+145: //stage4
+	
+	Stage_Name := 'Eject Spill';
+	
+	Pusher.TampExecuted := FALSE;
+	IF	Pusher.Stage4Executed = FALSE THEN
+		Pusher._Stage4();
+		Pusher.HomeExecuted:=FALSE;	
+	ELSE
+		//Pusher.Stage4Executed := FALSE;
+		StateNext := 147;
+		DatumTaught := FALSE;
+	END_IF
+
+147: //debug
+
+	IF Debug_Mode THEN
+		Maintenance_Visibility := TRUE;
+		IF Step_Next THEN
+			IF Parameter_Violation = FALSE THEN
+				Step_Next:=FALSE;
+				StateNext:=150;
+				Maintenance_Visibility := FALSE;
+			
+				Shield.Shield_param:=recipe_screen;
+				Compress.Compress_Param := recipe_screen;
+				Pusher.Pusher_Param := recipe_screen;
+			ELSE
+				Step_Next:=FALSE;
+			END_IF
+		END_IF
+	ELSE
+		StateNext:=150;
+		Maintenance_Visibility := FALSE;
+	END_IF
+	
+150: //stage 5
+	
+	Stage_Name := 'Retract All';
+	
+	Pusher.Stage4Executed := FALSE;
+	IF Pusher.Stage5Executed = FALSE THEN
+		Pusher._Stage5();
+		Pusher.HomeExecuted:=FALSE;
+	END_IF
+	
+	IF Compress.Stage5Executed = FALSE THEN
+		Compress._Stage5();
+		Compress.HomeExecuted:=FALSE;
+	END_IF
+	
+	IF Compress.Stage5Executed AND Pusher.Stage5Executed THEN
+		//Compress.Stage5Executed:=FALSE;
+		//Pusher.Stage5Executed:=FALSE;
+		DatumTaught:=FALSE;
+		StateNext := 155;
+	END_IF	
+151:
+	Pusher._Halt();
+	Shield._Halt();
+	Compress._Halt();
+	IF Pusher.PusherServo.xhalted AND Shield.ShieldServo.xHalted AND Compress.CompressServo.xHalted AND (ixStartbutton OR ixStart_Button_Machine) THEN
+		Pusher._Halt_false();
+		Shield._Halt_false();
+		Compress._Halt_false();
+		Pusher._Soft_Reset();
+		Shield._Soft_Reset();
+		Compress._Soft_Reset();
+		statenext:=state_old;
+	END_IF
+
+155: //end
+	Compress.Stage5Executed:=FALSE;
+	Pusher.Stage5Executed:=FALSE;
+	
+	Pusher.HomeExecuted:= TRUE;
+	Shield.HomeExecuted:=TRUE;
+	Compress.HomeExecuted:=TRUE;
+	statenext:= 115;
+
+	
+1000: // overtorque
+	CurrentProcessState	:= F_DisplayText("Process incomplete",0);			//Main Screen
+	//StartLoad := FALSE;
+	
+	Compress._Reset();
+	Pusher._Reset();
+	Shield._Reset();
+	
+	qxclamp:=FALSE;
+	ClampTimer.IN:=FALSE;
+	ClampTimer.PT:=Clamp_Security_Time;
+	
+	statenext:=2000;
+	
+	
+	
+
+	
+2000: // guard and estop
+	
+	tickcounter:= tickcounter+1;
+	IF	tickcounter = 100 THEN
+		tickcounter:=0;
+		statenext:=15;
+		overtorque_alarm:=FALSE;
+	END_IF
+
+2010: // clamp alarm
+	
+	tickcounter:= tickcounter+1;
+
+	
+	IF clamp_alarm THEN
+		
+		IF	tickcounter = 3000 THEN
+			tickcounter:=0;
+			statenext:=100;
+			Clamp_Cooling := FALSE;
+			Clamp_Alarm := FALSE;
+		ELSE
+			Clamp_Cooling := TRUE;
+			
+			IF Pusher.PusherServo.xstopped AND Shield.ShieldServo.xstopped AND Compress.CompressServo.xstopped THEN
+				Pusher._Reset();
+				Shield._Reset();
+				Compress._Reset();
+			END_IF
+		END_IF
+	ELSE
+		IF	tickcounter = 100 THEN
+			tickcounter:=0;
+			statenext:=100;
+			Clamp_Cooling := FALSE;
+		ELSIF Pusher.PusherServo.xstopped AND Shield.ShieldServo.xstopped AND Compress.CompressServo.xstopped THEN
+			Pusher._Reset();
+			Shield._Reset();
+			Compress._Reset();
+			
+		END_IF
+	END_IF
+	
+2020: //force home
+(*	
+	IF Forced_Home_Executed = FALSE THEN
+		Handle_Forced_Home();	
+	ELSE
+		StateNext:=115;
+		Forced_Home_Executed:=FALSE;
+	END_IF
+*)
+	
+END_CASE
+
+Pusher._Update();
+Shield._Update();
+Compress._Update();
+ClampTimer();
+
+IF 	StateNext <> 115 AND 
+	StateNext <> 128 THEN
+	qxStartButtonLamp:=FALSE;
+END_IF
+
+IF 	StateNext <> 115 AND 
+	StateNext <> 128 AND 
+	StateNext <> 129 AND 
+	StateNext <> 131 AND 
+	StateNext <> 137 AND 
+	StateNext <> 141 AND 
+	StateNext <> 143 AND 
+	StateNext <> 147 THEN
+
+	Maintenance_Visibility := FALSE;
+END_IF
+
+//Motor Overtorque
+IF StateNext >= 110 AND StateNext <= 155  THEN					// machine is running
+	
+	IF ibCompressServoTorque  > 2000 OR ibCompressServoTorque  < -2000 THEN						// PuckSlideServo torque too high
+		//Message := WSTRING_TO_STRING("Tobacco Compress Servo over-torque");
+		StateNext := 1000;
+		tickcounter:=0;
+		overtorque_alarm:= TRUE;	
+	END_IF
+	
+	IF ibPusherServoTorque  > 2000 OR ibPusherServoTorque  < -2000 THEN						// HeaterSlideServo torque too high
+		//Message := WSTRING_TO_STRING("Rod Pusher Servo over-torque");
+		StateNext := 1000;
+		tickcounter:=0;
+		overtorque_alarm:= TRUE;	
+	END_IF
+	
+	IF ibShieldServoTorque  > 2000 OR ibShieldServoTorque  < -2000 THEN						// HeaterSlideServo torque too high
+		//Message := WSTRING_TO_STRING("Rod Shield Servo over-torque");
+		StateNext := 1000;
+		tickcounter:=0;
+		overtorque_alarm:= TRUE;	
+	END_IF
+END_IF
+
+
+//Toggole Clamp
+IF (StateNext >= 115 AND StateNext <= 155) AND Toggle_Clamp THEN
+	Toggle_Clamp := FALSE;
+	IF qxClamp = FALSE THEN
+		
+		qxClamp:=TRUE;
+		ClampTimer.IN:=TRUE;
+		ClampTimer.PT:=Clamp_Security_Time;
+
+	ELSE
+		
+		qxClamp:=FALSE;
+		ClampTimer.IN:=FALSE;
+		ClampTimer.PT:=Clamp_Security_Time;
+		
+	END_IF
+	
+	
+END_IF
+
+//stop button
+IF NOT ixstop_button AND (Statenext<>151) THEN
+	//	state_old:=statenext;
+	//	statenext:= 151;
+	tickcounter:=0;
+	//Message:='Clamp Overtime';
+	qxClamp:=FALSE;
+
+	
+	ClampTimer.IN:=FALSE;
+	ClampTimer.PT:=Clamp_Security_Time;
+	
+	
+	
+	Compress._mc_stop();
+	Shield._mc_stop();
+	Pusher._mc_stop();
+	StateNext := 2010;
+	
+	
+END_IF
+
+//Clamp Err
+IF (Clamptimer.Q=TRUE) AND StateNext >= 100 AND StateNext <= 155 THEN 
+	
+	tickcounter:=0;
+	//Message:='Clamp Overtime';
+	qxClamp:=FALSE;
+
+	
+	ClampTimer.IN:=FALSE;
+	ClampTimer.PT:=Clamp_Security_Time;
+	
+	Clamp_Alarm:=TRUE;
+	
+	Compress._mc_stop();
+	Shield._mc_stop();
+	Pusher._mc_stop();
+	StateNext := 2010;
+
+END_IF
+
+//Home
+IF (Force_Home) AND StateNext >= 115 AND StateNext <= 155 THEN 
+	Force_Home:=FALSE;
+	StateNext := 2020;
+	tickcounter:=0;
+	
+	
+	
+	qxclamp:=FALSE;
+	ClampTimer.IN:=FALSE;
+	ClampTimer.PT:=Clamp_Security_Time;
+	
+	Pusher._Reset();
+	Shield._Reset();
+	Compress._Reset();
+END_IF
+
+//guard
+IF (NOT ixGuardRelayOkay) AND StateNext >= 100 AND StateNext <= 155 THEN 
+	
+	StateNext := 2000;
+	tickcounter:=0;
+	
+	//Message:='Guard Open';
+	
+	qxclamp:=FALSE;
+	ClampTimer.IN:=FALSE;
+	ClampTimer.PT:=Clamp_Security_Time;
+	
+	IF Pusher.HomeExecuted= FALSE OR Shield.HomeExecuted = FALSE OR Compress.HomeExecuted = FALSE THEN
+		Pusher._Reset();
+		Shield._Reset();
+		Compress._Reset();
+	ELSE
+		Pusher._Reset_Medium();
+		Shield._Reset_Medium();
+		Compress._Reset_Medium();
+	END_IF
+END_IF
+
+//estop
+IF (NOT ixCabinetE_StopButtonOkay) AND StateNext >= 30 AND StateNext <= 155 THEN 
+	
+	tickcounter:=0;
+	
+	//Message:='E-stop Pressed';
+	
+	qxclamp:=FALSE;
+	ClampTimer.IN:=FALSE;
+	ClampTimer.PT:=Clamp_Security_Time;
+	
+
+	
+	//IF Compress.CompressServo.xStopped AND Shield.ShieldServo.xStopped AND Pusher.PusherServo.xStopped THEN
+	StateNext := 2000;
+	Pusher._Reset();
+	Shield._Reset();
+	Compress._Reset();
+	//END_IF
+END_IF
+
+//IF State <> StateNext THEN - step through the state machine if required
+IF singleStep AND statenext > 119 THEN
+	//IF NOT SM_StepRequest THEN
+	//	SM_StepRequest := TRUE; 
+	//END_IF
+	IF SM_StepRequest THEN
+		SM_StepRequest := FALSE;
+		State := StateNext;
+	END_IF
+ELSE
+	State := StateNext;
+END_IF
+
+
+
+]]></ST>
+    </Implementation>
+    <Property Name="ext_Clamp_Security_Time" Id="{b4a0574a-c59c-4187-912c-e138bff48456}">
+      <Declaration><![CDATA[PROPERTY ext_Clamp_Security_Time : TIME]]></Declaration>
+      <Get Name="Get" Id="{6f9cde7b-b8c0-4b49-bc66-95e4a3439a9f}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[ext_Clamp_Security_Time := Clamp_Security_Time;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{8abc84f1-4a75-4404-9fee-f285ee2e4ef0}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[Clamp_Security_Time := ext_Clamp_Security_Time;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="ext_ClampTimer" Id="{14e072fb-8285-42c1-9c45-0d63393dfcd2}">
+      <Declaration><![CDATA[PROPERTY ext_ClampTimer : TON]]></Declaration>
+      <Get Name="Get" Id="{321e20e3-e34b-4a23-ae19-a8f738310bcc}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[ext_ClampTimer:=ClampTimer;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{f0e4832a-6e15-4cc1-ab7a-c4491ec3cf3f}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[ClampTimer:=ext_ClampTimer;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Method Name="Handle_Forced_Home" Id="{04eb6cdf-a7b3-4b41-a49a-21ff121f07e9}">
+      <Declaration><![CDATA[METHOD Handle_Forced_Home
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CASE Forced_Home_State OF
+	
+0:	
+	tickcounter:=tickcounter + 1;
+	IF tickcounter = 100 THEN
+		Forced_Home_State_Next:=5;
+	END_IF
+5:	
+
+
+
+END_CASE
+
+Forced_Home_State_Next := Forced_Home_State;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="StopClampTimer" Id="{d74d2087-e1fa-4163-bf2f-94ebc8b0fc77}">
+      <Declaration><![CDATA[METHOD StopClampTimer
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[ClampTimer.IN:=FALSE;
+ClampTimer.PT:= Clamp_Security_Time;]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="PRG_Machine">
+      <LineId Id="3" Count="3" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="2186" Count="0" />
+      <LineId Id="2231" Count="1" />
+      <LineId Id="2187" Count="0" />
+      <LineId Id="58" Count="0" />
+      <LineId Id="101" Count="4" />
+      <LineId Id="110" Count="0" />
+      <LineId Id="112" Count="2" />
+      <LineId Id="2908" Count="1" />
+      <LineId Id="115" Count="2" />
+      <LineId Id="3397" Count="1" />
+      <LineId Id="118" Count="3" />
+      <LineId Id="2912" Count="0" />
+      <LineId Id="2910" Count="1" />
+      <LineId Id="122" Count="12" />
+      <LineId Id="2504" Count="0" />
+      <LineId Id="2570" Count="2" />
+      <LineId Id="2569" Count="0" />
+      <LineId Id="2944" Count="0" />
+      <LineId Id="138" Count="0" />
+      <LineId Id="141" Count="0" />
+      <LineId Id="146" Count="4" />
+      <LineId Id="155" Count="1" />
+      <LineId Id="158" Count="5" />
+      <LineId Id="1561" Count="0" />
+      <LineId Id="1565" Count="0" />
+      <LineId Id="1570" Count="0" />
+      <LineId Id="1569" Count="0" />
+      <LineId Id="1567" Count="0" />
+      <LineId Id="1571" Count="0" />
+      <LineId Id="1568" Count="0" />
+      <LineId Id="1563" Count="0" />
+      <LineId Id="1562" Count="0" />
+      <LineId Id="164" Count="1" />
+      <LineId Id="3245" Count="0" />
+      <LineId Id="166" Count="0" />
+      <LineId Id="175" Count="1" />
+      <LineId Id="2620" Count="0" />
+      <LineId Id="178" Count="11" />
+      <LineId Id="206" Count="3" />
+      <LineId Id="211" Count="0" />
+      <LineId Id="1641" Count="0" />
+      <LineId Id="843" Count="1" />
+      <LineId Id="213" Count="1" />
+      <LineId Id="224" Count="0" />
+      <LineId Id="229" Count="4" />
+      <LineId Id="235" Count="1" />
+      <LineId Id="2575" Count="0" />
+      <LineId Id="237" Count="1" />
+      <LineId Id="3484" Count="1" />
+      <LineId Id="2578" Count="0" />
+      <LineId Id="2580" Count="1" />
+      <LineId Id="2579" Count="0" />
+      <LineId Id="2253" Count="0" />
+      <LineId Id="240" Count="1" />
+      <LineId Id="2343" Count="0" />
+      <LineId Id="242" Count="4" />
+      <LineId Id="885" Count="1" />
+      <LineId Id="3547" Count="1" />
+      <LineId Id="2990" Count="0" />
+      <LineId Id="3694" Count="0" />
+      <LineId Id="4186" Count="0" />
+      <LineId Id="3587" Count="0" />
+      <LineId Id="2991" Count="0" />
+      <LineId Id="4187" Count="0" />
+      <LineId Id="3934" Count="0" />
+      <LineId Id="3617" Count="0" />
+      <LineId Id="3492" Count="0" />
+      <LineId Id="3549" Count="0" />
+      <LineId Id="3487" Count="0" />
+      <LineId Id="3930" Count="3" />
+      <LineId Id="3028" Count="0" />
+      <LineId Id="3935" Count="1" />
+      <LineId Id="2992" Count="0" />
+      <LineId Id="1433" Count="0" />
+      <LineId Id="3246" Count="0" />
+      <LineId Id="3316" Count="0" />
+      <LineId Id="3315" Count="0" />
+      <LineId Id="3324" Count="17" />
+      <LineId Id="3317" Count="0" />
+      <LineId Id="3591" Count="5" />
+      <LineId Id="3318" Count="0" />
+      <LineId Id="1434" Count="0" />
+      <LineId Id="3181" Count="0" />
+      <LineId Id="2550" Count="0" />
+      <LineId Id="3180" Count="0" />
+      <LineId Id="2555" Count="0" />
+      <LineId Id="2551" Count="2" />
+      <LineId Id="2557" Count="2" />
+      <LineId Id="2556" Count="0" />
+      <LineId Id="2554" Count="0" />
+      <LineId Id="2487" Count="0" />
+      <LineId Id="2548" Count="0" />
+      <LineId Id="2560" Count="0" />
+      <LineId Id="2563" Count="0" />
+      <LineId Id="2561" Count="0" />
+      <LineId Id="2549" Count="0" />
+      <LineId Id="2494" Count="2" />
+      <LineId Id="2976" Count="0" />
+      <LineId Id="2497" Count="0" />
+      <LineId Id="2564" Count="0" />
+      <LineId Id="2498" Count="0" />
+      <LineId Id="2567" Count="1" />
+      <LineId Id="2566" Count="0" />
+      <LineId Id="2486" Count="0" />
+      <LineId Id="2499" Count="0" />
+      <LineId Id="2503" Count="0" />
+      <LineId Id="2587" Count="0" />
+      <LineId Id="3305" Count="2" />
+      <LineId Id="3309" Count="2" />
+      <LineId Id="3308" Count="0" />
+      <LineId Id="3312" Count="2" />
+      <LineId Id="3342" Count="0" />
+      <LineId Id="3599" Count="1" />
+      <LineId Id="4188" Count="0" />
+      <LineId Id="3602" Count="0" />
+      <LineId Id="3925" Count="0" />
+      <LineId Id="4189" Count="0" />
+      <LineId Id="3928" Count="0" />
+      <LineId Id="3926" Count="1" />
+      <LineId Id="3929" Count="0" />
+      <LineId Id="3603" Count="0" />
+      <LineId Id="3618" Count="0" />
+      <LineId Id="3605" Count="0" />
+      <LineId Id="3937" Count="2" />
+      <LineId Id="3604" Count="0" />
+      <LineId Id="3601" Count="0" />
+      <LineId Id="3343" Count="0" />
+      <LineId Id="3597" Count="1" />
+      <LineId Id="3346" Count="0" />
+      <LineId Id="3609" Count="1" />
+      <LineId Id="3607" Count="0" />
+      <LineId Id="3613" Count="0" />
+      <LineId Id="3940" Count="0" />
+      <LineId Id="3614" Count="0" />
+      <LineId Id="3616" Count="0" />
+      <LineId Id="3619" Count="0" />
+      <LineId Id="3705" Count="0" />
+      <LineId Id="3708" Count="0" />
+      <LineId Id="3706" Count="1" />
+      <LineId Id="3941" Count="2" />
+      <LineId Id="3615" Count="0" />
+      <LineId Id="3608" Count="0" />
+      <LineId Id="3612" Count="0" />
+      <LineId Id="3646" Count="0" />
+      <LineId Id="3611" Count="0" />
+      <LineId Id="3606" Count="0" />
+      <LineId Id="2588" Count="0" />
+      <LineId Id="3186" Count="0" />
+      <LineId Id="3183" Count="0" />
+      <LineId Id="3182" Count="0" />
+      <LineId Id="3231" Count="1" />
+      <LineId Id="3193" Count="0" />
+      <LineId Id="3184" Count="1" />
+      <LineId Id="2652" Count="1" />
+      <LineId Id="4162" Count="1" />
+      <LineId Id="4161" Count="0" />
+      <LineId Id="2978" Count="0" />
+      <LineId Id="1430" Count="0" />
+      <LineId Id="2654" Count="0" />
+      <LineId Id="2656" Count="0" />
+      <LineId Id="2688" Count="0" />
+      <LineId Id="2655" Count="0" />
+      <LineId Id="252" Count="0" />
+      <LineId Id="3620" Count="0" />
+      <LineId Id="3962" Count="0" />
+      <LineId Id="3621" Count="0" />
+      <LineId Id="3944" Count="17" />
+      <LineId Id="3963" Count="0" />
+      <LineId Id="2342" Count="0" />
+      <LineId Id="3695" Count="0" />
+      <LineId Id="1825" Count="0" />
+      <LineId Id="3031" Count="0" />
+      <LineId Id="2689" Count="1" />
+      <LineId Id="2979" Count="0" />
+      <LineId Id="2691" Count="0" />
+      <LineId Id="2696" Count="2" />
+      <LineId Id="2980" Count="0" />
+      <LineId Id="2699" Count="3" />
+      <LineId Id="2704" Count="2" />
+      <LineId Id="2703" Count="0" />
+      <LineId Id="2707" Count="0" />
+      <LineId Id="3632" Count="0" />
+      <LineId Id="3634" Count="0" />
+      <LineId Id="3964" Count="17" />
+      <LineId Id="3633" Count="0" />
+      <LineId Id="2708" Count="1" />
+      <LineId Id="3697" Count="0" />
+      <LineId Id="3696" Count="0" />
+      <LineId Id="3032" Count="2" />
+      <LineId Id="2710" Count="1" />
+      <LineId Id="2981" Count="0" />
+      <LineId Id="2712" Count="4" />
+      <LineId Id="3435" Count="0" />
+      <LineId Id="3647" Count="0" />
+      <LineId Id="3982" Count="0" />
+      <LineId Id="3648" Count="0" />
+      <LineId Id="3983" Count="17" />
+      <LineId Id="3436" Count="1" />
+      <LineId Id="3698" Count="0" />
+      <LineId Id="3700" Count="0" />
+      <LineId Id="3699" Count="0" />
+      <LineId Id="3438" Count="1" />
+      <LineId Id="3444" Count="0" />
+      <LineId Id="3441" Count="2" />
+      <LineId Id="3446" Count="1" />
+      <LineId Id="3440" Count="0" />
+      <LineId Id="2717" Count="0" />
+      <LineId Id="3668" Count="1" />
+      <LineId Id="4001" Count="18" />
+      <LineId Id="2718" Count="0" />
+      <LineId Id="3187" Count="0" />
+      <LineId Id="3702" Count="0" />
+      <LineId Id="3701" Count="0" />
+      <LineId Id="2719" Count="2" />
+      <LineId Id="2982" Count="0" />
+      <LineId Id="2722" Count="5" />
+      <LineId Id="3680" Count="0" />
+      <LineId Id="3682" Count="1" />
+      <LineId Id="4020" Count="17" />
+      <LineId Id="3681" Count="0" />
+      <LineId Id="2728" Count="1" />
+      <LineId Id="3703" Count="1" />
+      <LineId Id="3035" Count="0" />
+      <LineId Id="2731" Count="1" />
+      <LineId Id="2983" Count="0" />
+      <LineId Id="2733" Count="3" />
+      <LineId Id="2984" Count="0" />
+      <LineId Id="2737" Count="7" />
+      <LineId Id="2730" Count="0" />
+      <LineId Id="4150" Count="1" />
+      <LineId Id="4148" Count="0" />
+      <LineId Id="4152" Count="1" />
+      <LineId Id="4155" Count="1" />
+      <LineId Id="4158" Count="2" />
+      <LineId Id="4157" Count="0" />
+      <LineId Id="4154" Count="0" />
+      <LineId Id="4149" Count="0" />
+      <LineId Id="2745" Count="0" />
+      <LineId Id="3036" Count="2" />
+      <LineId Id="2985" Count="3" />
+      <LineId Id="263" Count="0" />
+      <LineId Id="1103" Count="0" />
+      <LineId Id="460" Count="0" />
+      <LineId Id="462" Count="0" />
+      <LineId Id="467" Count="0" />
+      <LineId Id="2355" Count="0" />
+      <LineId Id="469" Count="0" />
+      <LineId Id="2583" Count="1" />
+      <LineId Id="3357" Count="3" />
+      <LineId Id="3104" Count="1" />
+      <LineId Id="2582" Count="0" />
+      <LineId Id="2359" Count="0" />
+      <LineId Id="928" Count="0" />
+      <LineId Id="474" Count="0" />
+      <LineId Id="484" Count="1" />
+      <LineId Id="488" Count="0" />
+      <LineId Id="3103" Count="0" />
+      <LineId Id="3099" Count="1" />
+      <LineId Id="3102" Count="0" />
+      <LineId Id="4097" Count="0" />
+      <LineId Id="3101" Count="0" />
+      <LineId Id="2362" Count="0" />
+      <LineId Id="3216" Count="3" />
+      <LineId Id="3493" Count="1" />
+      <LineId Id="3497" Count="0" />
+      <LineId Id="3501" Count="0" />
+      <LineId Id="3498" Count="1" />
+      <LineId Id="3508" Count="0" />
+      <LineId Id="4098" Count="0" />
+      <LineId Id="3500" Count="0" />
+      <LineId Id="3495" Count="0" />
+      <LineId Id="4178" Count="5" />
+      <LineId Id="3507" Count="0" />
+      <LineId Id="3496" Count="0" />
+      <LineId Id="3502" Count="0" />
+      <LineId Id="3504" Count="1" />
+      <LineId Id="3509" Count="0" />
+      <LineId Id="3506" Count="0" />
+      <LineId Id="4268" Count="2" />
+      <LineId Id="4266" Count="1" />
+      <LineId Id="3503" Count="0" />
+      <LineId Id="3812" Count="1" />
+      <LineId Id="3816" Count="0" />
+      <LineId Id="3828" Count="0" />
+      <LineId Id="3818" Count="1" />
+      <LineId Id="3834" Count="1" />
+      <LineId Id="3833" Count="0" />
+      <LineId Id="3815" Count="0" />
+      <LineId Id="3814" Count="0" />
+      <LineId Id="495" Count="0" />
+      <LineId Id="2828" Count="3" />
+      <LineId Id="3240" Count="0" />
+      <LineId Id="4200" Count="0" />
+      <LineId Id="512" Count="0" />
+      <LineId Id="4192" Count="0" />
+      <LineId Id="4190" Count="1" />
+      <LineId Id="513" Count="0" />
+      <LineId Id="4199" Count="0" />
+      <LineId Id="4085" Count="6" />
+      <LineId Id="4082" Count="0" />
+      <LineId Id="4092" Count="0" />
+      <LineId Id="4083" Count="0" />
+      <LineId Id="4093" Count="0" />
+      <LineId Id="2107" Count="0" />
+      <LineId Id="2832" Count="0" />
+      <LineId Id="2834" Count="0" />
+      <LineId Id="3223" Count="0" />
+      <LineId Id="2835" Count="1" />
+      <LineId Id="3228" Count="0" />
+      <LineId Id="4094" Count="0" />
+      <LineId Id="2837" Count="4" />
+      <LineId Id="3229" Count="0" />
+      <LineId Id="4095" Count="0" />
+      <LineId Id="2842" Count="4" />
+      <LineId Id="3230" Count="0" />
+      <LineId Id="4096" Count="0" />
+      <LineId Id="2847" Count="1" />
+      <LineId Id="3198" Count="0" />
+      <LineId Id="3810" Count="1" />
+      <LineId Id="3772" Count="1" />
+      <LineId Id="3776" Count="0" />
+      <LineId Id="3778" Count="0" />
+      <LineId Id="3785" Count="0" />
+      <LineId Id="3779" Count="3" />
+      <LineId Id="3788" Count="0" />
+      <LineId Id="3783" Count="0" />
+      <LineId Id="3786" Count="1" />
+      <LineId Id="3789" Count="0" />
+      <LineId Id="3784" Count="0" />
+      <LineId Id="3777" Count="0" />
+      <LineId Id="3775" Count="0" />
+      <LineId Id="3774" Count="0" />
+      <LineId Id="3199" Count="0" />
+      <LineId Id="4271" Count="0" />
+      <LineId Id="2849" Count="0" />
+      <LineId Id="4143" Count="0" />
+      <LineId Id="4147" Count="0" />
+      <LineId Id="4251" Count="0" />
+      <LineId Id="4253" Count="12" />
+      <LineId Id="4252" Count="0" />
+      <LineId Id="4250" Count="0" />
+      <LineId Id="4144" Count="0" />
+      <LineId Id="2850" Count="0" />
+      <LineId Id="2833" Count="0" />
+      <LineId Id="2871" Count="0" />
+      <LineId Id="3202" Count="1" />
+      <LineId Id="3241" Count="0" />
+      <LineId Id="3204" Count="0" />
+      <LineId Id="3210" Count="0" />
+      <LineId Id="3237" Count="1" />
+      <LineId Id="3489" Count="0" />
+      <LineId Id="3211" Count="0" />
+      <LineId Id="3490" Count="0" />
+      <LineId Id="3205" Count="0" />
+      <LineId Id="4171" Count="0" />
+      <LineId Id="4173" Count="1" />
+      <LineId Id="4176" Count="0" />
+      <LineId Id="4172" Count="0" />
+      <LineId Id="4177" Count="0" />
+      <LineId Id="3201" Count="0" />
+      <LineId Id="3809" Count="0" />
+      <LineId Id="3791" Count="0" />
+      <LineId Id="3793" Count="13" />
+      <LineId Id="3792" Count="0" />
+      <LineId Id="3808" Count="0" />
+      <LineId Id="2863" Count="1" />
+      <LineId Id="3790" Count="0" />
+      <LineId Id="3097" Count="0" />
+      <LineId Id="3242" Count="1" />
+      <LineId Id="3098" Count="0" />
+      <LineId Id="3089" Count="0" />
+      <LineId Id="3348" Count="0" />
+      <LineId Id="3350" Count="0" />
+      <LineId Id="3349" Count="0" />
+      <LineId Id="4184" Count="0" />
+      <LineId Id="3108" Count="0" />
+      <LineId Id="3094" Count="1" />
+      <LineId Id="4185" Count="0" />
+      <LineId Id="4202" Count="2" />
+      <LineId Id="4201" Count="0" />
+      <LineId Id="2865" Count="1" />
+      <LineId Id="3807" Count="0" />
+      <LineId Id="2867" Count="1" />
+      <LineId Id="3174" Count="1" />
+      <LineId Id="3244" Count="0" />
+      <LineId Id="3176" Count="0" />
+      <LineId Id="3347" Count="0" />
+      <LineId Id="3351" Count="0" />
+      <LineId Id="3353" Count="0" />
+      <LineId Id="3352" Count="0" />
+      <LineId Id="4166" Count="0" />
+      <LineId Id="4165" Count="0" />
+      <LineId Id="4169" Count="0" />
+      <LineId Id="4164" Count="0" />
+      <LineId Id="3177" Count="2" />
+      <LineId Id="4170" Count="0" />
+      <LineId Id="2869" Count="0" />
+      <LineId Id="1763" Count="0" />
+      <LineId Id="561" Count="11" />
+      <LineId Id="1592" Count="0" />
+      <LineId Id="574" Count="0" />
+      <LineId Id="2794" Count="1" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_Machine.ext_Clamp_Security_Time.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_Machine.ext_Clamp_Security_Time.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_Machine.ext_ClampTimer.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_Machine.ext_ClampTimer.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_Machine.Handle_Forced_Home">
+      <LineId Id="6" Count="2" />
+      <LineId Id="27" Count="2" />
+      <LineId Id="14" Count="1" />
+      <LineId Id="22" Count="4" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_Machine.StopClampTimer">
+      <LineId Id="7" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

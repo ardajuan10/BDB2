@@ -1,0 +1,784 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <POU Name="PRG_IO" Id="{f101afa0-f9ee-4197-8bc4-4b48547efe33}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM PRG_IO
+VAR
+	
+	TextTimer: ton;
+	Message_timer: ton;
+	
+	//List_of_Recipes				:ARRAY[1..10] OF Recipe;
+	recipe_default				:recipe;
+	Current_Recipe				:Recipe;
+	//old_recipe					:Recipe;
+	empty_recipe				:Recipe;
+	current_recipe_no			:INT:=1;
+	saveas_recipe_no			:INT;
+	load_recipe_no				:INT;
+	delete_recipe_no			:INT;
+	temp						:INT;
+	temp2						:INT;
+		
+	Initialise					:BOOL := TRUE;
+	InitialiseTickCounter		:INT;
+	TickCounter					:INT;
+	
+	save_requested				:BOOL := FALSE;
+	
+	Pusher_Home					:BOOL;
+	Shield_Home					:BOOL;
+	Compress_Home				:BOOL;
+	
+	//violation
+	old_recipe					:Recipe;
+	old_limits					:Limits;
+	zero_violation				:BOOL;
+	max_distance_violation		:BOOL;
+	max_sh_push_diff_violation	:BOOL;
+	
+	Message_old					:STRING(300);
+	
+END_VAR 
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[ResetLampController();
+StartLampController();
+TextTimer();
+Message_timer();
+
+//old_recipe:=current_recipe;
+
+IF Initialise THEN
+	InitialiseTickCounter := InitialiseTickCounter + 1;
+	IF InitialiseTickCounter = 150 THEN
+		Config.CopyConfigRecipiesToGlobal();
+	END_IF		
+	IF InitialiseTickCounter >= 300 THEN	
+	//recipe_screen := List_of_Recipes[1];
+		recipe_default.Name:='default 1';
+	
+		recipe_default.Compress.Initial_Distance:=60;
+		recipe_default.Compress.Initial_Speed:=20;
+		recipe_default.Compress.Relax_Distance:=5;
+		recipe_default.Compress.Retract_Speed:=20;
+	
+		recipe_default.Pusher.Initial_Distance:=40;
+		recipe_default.Pusher.Initial_Speed:=20;
+		recipe_default.Pusher.Eject_Distance:=5;
+		recipe_default.Pusher.Eject_Speed:=20;
+		recipe_default.Pusher.Retract_Speed:=20;
+	
+		recipe_default.Shield.Retract_Speed:=20;
+		recipe_default.Shield.Initial_Distance:=40;
+		recipe_default.Shield.Initial_Speed:=20;
+		
+	
+		recipe_default.Memory_Free:=FALSE;
+	
+		List_of_Recipes[1]:=recipe_default;
+		recipe_screen:=List_of_Recipes[1];	
+		
+		limits_screen:=limits_save;
+		
+		Message:='Welcome!';
+	
+		InitialiseTickCounter := 0;
+		Initialise := FALSE;
+	END_IF		
+ELSE
+	InitialiseTickCounter := 0;
+
+	current_recipe:=recipe_screen;
+
+	//current_recipe_message:=CONCAT('The current recipe number is ',INT_TO_STRING(Current_recipe_no));
+	
+	IF current_recipe_no = 1 THEN
+		Default_Recipe_Visibility:=FALSE;
+	ELSE
+		Default_Recipe_Visibility:=TRUE;
+	END_IF
+	
+	FOR	temp := 1 TO 10 DO
+		Recipe_Visibility[temp]:=NOT(List_of_Recipes[temp].Memory_Free);
+	END_FOR
+	
+	temp:=1;
+END_IF
+
+
+//violation
+
+IF  recipe_screen.Compress.Initial_Distance =0 OR 
+	recipe_screen.Compress.Initial_Speed =0 OR 
+	recipe_screen.Compress.Relax_Distance =0 OR 
+	recipe_screen.Compress.Retract_Speed =0 OR
+	recipe_screen.Pusher.Eject_Distance = 0 OR
+	recipe_screen.pusher.Eject_Speed = 0 OR
+	recipe_screen.pusher.Initial_Distance = 0 OR
+	recipe_screen.Pusher.Initial_Speed = 0 OR
+	recipe_screen.Pusher.Retract_Speed = 0 OR
+	recipe_screen.Shield.Retract_Speed = 0 THEN
+		
+	zero_violation := TRUE;
+		
+	//Message:='Axis Parameters cannot be set to zero';
+		
+	//recipe_screen := old_recipe;
+	//limits_screen := old_limits;
+	
+ELSE
+	zero_violation := FALSE;
+END_IF
+	
+IF 	recipe_screen.Compress.Initial_Distance + recipe_screen.Other.Compress_Home_Offset > limits_screen.max_limit_compress OR
+	recipe_screen.Compress.Relax_Distance + recipe_screen.Other.Compress_Home_Offset > limits_screen.max_limit_compress OR
+	recipe_screen.Shield.Initial_Distance + recipe_screen.Other.Shield_Home_Offset > limits_screen.max_limit_shield OR
+	recipe_screen.Pusher.Initial_Distance + recipe_screen.Other.Pusher_Home_Offset > limits_screen.max_limit_Pusher OR
+	recipe_screen.Pusher.tamp_initial_distance + recipe_screen.Other.Pusher_Home_Offset > limits_screen.max_limit_Pusher OR
+	recipe_screen.Pusher.tamp_final_distance + recipe_screen.Other.Pusher_Home_Offset > limits_screen.max_limit_Pusher OR
+	recipe_screen.Pusher.Eject_Distance + recipe_screen.Other.Pusher_Home_Offset > limits_screen.max_limit_Pusher THEN
+		
+	max_distance_violation:=TRUE;
+		
+	//Message:='Maximum Limit Violation';
+		
+	//recipe_screen := old_recipe;
+	//limits_screen := old_limits;
+		
+ELSE
+	max_distance_violation:=FALSE;
+END_IF
+
+IF 	(recipe_screen.Other.Pusher_Home_Offset) - (recipe_screen.Other.Shield_Home_Offset) > limits_screen.max_pusher_shield_diff OR
+	(recipe_screen.Pusher.Initial_Distance + recipe_screen.Other.Pusher_Home_Offset) - (recipe_screen.Shield.Initial_Distance + recipe_screen.Other.Shield_Home_Offset) > limits_screen.max_pusher_shield_diff OR                      
+	(recipe_screen.Pusher.tamp_initial_distance + recipe_screen.Other.Pusher_Home_Offset) - (0 + recipe_screen.Other.Shield_Home_Offset) > limits_screen.max_pusher_shield_diff OR
+	(recipe_screen.Pusher.tamp_final_distance + recipe_screen.Other.Pusher_Home_Offset) - (0 + recipe_screen.Other.Shield_Home_Offset) > limits_screen.max_pusher_shield_diff OR
+	(recipe_screen.Pusher.Eject_Distance + recipe_screen.Other.Pusher_Home_Offset) - (0 + recipe_screen.Other.Shield_Home_Offset) > limits_screen.max_pusher_shield_diff THEN          
+		
+	max_sh_push_diff_violation := TRUE;
+	
+	//Message:='Maximum pusher-shield distance difference violation';
+	
+	//recipe_screen := old_recipe;
+	//limits_screen := old_limits;
+		
+ELSE
+	max_sh_push_diff_violation:=FALSE;
+END_IF
+
+IF max_sh_push_diff_violation OR max_distance_violation OR zero_violation THEN
+	parameter_violation:=TRUE;
+ELSE
+	parameter_violation:=FALSE;
+END_IF
+
+old_recipe:=recipe_screen;
+old_limits:=limits_screen;
+//violation end
+
+
+
+//alarms
+IF zero_violation THEN
+	alarm_message:='Some parameters can not be set to zero.'; 
+END_IF
+
+IF max_distance_violation THEN
+	alarm_message:='Maximum axis distance violation'; 
+END_IF
+
+IF max_sh_push_diff_violation THEN
+	alarm_message:='Maximum pusher-shield distance difference violation';; 
+END_IF
+
+IF Clamp_Alarm THEN
+	alarm_message:='Clamp Overtime';
+END_IF
+
+IF Overtorque_alarm THEN
+	alarm_message:='Motor Overtorque';
+END_IF
+
+IF NOT ixGuardOkay THEN
+	alarm_message:='Guard Open';
+END_IF
+
+IF NOT CabinetE_StopButtonOkay THEN
+	alarm_message:='E-Stop Pressed';
+END_IF
+
+IF CabinetE_StopButtonOkay AND ixGuardOkay AND NOT parameter_violation AND NOT Overtorque_alarm AND NOT Clamp_Alarm THEN
+	alarm_message:='';
+END_IF
+//end_of_alarms
+
+//save as request
+IF SaveasRecipe = TRUE THEN
+	saveas_recipe_no:=current_recipe_no;
+	WHILE (List_of_Recipes[saveas_recipe_no].Memory_Free = FALSE) AND (saveas_recipe_no<11) DO  
+		saveas_recipe_no:=saveas_recipe_no+1;
+		
+	END_WHILE
+	
+	IF saveas_recipe_no > 10 THEN
+		Message:='Maximum Recipe limit has been reached';
+		saveas_recipe_no:=10;
+		SaveasRecipe := FALSE;	
+	END_IF
+		
+	IF List_of_Recipes[saveas_recipe_no].Memory_Free = TRUE THEN
+		SaveasRecipe:=FALSE;
+		
+		Message := 'Adding new recipe...';
+
+		List_of_Recipes[saveas_recipe_no]:=current_recipe;
+		List_of_Recipes[saveas_recipe_no].Name:=Saveas_name;
+		List_of_Recipes[saveas_recipe_no].Memory_Free:=FALSE;
+		//current_recipe:=recipe_screen;
+		//Config.CopyGlobalRecipiesToConfig();
+		
+		//Current_Recipe := List_of_Recipes[current_recipe_no];
+		//recipe_screen:=current_recipe;
+
+		save_requested := TRUE;		
+	
+	END_IF
+	
+END_IF
+//save as request end
+
+//load recipe
+FOR temp := 1 TO 10 DO
+	IF LoadRecipe[temp] = TRUE THEN
+		load_recipe_no := temp;
+		LoadRecipe[temp] := FALSE;
+		
+		question := CONCAT('Do you want to save recipe ', recipe_screen.Name);
+		question := CONCAT(question,', before loading the recipe ');
+		question := CONCAT(question, List_of_Recipes[load_recipe_no].Name);
+		question := CONCAT(question,'?'); 
+	END_IF
+END_FOR
+
+IF Load_Request = TRUE THEN
+	
+	Load_Request:=FALSE;
+	
+	IF(Save_before_load=TRUE)THEN
+		
+		//current_recipe:=recipe_screen;
+		List_of_Recipes[current_recipe_no] := current_recipe;
+		List_of_Recipes[current_recipe_no].Memory_Free := FALSE;
+		//config.CopySettingsFromGlobal();
+		Save_before_load := FALSE;
+		
+		Message := CONCAT('Recipe ',recipe_screen.Name);
+		Message := CONCAT(Message,' saving... ');
+		
+		save_requested := TRUE;	
+		
+	END_IF
+	
+	current_recipe_no:=load_recipe_no;
+		
+	Current_Recipe := List_of_Recipes[current_recipe_no];
+	recipe_screen:=current_recipe;
+	//Message := CONCAT('Recipe ',current_recipe.Name);
+	//Message := CONCAT(Message,' loading... ');
+
+	
+END_IF
+//load recipe end
+
+//delete recipe
+FOR temp := 1 TO 10 DO
+	IF DeleteRecipe[temp] = TRUE THEN
+		delete_recipe_no := temp;
+		DeleteRecipe[temp] := FALSE;
+		
+		question := CONCAT('Do you want to delete recipe ', List_of_Recipes[delete_recipe_no].Name);
+		question := CONCAT(question,'?'); 
+	END_IF
+END_FOR
+
+IF Delete_Request = TRUE THEN
+	
+	Delete_Request:=FALSE;
+	
+	current_recipe_no:=delete_recipe_no;
+	
+	Message := CONCAT('Recipe ',List_of_Recipes[current_recipe_no].Name );
+	Message := CONCAT(Message,' deleting...');
+	
+	WHILE (delete_recipe_no<10) AND List_of_Recipes[delete_recipe_no+1].Memory_Free = FALSE DO
+		List_of_Recipes[delete_recipe_no]:=List_of_Recipes[delete_recipe_no+1];
+		delete_recipe_no:=delete_recipe_no+1;
+	END_WHILE
+	
+	List_of_Recipes[delete_recipe_no] := empty_recipe;
+	//List_of_Recipes[delete_recipe_no].Memory_Free:=FALSE;
+	
+	
+	IF current_recipe_no = delete_recipe_no AND current_recipe_no <> 1 THEN
+		current_recipe_no := current_recipe_no - 1;
+	END_IF
+		
+	Current_Recipe := List_of_Recipes[current_recipe_no];
+	recipe_screen:=current_recipe;
+	
+	save_requested := TRUE;
+
+	
+END_IF
+//delete recipe end
+
+//save recipe
+IF SaveRecipe THEN
+	SaveRecipe := FALSE;
+	//current_recipe:=recipe_screen;
+	//recipe_screen:=current_recipe;
+	current_recipe.Memory_Free:=FALSE;
+	
+	//WHILE (List_of_Recipes[current_recipe_no].Memory_Free = FALSE) AND (current_recipe_no<11) DO  
+	//	current_recipe_no:=current_recipe_no+1;
+	//END_WHILE
+	Message := 'Recipe saving...';	
+	
+	List_of_Recipes[current_recipe_no] := current_recipe;
+	save_requested := TRUE;
+	
+END_IF
+//save recipe end
+
+//save limits
+IF save_limits THEN
+	save_limits:=FALSE;
+	limits_save:=limits_screen;
+	save_requested := TRUE;
+	Message:='Saving Limits...';
+END_IF
+
+
+
+IF save_requested = TRUE THEN
+	
+	save_requested := FALSE;
+	Config.CopyGlobalRecipiesToConfig();
+	config_request:= TRUE;
+	//config_count:=0;
+	//Message:='Configuring...';
+	
+END_IF
+
+//Message Timer
+IF Message <> message_old THEN
+	Message_timer.IN:=TRUE;
+	Message_Timer.PT:=T#10S;
+END_IF
+
+IF Message_Timer.Q = TRUE THEN
+	Message:='';
+	Message_timer.IN:=FALSE;
+	//Message_Timer.PT:=T#30S;
+END_IF 
+Message_old:=Message;
+//end of message timer
+
+
+//Config.CopyGlobalRecipiesToConfig();
+//end recipes
+
+
+(***************************** Data For the Main Screen ***********************)
+
+
+	(* Settings Page*)
+
+
+	(* IO Page *)
+
+CabinetE_StopButtonOkay := ixCabinetE_StopButtonOkay;
+E_StopRelayOkay:=ixE_StopRelayOkay;
+GuardRelayOkay:=ixGuardRelayOkay;
+GuardOkay:=ixGuardOkay;
+
+ResetButton := ixResetButton;
+
+		
+// Cabinet Digital Outputs 1 - Device 1, Term 3
+EnableE_Stop:=qxEnableE_Stop;
+	
+//StartButtonLamp:=qxStartButtonLamp;
+ResetButtonLamp:=qxResetButtonLamp;
+	
+	
+// Servo Analogue Inputs 1- Device 2, Term 2
+CompressServoTorque:=ibCompressServoTorque;
+CompressServoFollowingError:=ibCompressServoFollowingError;
+CompressServoTorqueLimit:=qbCompressServoTorqueLimit;
+	
+// Servo Analogue Inputs 1- Device 2, Term 3
+PusherServoTorque:=ibPusherServoTorque;
+PusherServoFollowingError:=ibPusherServoFollowingError;
+PusherServoTorqueLimit:=qbPusherServoTorqueLimit;
+	
+// Servo Analogue Inputs 1- Device 2, Term 3
+ShieldServoTorque:=ibShieldServoTorque;
+ShieldServoFollowingError:=ibShieldServoFollowingError;
+ShieldServoTorqueLimit:=qbShieldServoTorqueLimit;
+	
+
+	
+// Machine Digital Inputs 1 - Device 2, Term 5
+CompressHomeSwitch:=ixCompressHomeSwitch;
+PusherHomeSwitch:=ixPusherHomeSwitch;
+ShieldHomeSwitch:=ixShieldHomeSwitch;
+StartButton:=ixStartButton;
+GuardOkay:=ixGuardOkay; 
+MachineE_StopButtonOkay:=ixMachineE_StopButtonOkay;
+//FanCartridgeDiagnostics:=ixFanCartridgeDiagnostics;
+
+//sc_CompressServoErrorID := CompressServoErrorID;
+//sc_PusherServoErrorID := PusherServoErrorID;	
+//sc_ShieldServoErrorID := ShieldServoErrorID;
+	
+
+//Homed?
+Pusher_Home:=PRG_Machine.Pusher.HomeExecuted;
+Shield_Home:=PRG_Machine.Shield.HomeExecuted;
+Compress_Home:=PRG_Machine.Compress.HomeExecuted;
+	
+//Clamp
+Clamp_State:=qxClamp;
+
+//Mode
+IF debug_mode = FALSE THEN
+	mode_string:= 'Current Mode: Automatic';
+ELSE
+	mode_string:= 'Current Mode: Debug';
+END_IF
+
+//until here
+
+
+
+
+
+qxResetButtonLamp := ResetLampController.Q; //io
+ResetLamp := ResetLampController.Q; //zenon
+
+
+
+ShieldAxisPosition := PRG_Machine.Shield.ShieldServo.fActualPosition;		
+PusherAxisPosition := PRG_Machine.Pusher.PusherServo.fActualPosition;
+CompressAxisPosition := PRG_Machine.Compress.CompressServo.fActualPosition;
+
+Zenon_Offset_Compress:=PRG_Machine.Compress.OffsetExecuted;
+Zenon_Offset_Shield:=PRG_Machine.Shield.OffsetExecuted;
+Zenon_Offset_Pusher:=PRG_Machine.Pusher.OffsetExecuted;
+		
+	(* Top Bar *)
+//	sSystemState			: STRING;		//Top Bar
+(*		
+IF sSystemStateHi = WSTRING_TO_STRING("") THEN
+	IF sSystemStateMed = WSTRING_TO_STRING("") THEN
+		sSystemState := sSystemStateLo;
+	ELSE
+		sSystemState := sSystemStateMed;
+	END_IF	
+ELSE
+	sSystemState := sSystemStateHi;
+	TextTimer.PT := T#5S;
+	TextTimer.IN := TRUE;
+	IF TextTimer.Q THEN
+		sSystemStateHi :=  WSTRING_TO_STRING("");
+		TextTimer.IN := false;
+	END_IF
+END_IF
+
+sc_sSystemStateHi := sSystemStateHi;
+sc_sSystemStateMed := sSystemStateMed;
+sc_sSystemStateLo := sSystemStateLo;
+
+*)]]></ST>
+    </Implementation>
+    <Property Name="List_of_Recipes_config" Id="{92324b27-23cd-4b80-9414-75de92c10226}">
+      <Declaration><![CDATA[PROPERTY List_of_Recipes_config :ARRAY[1..10] OF Recipe;]]></Declaration>
+      <Get Name="Get" Id="{f93cf17d-52c3-4715-a269-8274f1b057d6}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[List_of_Recipes_config := List_of_Recipes;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{29a903ab-de62-4fef-8203-1ec5ccafa9c7}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[List_of_Recipes := List_of_Recipes_config;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <Property Name="recipe_default_ext" Id="{004faa73-251f-4e55-9276-5e6e11f50fae}">
+      <Declaration><![CDATA[PROPERTY recipe_default_ext :Recipe;]]></Declaration>
+      <Get Name="Get" Id="{077e0aaa-22a5-4b34-be0f-cbc181a1f8ae}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[recipe_default_ext := recipe_default;]]></ST>
+        </Implementation>
+      </Get>
+      <Set Name="Set" Id="{55dbf694-5b08-4539-9a9e-f402110f2108}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[recipe_default := recipe_default_ext;]]></ST>
+        </Implementation>
+      </Set>
+    </Property>
+    <LineIds Name="PRG_IO">
+      <LineId Id="574" Count="0" />
+      <LineId Id="3" Count="0" />
+      <LineId Id="1700" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="709" Count="0" />
+      <LineId Id="851" Count="0" />
+      <LineId Id="1207" Count="0" />
+      <LineId Id="1209" Count="0" />
+      <LineId Id="1212" Count="0" />
+      <LineId Id="1214" Count="1" />
+      <LineId Id="1226" Count="0" />
+      <LineId Id="1232" Count="14" />
+      <LineId Id="1362" Count="0" />
+      <LineId Id="1364" Count="0" />
+      <LineId Id="1363" Count="0" />
+      <LineId Id="1247" Count="5" />
+      <LineId Id="1702" Count="0" />
+      <LineId Id="1701" Count="0" />
+      <LineId Id="1253" Count="0" />
+      <LineId Id="1227" Count="0" />
+      <LineId Id="1254" Count="0" />
+      <LineId Id="1228" Count="0" />
+      <LineId Id="1230" Count="0" />
+      <LineId Id="1217" Count="1" />
+      <LineId Id="1255" Count="0" />
+      <LineId Id="1264" Count="0" />
+      <LineId Id="1256" Count="1" />
+      <LineId Id="1423" Count="5" />
+      <LineId Id="1258" Count="5" />
+      <LineId Id="1219" Count="0" />
+      <LineId Id="1208" Count="0" />
+      <LineId Id="1524" Count="1" />
+      <LineId Id="1528" Count="0" />
+      <LineId Id="1546" Count="0" />
+      <LineId Id="1532" Count="9" />
+      <LineId Id="1569" Count="0" />
+      <LineId Id="1542" Count="1" />
+      <LineId Id="1552" Count="2" />
+      <LineId Id="1544" Count="1" />
+      <LineId Id="1547" Count="1" />
+      <LineId Id="1555" Count="0" />
+      <LineId Id="1574" Count="0" />
+      <LineId Id="1557" Count="7" />
+      <LineId Id="1570" Count="0" />
+      <LineId Id="1565" Count="1" />
+      <LineId Id="1572" Count="1" />
+      <LineId Id="1571" Count="0" />
+      <LineId Id="1567" Count="0" />
+      <LineId Id="1550" Count="1" />
+      <LineId Id="1575" Count="1" />
+      <LineId Id="1578" Count="4" />
+      <LineId Id="1590" Count="0" />
+      <LineId Id="1583" Count="1" />
+      <LineId Id="1591" Count="2" />
+      <LineId Id="1585" Count="3" />
+      <LineId Id="1577" Count="0" />
+      <LineId Id="1594" Count="0" />
+      <LineId Id="1596" Count="3" />
+      <LineId Id="1595" Count="0" />
+      <LineId Id="1526" Count="1" />
+      <LineId Id="852" Count="0" />
+      <LineId Id="1637" Count="0" />
+      <LineId Id="1672" Count="1" />
+      <LineId Id="1638" Count="3" />
+      <LineId Id="1102" Count="0" />
+      <LineId Id="1642" Count="6" />
+      <LineId Id="1667" Count="3" />
+      <LineId Id="1650" Count="0" />
+      <LineId Id="1664" Count="2" />
+      <LineId Id="1663" Count="0" />
+      <LineId Id="1651" Count="6" />
+      <LineId Id="1659" Count="3" />
+      <LineId Id="1649" Count="0" />
+      <LineId Id="1600" Count="0" />
+      <LineId Id="774" Count="2" />
+      <LineId Id="782" Count="0" />
+      <LineId Id="788" Count="0" />
+      <LineId Id="794" Count="0" />
+      <LineId Id="797" Count="0" />
+      <LineId Id="920" Count="5" />
+      <LineId Id="778" Count="0" />
+      <LineId Id="792" Count="1" />
+      <LineId Id="892" Count="0" />
+      <LineId Id="897" Count="0" />
+      <LineId Id="828" Count="0" />
+      <LineId Id="1105" Count="0" />
+      <LineId Id="1107" Count="1" />
+      <LineId Id="1106" Count="0" />
+      <LineId Id="975" Count="0" />
+      <LineId Id="974" Count="0" />
+      <LineId Id="973" Count="0" />
+      <LineId Id="829" Count="0" />
+      <LineId Id="1333" Count="1" />
+      <LineId Id="848" Count="0" />
+      <LineId Id="944" Count="0" />
+      <LineId Id="800" Count="0" />
+      <LineId Id="777" Count="0" />
+      <LineId Id="893" Count="0" />
+      <LineId Id="935" Count="2" />
+      <LineId Id="939" Count="0" />
+      <LineId Id="941" Count="0" />
+      <LineId Id="996" Count="0" />
+      <LineId Id="1001" Count="4" />
+      <LineId Id="942" Count="0" />
+      <LineId Id="940" Count="0" />
+      <LineId Id="984" Count="0" />
+      <LineId Id="992" Count="0" />
+      <LineId Id="985" Count="1" />
+      <LineId Id="1025" Count="0" />
+      <LineId Id="1027" Count="0" />
+      <LineId Id="1030" Count="0" />
+      <LineId Id="1034" Count="0" />
+      <LineId Id="1031" Count="0" />
+      <LineId Id="1047" Count="0" />
+      <LineId Id="1032" Count="1" />
+      <LineId Id="1744" Count="0" />
+      <LineId Id="1746" Count="1" />
+      <LineId Id="1325" Count="1" />
+      <LineId Id="1028" Count="1" />
+      <LineId Id="1026" Count="0" />
+      <LineId Id="997" Count="0" />
+      <LineId Id="987" Count="4" />
+      <LineId Id="1037" Count="1" />
+      <LineId Id="993" Count="0" />
+      <LineId Id="938" Count="0" />
+      <LineId Id="959" Count="0" />
+      <LineId Id="1131" Count="0" />
+      <LineId Id="1133" Count="6" />
+      <LineId Id="1142" Count="5" />
+      <LineId Id="1173" Count="0" />
+      <LineId Id="1171" Count="0" />
+      <LineId Id="1177" Count="0" />
+      <LineId Id="1179" Count="1" />
+      <LineId Id="1178" Count="0" />
+      <LineId Id="1174" Count="0" />
+      <LineId Id="1172" Count="0" />
+      <LineId Id="1175" Count="0" />
+      <LineId Id="1148" Count="1" />
+      <LineId Id="1176" Count="0" />
+      <LineId Id="1312" Count="0" />
+      <LineId Id="1316" Count="1" />
+      <LineId Id="1313" Count="2" />
+      <LineId Id="1160" Count="3" />
+      <LineId Id="1318" Count="0" />
+      <LineId Id="1165" Count="3" />
+      <LineId Id="1132" Count="0" />
+      <LineId Id="960" Count="0" />
+      <LineId Id="962" Count="1" />
+      <LineId Id="995" Count="0" />
+      <LineId Id="1048" Count="0" />
+      <LineId Id="970" Count="0" />
+      <LineId Id="1041" Count="1" />
+      <LineId Id="1044" Count="1" />
+      <LineId Id="1043" Count="0" />
+      <LineId Id="1391" Count="0" />
+      <LineId Id="1036" Count="0" />
+      <LineId Id="1399" Count="0" />
+      <LineId Id="1286" Count="0" />
+      <LineId Id="969" Count="0" />
+      <LineId Id="961" Count="0" />
+      <LineId Id="894" Count="0" />
+      <LineId Id="1510" Count="0" />
+      <LineId Id="1512" Count="7" />
+      <LineId Id="1511" Count="0" />
+      <LineId Id="1386" Count="1" />
+      <LineId Id="1748" Count="0" />
+      <LineId Id="1392" Count="0" />
+      <LineId Id="1741" Count="2" />
+      <LineId Id="1393" Count="0" />
+      <LineId Id="1388" Count="0" />
+      <LineId Id="1502" Count="1" />
+      <LineId Id="1688" Count="11" />
+      <LineId Id="1687" Count="0" />
+      <LineId Id="895" Count="0" />
+      <LineId Id="737" Count="0" />
+      <LineId Id="802" Count="0" />
+      <LineId Id="770" Count="0" />
+      <LineId Id="738" Count="0" />
+      <LineId Id="10" Count="1" />
+      <LineId Id="101" Count="0" />
+      <LineId Id="564" Count="0" />
+      <LineId Id="566" Count="0" />
+      <LineId Id="575" Count="0" />
+      <LineId Id="102" Count="0" />
+      <LineId Id="576" Count="0" />
+      <LineId Id="580" Count="3" />
+      <LineId Id="1658" Count="0" />
+      <LineId Id="585" Count="0" />
+      <LineId Id="1452" Count="0" />
+      <LineId Id="586" Count="0" />
+      <LineId Id="597" Count="2" />
+      <LineId Id="601" Count="2" />
+      <LineId Id="606" Count="16" />
+      <LineId Id="628" Count="6" />
+      <LineId Id="639" Count="1" />
+      <LineId Id="668" Count="5" />
+      <LineId Id="641" Count="0" />
+      <LineId Id="1454" Count="1" />
+      <LineId Id="1460" Count="0" />
+      <LineId Id="647" Count="0" />
+      <LineId Id="577" Count="0" />
+      <LineId Id="1461" Count="1" />
+      <LineId Id="579" Count="0" />
+      <LineId Id="1469" Count="2" />
+      <LineId Id="1474" Count="0" />
+      <LineId Id="1473" Count="0" />
+      <LineId Id="1467" Count="1" />
+      <LineId Id="121" Count="0" />
+      <LineId Id="662" Count="0" />
+      <LineId Id="535" Count="1" />
+      <LineId Id="694" Count="2" />
+      <LineId Id="203" Count="0" />
+      <LineId Id="497" Count="0" />
+      <LineId Id="502" Count="1" />
+      <LineId Id="558" Count="0" />
+      <LineId Id="654" Count="0" />
+      <LineId Id="1463" Count="3" />
+      <LineId Id="655" Count="0" />
+      <LineId Id="231" Count="1" />
+      <LineId Id="241" Count="0" />
+      <LineId Id="296" Count="15" />
+      <LineId Id="322" Count="0" />
+      <LineId Id="682" Count="1" />
+      <LineId Id="323" Count="0" />
+      <LineId Id="411" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_IO.List_of_Recipes_config.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_IO.List_of_Recipes_config.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_IO.recipe_default_ext.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_IO.recipe_default_ext.Set">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

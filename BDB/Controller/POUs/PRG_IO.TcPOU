@@ -1,0 +1,1427 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <POU Name="PRG_IO" Id="{f101afa0-f9ee-4197-8bc4-4b48547efe33}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM PRG_IO
+VAR
+	
+	//piccirix		:INT;
+	TextTimer: ton;
+	Message_timer: ton;
+	actual_cycle_timer: ton;
+	
+
+	recipe_default				:recipe;
+	Current_Recipe				:Recipe;
+	empty_recipe				:Recipe;
+	current_recipe_no			:INT:=1;
+	saveas_recipe_no			:INT;
+	load_recipe_no				:INT;
+	delete_recipe_no			:INT;
+	temp						:INT;
+	temp2						:INT;
+		
+	Initialise					:BOOL := TRUE;
+	InitialiseTickCounter		:INT;
+	TickCounter					:INT;
+	
+	save_requested				:BOOL;
+	
+	Pusher_Home					:BOOL;
+	Shield_Home					:BOOL;
+	Compress_Home				:BOOL;
+	
+	//violation
+	//old_recipe					:Recipe;
+	//old_limits					:Limits;
+	zero_violation				:BOOL;
+	max_distance_violation		:BOOL;
+	max_sh_push_diff_violation	:BOOL;
+	
+	Message_old					:STRING(300);
+	
+	Message_State				:INT:=0;
+	
+	//deleting					:BOOL;
+	//saving						:BOOL;
+	//saving_as					:BOOL;
+	//saving_lim					:BOOL;
+	
+	done						:BOOL:=FALSE;
+	//you are here!!!!!!!!!!
+	
+	//cycles_waited				:INT;
+	product_count_old			:INT;
+	actual_cycle_array			: ARRAY[1..10] OF LREAL;
+	
+	
+END_VAR
+
+VAR_OUTPUT
+					
+END_VAR 
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[ResetLampController();
+StartLampController();
+Message_timer();
+actual_cycle_timer();
+
+done:=TRUE;
+//old_recipe:=current_recipe;
+f_initialisation();
+
+f_param_violation();
+
+f_calc_auto_cycle_time();
+
+f_calc_actual_cycle_rate();
+
+f_alarms();
+
+f_save_as();
+
+f_load();
+
+f_delete();
+
+f_save();
+
+f_save_limits();
+
+f_configure_recipe();
+
+f_titles();
+
+f_message_timer();
+
+//end recipes
+f_leftbar_visibility();
+
+f_digital_io();
+		
+f_mode_of_operation();]]></ST>
+    </Implementation>
+    <Method Name="f_alarms" Id="{1a8033f1-4582-4b50-bbf8-08d1c93f31e5}">
+      <Declaration><![CDATA[METHOD f_alarms : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF zero_violation THEN
+	IF language.english THEN
+		alarm_message:='Some parameters can not be set to zero.'; 
+	ELSE
+		alarm_message:='Alguns parâmetros não podem ser ajustados para zero.';
+	END_IF
+END_IF
+
+IF max_distance_violation THEN
+	
+	IF language.english THEN
+		alarm_message:='Maximum axis distance violation';
+	ELSE
+		alarm_message:='Violação máxima da distância do eixo';
+	END_IF 
+END_IF
+
+IF max_sh_push_diff_violation THEN
+	
+	
+	IF language.english THEN
+		alarm_message:='Maximum pusher-shield distance difference violation';
+	ELSE
+		alarm_message:='Violação máxima da diferença de distância entre proteção-empurrador';
+	END_IF 
+ 
+END_IF
+
+IF Clamp_Alarm THEN
+	
+	
+	IF language.english THEN
+		alarm_message:='Clamp Overtime';
+	ELSE
+		alarm_message:='Tempo adicional de grampo';
+	END_IF 
+END_IF
+
+IF Overtorque_alarm THEN
+	
+	
+	IF language.english THEN
+		alarm_message:='Motor Overtorque';
+	ELSE
+		alarm_message:='Excesso de torque do motor';
+	END_IF
+	
+END_IF
+
+IF NOT ixGuardOkay THEN
+	
+	
+	IF language.english THEN
+		alarm_message:='Guard Open';
+	ELSE
+		alarm_message:='Guarda Aberto';
+	END_IF
+END_IF
+
+IF NOT CabinetE_StopButtonOkay THEN
+	
+	IF language.english THEN
+		alarm_message:='E-Stop Pressed';
+	ELSE
+		alarm_message:='Parada de emergência pressionada';
+	END_IF
+END_IF
+
+IF CabinetE_StopButtonOkay AND ixGuardOkay AND NOT parameter_violation AND NOT Overtorque_alarm AND NOT Clamp_Alarm THEN
+	alarm_message:='';
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="f_calc_actual_cycle_rate" Id="{acd83977-3aa3-4f8f-a505-b59f28446497}">
+      <Declaration><![CDATA[METHOD f_calc_actual_cycle_rate : BOOL
+VAR
+	cropped_product_count			:INT;
+	temp_for						:INT;
+	total_time						:LREAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[actual_cycle_timer.IN:=TRUE;
+actual_cycle_timer.PT:= T#604800S; //week
+
+
+
+IF actual_cycle_timer.Q THEN
+	//cycles_waited:=cycles_waited+1;
+	actual_cycle_timer.IN:=FALSE;
+
+
+ELSIF product_count_old <> product_count THEN
+	
+	actual_cycle_array[10]:=actual_cycle_array[9];
+	actual_cycle_array[9]:=actual_cycle_array[8];
+	actual_cycle_array[8]:=actual_cycle_array[7];
+	actual_cycle_array[7]:=actual_cycle_array[6];
+	actual_cycle_array[6]:=actual_cycle_array[5];
+	actual_cycle_array[5]:=actual_cycle_array[4];
+	actual_cycle_array[4]:=actual_cycle_array[3];
+	actual_cycle_array[3]:=actual_cycle_array[2];
+	actual_cycle_array[2]:=actual_cycle_array[1];
+	
+	
+	actual_cycle_array[1]:=(*cycles_waited*300+*)TIME_TO_LREAL(actual_cycle_timer.ET);
+	//cycles_waited:=0;
+	actual_cycle_timer.IN:=FALSE;
+	
+	
+END_IF
+
+
+cropped_product_count:=product_count;
+
+IF cropped_product_count > 10 THEN
+	cropped_product_count:=10;
+END_IF 
+
+IF cropped_product_count <>0 THEN
+	
+	total_time:=0;
+	FOR temp_for := 1 TO cropped_product_count DO
+		total_time:=total_time+actual_cycle_array[temp_for];
+	END_FOR
+	
+	actual_cycle_rate := ((cropped_product_count*3600000)/total_time);
+	
+ELSE
+	total_time:=0;
+	actual_cycle_rate:=0;
+END_IF
+
+
+
+product_count_old:=product_count;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="f_calc_auto_cycle_time" Id="{86e509a6-13a6-4491-97ea-61379383837a}">
+      <Declaration><![CDATA[METHOD f_calc_auto_cycle_time : BOOL
+VAR
+	shield_time			:LREAL;
+	pusher_time			:LREAL;
+	compress_time		:LREAL;
+	temp				:LREAL;
+	temp_pusher			:LREAL;
+	temp_shield			:LREAL;
+
+	
+	temp_for			:INT;
+	
+	auto_time_array		:ARRAY [1..8] OF LREAL;
+	
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+compress_time := recipe_screen.Compress.Initial_Distance/recipe_screen.compress.Initial_Speed;
+temp:=ABS(recipe_screen.Compress.Initial_Distance-recipe_screen.Compress.Relax_Distance);
+compress_time := compress_time + (temp/recipe_screen.compress.Initial_Speed);         
+auto_time_array[1] := compress_time;
+
+temp_shield:=0;
+temp_pusher:=0;
+
+FOR temp_for := 2 TO 7 DO
+
+	shield_time:=(ABS(recipe_screen.Shield.Distance[temp_for-1]-temp_shield))/recipe_screen.Shield.Speed[temp_for-1];
+	temp_shield:=recipe_screen.Shield.Distance[temp_for-1];
+	
+	pusher_time:=(ABS(recipe_screen.Pusher.Distance[temp_for-1]-temp_pusher))/recipe_screen.Pusher.Speed[temp_for-1];
+	temp_pusher:=recipe_screen.Pusher.Distance[temp_for-1];
+	
+	IF pusher_time > shield_time THEN
+		auto_time_array[temp_for]:=pusher_time;	
+	ELSE
+		auto_time_array[temp_for]:=shield_time;
+	END_IF
+	
+END_FOR
+
+compress_time := recipe_screen.Compress.Relax_Distance/recipe_screen.Compress.Retract_speed;
+shield_time := recipe_screen.Shield.Distance[6]/recipe_screen.Shield.retract_speed;
+pusher_time := recipe_screen.Pusher.distance[6]/recipe_screen.pusher.retract_speed;
+
+IF compress_time>=shield_time AND compress_time>=pusher_time THEN
+	auto_time_array[8]:=compress_time;
+END_IF
+
+IF pusher_time>=shield_time AND pusher_time>=compress_time THEN
+	auto_time_array[8]:=pusher_time;
+END_IF
+
+IF shield_time>=pusher_time AND shield_time>=compress_time THEN
+	auto_time_array[8]:=shield_time;
+END_IF
+
+auto_cycle_time:=0;
+FOR temp_for := 1 TO 8 DO
+	auto_cycle_time:= auto_time_array[temp_for]+auto_cycle_time;
+	
+END_FOR
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="f_configure_recipe" Id="{215e3343-ba27-4e02-8fc6-227c6158fa5a}">
+      <Declaration><![CDATA[METHOD f_configure_recipe : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+FOR temp := 1 TO 11 DO
+	IF save_requested = TRUE THEN
+		Config.CopyGlobalRecipiesToConfig();
+		config_request:=TRUE;
+		save_requested:=FALSE;
+	END_IF
+END_FOR]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="f_delete" Id="{27272c84-d87b-4be3-b3db-e1f37bbf566e}">
+      <Declaration><![CDATA[METHOD f_delete : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[FOR temp := 1 TO 10 DO
+	IF DeleteRecipe[temp] = TRUE THEN
+		delete_recipe_no := temp;
+		DeleteRecipe[temp] := FALSE;
+		
+		IF language.english THEN
+			question := CONCAT('Do you want to delete recipe ', List_of_Recipes[delete_recipe_no].Name);
+			question := CONCAT(question,'?');
+		ELSE
+			question := CONCAT('Deseja excluir a receita ', List_of_Recipes[delete_recipe_no].Name);
+			question := CONCAT(question,'?');
+		END_IF
+ 
+	END_IF
+END_FOR
+
+IF Delete_Request = TRUE THEN
+	
+	Delete_Request:=FALSE;
+	
+	configuring:=TRUE;
+	
+	current_recipe_no:=delete_recipe_no;
+	
+	IF language.english THEN
+		Message := CONCAT('Deleting recipe ',List_of_Recipes[current_recipe_no].Name );
+		Message := CONCAT(Message,'...');
+
+		Config_Message := concat('Recipe ', List_of_Recipes[current_recipe_no].Name);
+		Config_Message := concat(Config_Message,' has been deleted.');
+	ELSE
+		Message := CONCAT('Excluindo receita ',List_of_Recipes[current_recipe_no].Name );
+		Message := CONCAT(Message,'...');
+
+		Config_Message := concat('A receita ', List_of_Recipes[current_recipe_no].Name);
+		Config_Message := concat(Config_Message,' foi excluída.');
+	END_IF
+	
+	WHILE (delete_recipe_no<10) AND List_of_Recipes[delete_recipe_no+1].Memory_Free = FALSE DO
+		List_of_Recipes[delete_recipe_no]:=List_of_Recipes[delete_recipe_no+1];
+		//save_requested[delete_recipe_no] := TRUE;
+		delete_recipe_no:=delete_recipe_no+1;
+	END_WHILE
+	
+	List_of_Recipes[delete_recipe_no] := empty_recipe;
+	save_requested := TRUE;
+	//List_of_Recipes[delete_recipe_no].Memory_Free:=FALSE;
+	
+	
+	IF current_recipe_no = delete_recipe_no AND current_recipe_no <> 1 THEN
+		current_recipe_no := current_recipe_no - 1;
+	END_IF
+		
+	Current_Recipe := List_of_Recipes[current_recipe_no];
+	recipe_screen:=current_recipe;
+	
+	
+	
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="f_digital_io" Id="{5d7fc026-233a-4514-8f48-c5f53350c600}">
+      <Declaration><![CDATA[METHOD f_digital_io : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+(***************************** Data For the Main Screen ***********************)
+
+
+CabinetE_StopButtonOkay := ixCabinetE_StopButtonOkay;
+E_StopRelayOkay:=ixE_StopRelayOkay;
+GuardRelayOkay:=ixGuardRelayOkay;
+GuardOkay:=ixGuardOkay;
+
+ResetButton := ixResetButton;
+
+		
+// Cabinet Digital Outputs 1 - Device 1, Term 3
+EnableE_Stop:=qxEnableE_Stop;
+	
+//StartButtonLamp:=qxStartButtonLamp;
+ResetButtonLamp:=qxResetButtonLamp;
+	
+	
+// Servo Analogue Inputs 1- Device 2, Term 2
+CompressServoTorque:=ibCompressServoTorque;
+CompressServoFollowingError:=ibCompressServoFollowingError;
+CompressServoTorqueLimit:=qbCompressServoTorqueLimit;
+	
+// Servo Analogue Inputs 1- Device 2, Term 3
+PusherServoTorque:=ibPusherServoTorque;
+PusherServoFollowingError:=ibPusherServoFollowingError;
+PusherServoTorqueLimit:=qbPusherServoTorqueLimit;
+	
+// Servo Analogue Inputs 1- Device 2, Term 3
+ShieldServoTorque:=ibShieldServoTorque;
+ShieldServoFollowingError:=ibShieldServoFollowingError;
+ShieldServoTorqueLimit:=qbShieldServoTorqueLimit;
+	
+
+	
+// Machine Digital Inputs 1 - Device 2, Term 5
+CompressHomeSwitch:=ixCompressHomeSwitch;
+PusherHomeSwitch:=ixPusherHomeSwitch;
+ShieldHomeSwitch:=ixShieldHomeSwitch;
+StartButton:= ixStartButton;
+GuardOkay:=ixGuardOkay; 
+MachineE_StopButtonOkay:=ixMachineE_StopButtonOkay;
+//FanCartridgeDiagnostics:=ixFanCartridgeDiagnostics;
+
+//sc_CompressServoErrorID := CompressServoErrorID;
+//sc_PusherServoErrorID := PusherServoErrorID;	
+//sc_ShieldServoErrorID := ShieldServoErrorID;
+	
+
+//Homed?
+Pusher_Home:=PRG_Machine.Pusher.HomeExecuted;
+Shield_Home:=PRG_Machine.Shield.HomeExecuted;
+Compress_Home:=PRG_Machine.Compress.HomeExecuted;
+	
+//Clamp
+Clamp_State:=qxClamp;
+
+
+qxResetButtonLamp := ResetLampController.Q; //io
+ResetLamp := ResetLampController.Q; //zenon
+
+
+
+ShieldAxisPosition := PRG_Machine.Shield.ShieldServo.fActualPosition;		
+PusherAxisPosition := PRG_Machine.Pusher.PusherServo.fActualPosition;
+CompressAxisPosition := PRG_Machine.Compress.CompressServo.fActualPosition;
+
+Zenon_Offset_Compress:=PRG_Machine.Compress.OffsetExecuted;
+Zenon_Offset_Shield:=PRG_Machine.Shield.OffsetExecuted;
+Zenon_Offset_Pusher:=PRG_Machine.Pusher.OffsetExecuted;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="f_initialisation" Id="{0653a8a7-b4f3-4928-bb8f-24d67ec26c17}">
+      <Declaration><![CDATA[METHOD f_initialisation : BOOL
+VAR
+	//temp			:INT;
+	
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+IF Initialise THEN
+	//InitialiseTickCounter := InitialiseTickCounter + 1;
+	//IF InitialiseTickCounter = 150 THEN
+	//	Config.CopyConfigRecipiesToGlobal();
+	//END_IF
+	//piccirix:=piccirix+1;
+	
+	Config.CopyConfigRecipiesToGlobal();
+		//piccirix:=piccirix+1;
+	
+	//piccirix:=piccirix+1;	
+	//IF InitialiseTickCounter >= 300 THEN	
+	//recipe_screen := List_of_Recipes[1];
+	yellow_visibility.main:=TRUE;
+	
+	recipe_default.Name:='default 1';
+	
+	recipe_default.Compress.Initial_Distance:=5;
+	recipe_default.Compress.Initial_Speed:=5;
+	recipe_default.Compress.Relax_Distance:=3;
+	recipe_default.Compress.Retract_Speed:=5;
+	
+	recipe_default.Pusher.Speed[1]:=5;
+	recipe_default.Pusher.Speed[2]:=5;
+	recipe_default.Pusher.Speed[3]:=5;
+	recipe_default.Pusher.Speed[4]:=5;
+	recipe_default.Pusher.Speed[5]:=5;
+	recipe_default.Pusher.Speed[6]:=5;
+	recipe_default.Pusher.Retract_Speed:=5;
+	recipe_default.Pusher.Distance[1]:=5;
+	recipe_default.Pusher.Distance[2]:=0;
+	recipe_default.Pusher.Distance[3]:=5;
+	recipe_default.Pusher.Distance[4]:=0;
+	recipe_default.Pusher.Distance[5]:=5;
+	recipe_default.Pusher.Distance[6]:=0;
+
+	recipe_default.Shield.Speed[1]:=5;
+	recipe_default.Shield.Speed[2]:=5;
+	recipe_default.Shield.Speed[3]:=5;
+	recipe_default.Shield.Speed[4]:=5;
+	recipe_default.Shield.Speed[5]:=5;
+	recipe_default.Shield.Speed[6]:=5;
+	recipe_default.Shield.Retract_Speed:=5;
+	recipe_default.Shield.Distance[1]:=5;
+	recipe_default.Shield.Distance[2]:=0;
+	recipe_default.Shield.Distance[3]:=5;
+	recipe_default.Shield.Distance[4]:=0;
+	recipe_default.Shield.Distance[5]:=5;
+	recipe_default.Shield.Distance[6]:=0;
+	
+	recipe_default.Other.Compress_Home_Offset:=3;
+	recipe_default.Other.Pusher_Home_Offset:=3;
+	recipe_default.Other.Shield_Home_Offset:=3;
+	
+	recipe_default.Memory_Free:=FALSE;
+	
+	List_of_Recipes[1]:=recipe_default;
+	recipe_screen:=List_of_Recipes[1];	
+		
+	limits_screen:=limits_save;
+	
+	IF language.english THEN
+		Message:='Welcome!';
+	ELSE
+		Message:='Bem-vindo!';
+	END_IF
+	
+	InitialiseTickCounter := 0;
+	Initialise := FALSE;
+	//END_IF		
+ELSE
+	//InitialiseTickCounter := 0;
+	
+	//FOR temp:=1 TO 11 DO
+	///	Config.CopyConfigRecipiesToGlobal(temp);
+		//piccirix:=piccirix+1;
+	//END_FOR
+
+	current_recipe:=recipe_screen;
+
+	//current_recipe_message:=CONCAT('The current recipe number is ',INT_TO_STRING(Current_recipe_no));
+	
+	IF current_recipe_no = 1 THEN
+		Default_Recipe_Visibility:=FALSE;
+	ELSE
+		Default_Recipe_Visibility:=TRUE;
+	END_IF
+	
+	FOR	temp := 1 TO 10 DO
+		Recipe_Visibility[temp]:=NOT(List_of_Recipes[temp].Memory_Free);
+	END_FOR
+	
+	//temp:=1;
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="f_leftbar_visibility" Id="{2191e081-94f5-4fe5-846f-bfcc07a50e36}">
+      <Declaration><![CDATA[METHOD f_leftbar_visibility : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF NOT yellow_visibility_old.main AND yellow_visibility.main THEN
+	yellow_visibility.recipe:=FALSE;
+	yellow_visibility.maintenance:=FALSE;
+	yellow_visibility.io:=FALSE;
+	yellow_visibility.graph:=FALSE;
+		
+END_IF
+
+IF NOT yellow_visibility_old.recipe AND yellow_visibility.recipe THEN
+	yellow_visibility.main:=FALSE;
+	yellow_visibility.maintenance:=FALSE;
+	yellow_visibility.io:=FALSE;
+	yellow_visibility.graph:=FALSE;
+		
+END_IF
+
+IF NOT yellow_visibility_old.graph AND yellow_visibility.graph THEN
+	yellow_visibility.main:=FALSE;
+	yellow_visibility.maintenance:=FALSE;
+	yellow_visibility.io:=FALSE;
+	yellow_visibility.recipe:=FALSE;
+		
+END_IF
+
+IF NOT yellow_visibility_old.io AND yellow_visibility.io THEN
+	yellow_visibility.main:=FALSE;
+	yellow_visibility.maintenance:=FALSE;
+	yellow_visibility.graph:=FALSE;
+	yellow_visibility.recipe:=FALSE;
+		
+END_IF
+
+IF NOT yellow_visibility_old.maintenance AND yellow_visibility.maintenance THEN
+	yellow_visibility.main:=FALSE;
+	yellow_visibility.io:=FALSE;
+	yellow_visibility.graph:=FALSE;
+	yellow_visibility.recipe:=FALSE;
+		
+END_IF
+
+yellow_visibility_old.main:=yellow_visibility.main;
+yellow_visibility_old.maintenance:=yellow_visibility.maintenance;
+yellow_visibility_old.recipe:=yellow_visibility.recipe;
+yellow_visibility_old.graph:=yellow_visibility.graph;
+yellow_visibility_old.io:=yellow_visibility.io;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="f_load" Id="{63642d7f-3568-4002-8beb-c72f7cd6cdf5}">
+      <Declaration><![CDATA[METHOD f_load : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[FOR temp := 1 TO 10 DO
+	IF LoadRecipe[temp] = TRUE THEN
+		load_recipe_no := temp;
+		LoadRecipe[temp] := FALSE;
+		
+
+		
+		IF language.english THEN
+			question := CONCAT('Do you want to save recipe ', recipe_screen.Name);
+			question := CONCAT(question,', before loading the recipe ');
+			question := CONCAT(question, List_of_Recipes[load_recipe_no].Name);
+			question := CONCAT(question,'?');			
+		ELSE
+			question := CONCAT('Deseja salvar a receita ', recipe_screen.Name);
+			question := CONCAT(question,', antes de carregar a receita ');
+			question := CONCAT(question, List_of_Recipes[load_recipe_no].Name);
+			question := CONCAT(question,'?');			
+		END_IF
+ 		
+	END_IF
+END_FOR
+
+IF Load_Request = TRUE THEN
+	
+	Load_Request:=FALSE;
+	
+	IF(Save_before_load=TRUE)THEN
+		
+		configuring:=TRUE;
+		//current_recipe:=recipe_screen;
+		List_of_Recipes[current_recipe_no] := current_recipe;
+		List_of_Recipes[current_recipe_no].Memory_Free := FALSE;
+		//config.CopySettingsFromGlobal();
+		Save_before_load := FALSE;
+		
+		IF language.english THEN
+			Message := CONCAT('Saving recipe ',recipe_screen.Name);
+			Message := CONCAT(Message,'... ');
+		
+			Config_Message := concat('Recipe ', recipe_screen.Name);
+			Config_Message := concat(Config_Message,' has been saved.');
+		ELSE
+			
+			Message := CONCAT('Salvando receita ',recipe_screen.Name);
+			Message := CONCAT(Message,'... ');
+		
+			Config_Message := concat('A receita ', recipe_screen.Name);
+			Config_Message := concat(Config_Message,' foi salva.');			
+		END_IF
+		save_requested := TRUE;	
+		
+	ELSE
+		IF language.english THEN
+			Message := CONCAT('Recipe ',List_of_Recipes[load_recipe_no].Name);
+			Message := CONCAT(Message,' has been loaded');
+		ELSE
+			Message := CONCAT('A receita ',List_of_Recipes[load_recipe_no].Name);
+			Message := CONCAT(Message,' foi carregada.');			
+		END_IF
+	END_IF
+	
+	current_recipe_no:=load_recipe_no;
+		
+	Current_Recipe := List_of_Recipes[current_recipe_no];
+	recipe_screen:=current_recipe;
+	//Message := CONCAT('Recipe ',current_recipe.Name);
+	//Message := CONCAT(Message,' loading... ');
+
+	
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="f_message_timer" Id="{1e347756-1486-4adc-b372-20e00fabf413}">
+      <Declaration><![CDATA[METHOD f_message_timer : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CASE Message_State OF
+
+0:
+	
+	IF Message <> message_old THEN
+		//Message_State:=2;
+		Message_timer.IN:=FALSE;
+		Message_Timer.PT:=T#10S;
+		Message_State:=0;
+		
+		Message_State:=1;
+		
+	END_IF
+1:
+	Message_timer.IN:=TRUE;
+	Message_Timer.PT:=T#10S;
+	Message_State:=0;
+END_CASE
+
+IF Message_Timer.Q = TRUE THEN
+	Message:='';
+	Message_timer.IN:=FALSE;
+	Message_Timer.PT:=T#10S;
+	//Message_Timer.PT:=T#30S;
+END_IF 
+Message_old:=Message;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="f_mode_of_operation" Id="{aa08e424-1e61-43c0-9887-9e4fc718334d}">
+      <Declaration><![CDATA[METHOD f_mode_of_operation : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//Mode
+IF debug_mode = FALSE THEN
+	IF language.english THEN
+		mode_string:= 'Current Mode: Automatic';
+	ELSE
+		mode_string:= 'Modo atual: Automático';
+	END_IF
+	yellow_visibility.auto_mode:=TRUE;
+	yellow_visibility.debug_mode:=FALSE;
+ELSE
+	IF language.english THEN
+		mode_string:= 'Current Mode: Debug';
+	ELSE
+		mode_string:= 'Modo atual: Depuração';
+	END_IF
+	yellow_visibility.auto_mode:=FALSE;
+	yellow_visibility.debug_mode:=TRUE;
+END_IF
+
+//until here]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="f_param_violation" Id="{527f6f79-26aa-48cf-b3bd-37347654abb1}">
+      <Declaration><![CDATA[METHOD f_param_violation : BOOL
+VAR
+	pusher_calc				:ARRAY[0..6] OF LREAL;
+	shield_calc				:ARRAY[0..6] OF LREAL;
+	pusher_time				:LREAL;
+	shield_time				:LREAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//violation
+
+IF  
+	recipe_screen.Compress.Initial_Speed =0 OR 
+	recipe_screen.Compress.Retract_Speed =0 OR
+	recipe_screen.pusher.speed[1] = 0 OR
+	recipe_screen.pusher.speed[2] = 0 OR
+	recipe_screen.pusher.speed[3] = 0 OR
+	recipe_screen.pusher.speed[4] = 0 OR
+	recipe_screen.pusher.speed[5] = 0 OR
+	recipe_screen.pusher.speed[6] = 0 OR
+	recipe_screen.Pusher.Retract_Speed = 0 OR
+	recipe_screen.Shield.speed[1] = 0 OR
+	recipe_screen.Shield.speed[2] = 0 OR
+	recipe_screen.Shield.speed[3] = 0 OR
+	recipe_screen.Shield.speed[4] = 0 OR
+	recipe_screen.Shield.speed[5] = 0 OR
+	recipe_screen.Shield.speed[6] = 0 OR
+	recipe_screen.Shield.Retract_Speed = 0 THEN
+		
+	zero_violation := TRUE;
+		
+ELSE
+	zero_violation := FALSE;
+END_IF
+
+IF 	recipe_screen.Other.Compress_Home_Offset > limits_screen.max_limit_compress OR
+	recipe_screen.Other.Shield_Home_Offset > limits_screen.max_limit_Shield OR
+	recipe_screen.Other.Pusher_Home_Offset > limits_screen.max_limit_Pusher OR
+	
+	recipe_screen.Compress.Initial_Distance + recipe_screen.Other.Compress_Home_Offset > limits_screen.max_limit_compress OR
+	recipe_screen.Compress.Relax_Distance + recipe_screen.Other.Compress_Home_Offset > limits_screen.max_limit_compress OR
+	
+	recipe_screen.Shield.Distance[1] + recipe_screen.Other.shield_Home_Offset > limits_screen.max_limit_shield OR
+	recipe_screen.Shield.Distance[2] + recipe_screen.Other.shield_Home_Offset > limits_screen.max_limit_shield OR
+	recipe_screen.Shield.Distance[3] + recipe_screen.Other.shield_Home_Offset > limits_screen.max_limit_shield OR
+	recipe_screen.Shield.Distance[4] + recipe_screen.Other.shield_Home_Offset > limits_screen.max_limit_shield OR
+	recipe_screen.Shield.Distance[5] + recipe_screen.Other.shield_Home_Offset > limits_screen.max_limit_shield OR
+	recipe_screen.Shield.Distance[6] + recipe_screen.Other.shield_Home_Offset > limits_screen.max_limit_shield OR
+	
+	recipe_screen.Pusher.Distance[1] + recipe_screen.Other.Pusher_Home_Offset > limits_screen.max_limit_pusher OR
+	recipe_screen.Pusher.Distance[2] + recipe_screen.Other.Pusher_Home_Offset > limits_screen.max_limit_pusher OR
+	recipe_screen.Pusher.Distance[3] + recipe_screen.Other.Pusher_Home_Offset > limits_screen.max_limit_pusher OR
+	recipe_screen.Pusher.Distance[4] + recipe_screen.Other.Pusher_Home_Offset > limits_screen.max_limit_pusher OR
+	recipe_screen.Pusher.Distance[5] + recipe_screen.Other.Pusher_Home_Offset > limits_screen.max_limit_pusher OR
+	recipe_screen.Pusher.Distance[6] + recipe_screen.Other.Pusher_Home_Offset > limits_screen.max_limit_pusher THEN
+	
+	max_distance_violation:=TRUE;
+	
+ELSE
+	max_distance_violation:=FALSE;
+END_IF
+
+max_sh_push_diff_violation := FALSE;
+
+pusher_calc[0]:=recipe_screen.Other.Pusher_Home_Offset;
+shield_calc[0]:=recipe_screen.Other.shield_Home_Offset;
+
+FOR temp:=1 TO 6 DO
+	pusher_calc[temp]:=recipe_screen.Other.Pusher_Home_Offset + recipe_screen.Pusher.Distance[temp];
+	shield_calc[temp]:=recipe_screen.Other.Shield_Home_Offset + recipe_screen.Shield.Distance[temp];
+END_FOR
+
+
+FOR temp:=0 TO 6 DO
+	IF pusher_calc[temp]-shield_calc[temp]> limits_screen.max_pusher_shield_diff THEN
+		max_sh_push_diff_violation := TRUE;
+	END_IF                         
+END_FOR
+
+FOR temp:=0 TO 5 DO
+	pusher_time:=(pusher_calc[temp+1]-pusher_calc[temp])/recipe_screen.Pusher.Speed[temp+1];
+	shield_time:=(shield_calc[temp+1]-shield_calc[temp])/recipe_screen.Shield.Speed[temp+1];
+	IF recipe_screen.Pusher.Speed[temp+1] > recipe_screen.Shield.Speed[temp+1] AND pusher_time < shield_time THEN
+    	IF pusher_calc[temp+1]-(pusher_time*recipe_screen.Shield.Speed[temp+1]+shield_calc[temp]) > limits_screen.max_pusher_shield_diff  THEN
+			max_sh_push_diff_violation := TRUE;
+		END_IF	
+	
+			
+	END_IF                         
+END_FOR
+
+
+IF max_sh_push_diff_violation OR max_distance_violation OR zero_violation THEN
+	parameter_violation:=TRUE;
+ELSE
+	parameter_violation:=FALSE;
+END_IF
+
+
+//violation end]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="f_save" Id="{3dd2118d-842a-4a45-8156-c2e61182075e}">
+      <Declaration><![CDATA[METHOD f_save : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF SaveRecipe THEN
+	SaveRecipe := FALSE;
+
+	current_recipe.Memory_Free:=FALSE;
+	configuring:=TRUE;
+	
+	IF language.english THEN
+		Message :=concat('Saving Recipe ',current_recipe.Name);	
+		Message :=concat(Message,'...');
+	
+		Config_Message := concat('Recipe ', current_recipe.Name);
+		Config_Message := concat(Config_Message,' has been saved.');
+	ELSE
+		Message :=concat('Salvando receita ',current_recipe.Name);	
+		Message :=concat(Message,'...');
+	
+		Config_Message := concat('A receita ', current_recipe.Name);
+		Config_Message := concat(Config_Message,' foi salva');
+	END_IF
+	
+	List_of_Recipes[current_recipe_no] := current_recipe;
+	save_requested := TRUE;
+	
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="f_save_as" Id="{25483141-5c86-4765-8fd5-09689208a376}">
+      <Declaration><![CDATA[METHOD f_save_as : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF SaveasRecipe = TRUE THEN
+	saveas_recipe_no:=current_recipe_no;
+	WHILE (List_of_Recipes[saveas_recipe_no].Memory_Free = FALSE) AND (saveas_recipe_no<11) DO  
+		saveas_recipe_no:=saveas_recipe_no+1;
+		
+	END_WHILE
+	
+	IF saveas_recipe_no > 10 THEN
+		
+		IF language.english THEN
+			Message:='Maximum Recipe limit has been reached.';
+		ELSE
+			Message:='A limite máxima de receita foi alcançada.';
+		END_IF
+		
+		saveas_recipe_no:=10;
+		SaveasRecipe := FALSE;	
+	
+		
+	ELSIF List_of_Recipes[saveas_recipe_no].Memory_Free = TRUE THEN
+		SaveasRecipe:=FALSE;
+		
+		IF language.english THEN
+			Message :=concat( 'Recipe ',current_recipe.Name);
+			Message :=concat( Message,' is being saved as ');
+			Message :=concat( Message,saveas_name);
+			Message :=concat( Message,'...');
+		
+			Config_Message := concat('Recipe ', current_recipe.Name);
+			Config_Message := concat(Config_Message,' has been saved as ');
+			Config_Message := concat(Config_Message,saveas_name);
+			Config_Message := concat(Config_Message,'.');
+		ELSE //ure here........
+			Message :=concat( 'A receita ',current_recipe.Name);
+			Message :=concat( Message,' está sendo salva como ');
+			Message :=concat( Message,saveas_name);
+			Message :=concat( Message,'...');
+		
+			Config_Message := concat('A receita ', current_recipe.Name);
+			Config_Message := concat(Config_Message,' foi salva como receita ');
+			Config_Message := concat(Config_Message,saveas_name);
+			Config_Message := concat(Config_Message,'.');			
+		END_IF
+		
+		configuring:=TRUE;
+		save_requested := TRUE;
+
+		List_of_Recipes[saveas_recipe_no]:=current_recipe;
+		List_of_Recipes[saveas_recipe_no].Name:=Saveas_name;
+		List_of_Recipes[saveas_recipe_no].Memory_Free:=FALSE;
+		//current_recipe:=recipe_screen;
+		//Config.CopyGlobalRecipiesToConfig();
+		
+		//Current_Recipe := List_of_Recipes[current_recipe_no];
+		//recipe_screen:=current_recipe;
+
+				
+	
+	END_IF
+	
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="f_save_limits" Id="{6b75cead-59ad-447f-9f0e-74d45ff855e9}">
+      <Declaration><![CDATA[METHOD f_save_limits : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF save_limits THEN
+	save_limits:=FALSE;
+	limits_save:=limits_screen;
+	save_requested := TRUE;
+	
+	IF language.english THEN
+		Message:='Saving Limits...';
+	ELSE
+		Message:='Salvando limites...';
+	END_IF
+		
+	Config_Message:='Limits has been saved';
+	configuring:=TRUE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="f_titles" Id="{990f8c7e-34be-4444-80c2-81c480d51b84}">
+      <Declaration><![CDATA[METHOD f_titles : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+IF language.english THEN
+	recipe_titles.clamp:=concat( 'Clamp parameters for recipe ',recipe_screen.Name); 
+	recipe_titles.clamp:=concat( recipe_titles.clamp,':');
+ELSE
+	recipe_titles.clamp:=concat( 'Parâmetros do grampo para receita ',recipe_screen.Name); 
+	recipe_titles.clamp:=concat( recipe_titles.clamp,':');
+END_IF
+
+IF language.english THEN
+	recipe_titles.compress:=concat( 'Compress parameters for recipe ',recipe_screen.Name); 
+	recipe_titles.compress:=concat( recipe_titles.compress,':');
+ELSE
+	recipe_titles.compress:=concat( 'Parâmetros de compressão para receita ',recipe_screen.Name); 
+	recipe_titles.compress:=concat( recipe_titles.compress,':');	
+END_IF
+
+IF language.english THEN
+	recipe_titles.offset:=concat( 'Offset parameters for recipe receita ',recipe_screen.Name); 
+	recipe_titles.offset:=concat( recipe_titles.offset,':');
+ELSE
+	recipe_titles.offset:=concat( 'Parâmetros de desvio para receita ',recipe_screen.Name); 
+	recipe_titles.offset:=concat( recipe_titles.offset,':');
+END_IF
+
+IF language.english THEN
+	recipe_titles.shield:=concat( 'Shield parameters for recipe ',recipe_screen.Name); 
+	recipe_titles.shield:=concat( recipe_titles.shield,':');
+ELSE
+	recipe_titles.shield:=concat( 'Parâmetros de proteção para receita ',recipe_screen.Name); 
+	recipe_titles.shield:=concat( recipe_titles.shield,':');
+END_IF
+
+IF language.english THEN
+	recipe_titles.pusher:=concat( 'Pusher parameters for recipe ',recipe_screen.Name); 
+	recipe_titles.pusher:=concat( recipe_titles.pusher,':');
+ELSE
+	recipe_titles.pusher:=concat( 'Parâmetros do empurrador para receita ',recipe_screen.Name); 
+	recipe_titles.pusher:=concat( recipe_titles.pusher,':');
+END_IF
+
+]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="PRG_IO">
+      <LineId Id="574" Count="0" />
+      <LineId Id="1700" Count="0" />
+      <LineId Id="1988" Count="1" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="709" Count="0" />
+      <LineId Id="851" Count="0" />
+      <LineId Id="1880" Count="0" />
+      <LineId Id="1787" Count="0" />
+      <LineId Id="1986" Count="1" />
+      <LineId Id="1991" Count="1" />
+      <LineId Id="1637" Count="0" />
+      <LineId Id="1853" Count="0" />
+      <LineId Id="1639" Count="0" />
+      <LineId Id="775" Count="0" />
+      <LineId Id="893" Count="0" />
+      <LineId Id="937" Count="1" />
+      <LineId Id="1877" Count="0" />
+      <LineId Id="1168" Count="0" />
+      <LineId Id="1878" Count="0" />
+      <LineId Id="1868" Count="0" />
+      <LineId Id="1881" Count="0" />
+      <LineId Id="1879" Count="0" />
+      <LineId Id="1518" Count="0" />
+      <LineId Id="1502" Count="0" />
+      <LineId Id="2052" Count="0" />
+      <LineId Id="1503" Count="0" />
+      <LineId Id="1789" Count="0" />
+      <LineId Id="1699" Count="0" />
+      <LineId Id="802" Count="0" />
+      <LineId Id="770" Count="0" />
+      <LineId Id="1932" Count="0" />
+      <LineId Id="738" Count="0" />
+      <LineId Id="655" Count="0" />
+      <LineId Id="231" Count="0" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_IO.f_alarms">
+      <LineId Id="39" Count="0" />
+      <LineId Id="6" Count="1" />
+      <LineId Id="41" Count="1" />
+      <LineId Id="40" Count="0" />
+      <LineId Id="8" Count="2" />
+      <LineId Id="43" Count="4" />
+      <LineId Id="11" Count="3" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="50" Count="3" />
+      <LineId Id="49" Count="0" />
+      <LineId Id="15" Count="3" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="60" Count="0" />
+      <LineId Id="56" Count="3" />
+      <LineId Id="19" Count="3" />
+      <LineId Id="61" Count="0" />
+      <LineId Id="63" Count="4" />
+      <LineId Id="62" Count="0" />
+      <LineId Id="23" Count="3" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="73" Count="0" />
+      <LineId Id="69" Count="3" />
+      <LineId Id="27" Count="3" />
+      <LineId Id="74" Count="4" />
+      <LineId Id="31" Count="4" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_IO.f_calc_actual_cycle_rate">
+      <LineId Id="6" Count="0" />
+      <LineId Id="55" Count="1" />
+      <LineId Id="7" Count="2" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="13" Count="1" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="21" Count="7" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="34" Count="1" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="57" Count="3" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="50" Count="0" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="44" Count="1" />
+      <LineId Id="70" Count="1" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="49" Count="0" />
+      <LineId Id="67" Count="0" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="52" Count="1" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_IO.f_calc_auto_cycle_time">
+      <LineId Id="13" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="17" Count="1" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="19" Count="1" />
+      <LineId Id="28" Count="1" />
+      <LineId Id="31" Count="9" />
+      <LineId Id="22" Count="1" />
+      <LineId Id="41" Count="16" />
+      <LineId Id="61" Count="0" />
+      <LineId Id="58" Count="0" />
+      <LineId Id="62" Count="0" />
+      <LineId Id="59" Count="1" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_IO.f_configure_recipe">
+      <LineId Id="16" Count="1" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="21" Count="1" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_IO.f_delete">
+      <LineId Id="6" Count="3" />
+      <LineId Id="75" Count="0" />
+      <LineId Id="10" Count="1" />
+      <LineId Id="72" Count="0" />
+      <LineId Id="74" Count="0" />
+      <LineId Id="77" Count="0" />
+      <LineId Id="73" Count="0" />
+      <LineId Id="76" Count="0" />
+      <LineId Id="12" Count="5" />
+      <LineId Id="49" Count="1" />
+      <LineId Id="18" Count="2" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="21" Count="1" />
+      <LineId Id="54" Count="2" />
+      <LineId Id="65" Count="1" />
+      <LineId Id="68" Count="3" />
+      <LineId Id="67" Count="0" />
+      <LineId Id="23" Count="2" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="26" Count="3" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="30" Count="10" />
+      <LineId Id="42" Count="1" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_IO.f_digital_io">
+      <LineId Id="6" Count="69" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_IO.f_initialisation">
+      <LineId Id="6" Count="4" />
+      <LineId Id="66" Count="0" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="70" Count="0" />
+      <LineId Id="79" Count="0" />
+      <LineId Id="71" Count="0" />
+      <LineId Id="67" Count="0" />
+      <LineId Id="11" Count="1" />
+      <LineId Id="72" Count="0" />
+      <LineId Id="77" Count="0" />
+      <LineId Id="13" Count="8" />
+      <LineId Id="85" Count="3" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="89" Count="5" />
+      <LineId Id="25" Count="1" />
+      <LineId Id="95" Count="13" />
+      <LineId Id="29" Count="1" />
+      <LineId Id="109" Count="0" />
+      <LineId Id="31" Count="6" />
+      <LineId Id="125" Count="0" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="126" Count="0" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="127" Count="1" />
+      <LineId Id="40" Count="4" />
+      <LineId Id="115" Count="4" />
+      <LineId Id="45" Count="17" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_IO.f_leftbar_visibility">
+      <LineId Id="10" Count="3" />
+      <LineId Id="8" Count="1" />
+      <LineId Id="14" Count="31" />
+      <LineId Id="6" Count="1" />
+      <LineId Id="46" Count="3" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_IO.f_load">
+      <LineId Id="6" Count="4" />
+      <LineId Id="76" Count="0" />
+      <LineId Id="78" Count="1" />
+      <LineId Id="83" Count="2" />
+      <LineId Id="80" Count="0" />
+      <LineId Id="82" Count="0" />
+      <LineId Id="86" Count="2" />
+      <LineId Id="81" Count="0" />
+      <LineId Id="77" Count="0" />
+      <LineId Id="14" Count="8" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="23" Count="5" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="29" Count="1" />
+      <LineId Id="57" Count="2" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="70" Count="0" />
+      <LineId Id="64" Count="0" />
+      <LineId Id="66" Count="3" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="32" Count="2" />
+      <LineId Id="71" Count="0" />
+      <LineId Id="55" Count="1" />
+      <LineId Id="72" Count="1" />
+      <LineId Id="75" Count="0" />
+      <LineId Id="74" Count="0" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="35" Count="9" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_IO.f_message_timer">
+      <LineId Id="6" Count="24" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_IO.f_mode_of_operation">
+      <LineId Id="6" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="24" Count="2" />
+      <LineId Id="16" Count="1" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="31" Count="2" />
+      <LineId Id="18" Count="1" />
+      <LineId Id="10" Count="2" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_IO.f_param_violation">
+      <LineId Id="6" Count="3" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="77" Count="4" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="82" Count="5" />
+      <LineId Id="16" Count="4" />
+      <LineId Id="26" Count="1" />
+      <LineId Id="154" Count="0" />
+      <LineId Id="91" Count="0" />
+      <LineId Id="97" Count="2" />
+      <LineId Id="93" Count="0" />
+      <LineId Id="95" Count="0" />
+      <LineId Id="100" Count="15" />
+      <LineId Id="96" Count="0" />
+      <LineId Id="94" Count="0" />
+      <LineId Id="116" Count="1" />
+      <LineId Id="124" Count="0" />
+      <LineId Id="127" Count="0" />
+      <LineId Id="130" Count="0" />
+      <LineId Id="132" Count="0" />
+      <LineId Id="131" Count="0" />
+      <LineId Id="134" Count="4" />
+      <LineId Id="133" Count="0" />
+      <LineId Id="125" Count="0" />
+      <LineId Id="119" Count="1" />
+      <LineId Id="122" Count="1" />
+      <LineId Id="121" Count="0" />
+      <LineId Id="139" Count="1" />
+      <LineId Id="150" Count="1" />
+      <LineId Id="141" Count="0" />
+      <LineId Id="146" Count="0" />
+      <LineId Id="152" Count="1" />
+      <LineId Id="147" Count="0" />
+      <LineId Id="145" Count="0" />
+      <LineId Id="143" Count="1" />
+      <LineId Id="92" Count="0" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="65" Count="6" />
+      <LineId Id="73" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_IO.f_save">
+      <LineId Id="6" Count="1" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="41" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="29" Count="2" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="37" Count="3" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="16" Count="3" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_IO.f_save_as">
+      <LineId Id="6" Count="7" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="58" Count="0" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="61" Count="2" />
+      <LineId Id="60" Count="0" />
+      <LineId Id="15" Count="4" />
+      <LineId Id="66" Count="0" />
+      <LineId Id="20" Count="1" />
+      <LineId Id="42" Count="1" />
+      <LineId Id="48" Count="5" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="64" Count="0" />
+      <LineId Id="68" Count="7" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="67" Count="0" />
+      <LineId Id="41" Count="0" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="22" Count="14" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_IO.f_save_limits">
+      <LineId Id="6" Count="2" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="26" Count="1" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="PRG_IO.f_titles">
+      <LineId Id="22" Count="1" />
+      <LineId Id="6" Count="1" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="8" Count="2" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="32" Count="1" />
+      <LineId Id="11" Count="2" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="38" Count="2" />
+      <LineId Id="47" Count="0" />
+      <LineId Id="42" Count="1" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="50" Count="1" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="53" Count="0" />
+      <LineId Id="16" Count="1" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

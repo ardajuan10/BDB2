@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.0.36">
+  <POU Name="F_DisplayText" Id="{e132cb27-07ff-4d43-9fa0-8718d5cb8124}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION F_DisplayText : STRING
+VAR_INPUT
+	InputString: WSTRING;
+	InputNumber: WORD;
+END_VAR
+VAR
+	Text : STRING;
+	Join : STRING;
+	TextPlus : STRING;
+	number : STRING;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[Text := WSTRING_TO_STRING(InputString);
+Number := WORD_TO_STRING(InputNumber);
+IF InputNumber = 0 THEN
+	F_DisplayText := Text;
+ELSE
+	Join := WSTRING_TO_STRING(" #");
+	TextPlus := concat(Text,Join);
+	F_DisplayText := concat(TextPlus,Number);
+END_IF
+]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

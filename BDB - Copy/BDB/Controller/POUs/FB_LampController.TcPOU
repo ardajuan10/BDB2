@@ -1,0 +1,66 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.0.36">
+  <POU Name="FB_LampController" Id="{138bec28-87b3-4367-852f-37ec96a1c1d3}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_LampController
+VAR_INPUT
+	State:E_LampState;
+END_VAR
+VAR_OUTPUT
+	Q : BOOL := FALSE;
+END_VAR
+VAR
+	FlashOffTime: TON;
+	FlashOnTime: TON;
+	LampFlash: BOOL := TRUE;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[FlashOffTime();
+FlashOnTime();
+
+//IF NOT Steady AND NOT Flash_Fast AND NOT Flash_Slow THEN 
+IF State = 0 THEN
+	q := FALSE;
+END_IF
+
+//IF Steady AND NOT Flash_Fast AND NOT Flash_Slow THEN 
+IF State = 1 THEN
+	q := TRUE;
+END_IF
+
+//IF NOT Steady AND Flash_Fast AND NOT Flash_Slow THEN 
+IF State = 2 THEN
+	FlashOffTime.PT := T#250MS;
+	FlashOnTime.PT := T#100MS;
+END_IF
+
+//IF NOT Steady AND NOT Flash_Fast AND Flash_Slow THEN 
+IF State = 4 THEN
+	FlashOffTime.PT := T#1500MS;
+	FlashOnTime.PT := T#250MS;
+END_IF
+
+IF state > 1 THEN 
+	IF LampFlash THEN
+	 	FlashOnTime.IN := TRUE;
+		FlashOffTime.IN := FALSE;
+		q := TRUE;
+		IF FlashOnTime.Q THEN 
+			LampFlash := FALSE;
+		END_IF
+	ELSE 
+		FlashOnTime.IN := FALSE;
+		FlashOffTime.IN := TRUE;
+		q := FALSE;
+		IF FlashOffTime.Q THEN 
+			LampFlash := TRUE;
+		END_IF
+	END_IF
+END_IF
+
+IF LampTest THEN
+	q := TRUE;
+END_IF]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

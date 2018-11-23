@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <DUT Name="Rec_Pusher" Id="{84aa4b80-3b97-4d1a-be08-8a9b0efe8a1f}">
+    <Declaration><![CDATA[TYPE Rec_Pusher :
+	STRUCT
+		Initial_Speed				:LREAL;
+		Initial_Distance			:LREAL;
+		Eject_Speed					:LREAL;
+		Eject_Distance				:LREAL;
+		Retract_Speed				:LREAL;
+		tamp_initial_speed			:LREAL;
+		tamp_final_speed			:LREAL;
+		tamp_initial_distance		:LREAL;
+		tamp_final_distance			:LREAL;
+	END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

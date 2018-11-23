@@ -1,0 +1,352 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <DUT Name="TConfigData" Id="{21552975-e212-4564-a4a7-96057efee7db}">
+    <Declaration><![CDATA[{attribute 'pack_mode' := '0'}
+TYPE TConfigData :
+STRUCT
+	
+	//Limits
+	con_max_limit_Compress 					:LREAL;
+	con_max_limit_Shield 					:LREAL;
+	con_max_limit_Pusher 					:LREAL;
+	con_max_pusher_shield_diff				:LREAL;
+	
+	//Rec1_Name        						:STRING;
+	Rec1_Name_1								:UDINT;
+	Rec1_Name_2								:UDINT;
+	Rec1_Name_3								:UDINT;
+	Rec1_Name_4								:UDINT;
+	Rec1_Name_5								:UDINT;
+	
+	Rec1_Shield_Retract_Speed				:LREAL;
+	Rec1_Shield_Initial_Speed				:LREAL;
+	Rec1_Shield_Initial_Distance			:LREAL;
+	Rec1_Compress_Initial_Speed				:LREAL;
+	Rec1_Compress_Initial_Distance			:LREAL;
+	Rec1_Compress_Shield_Dwell				:LREAL;
+	Rec1_Compress_Relax_Distance			:LREAL;
+	Rec1_Compress_Retract_Speed				:LREAL;
+	Rec1_Pusher_Initial_Speed				:LREAL;
+	Rec1_Pusher_Initial_Distance			:LREAL;
+	Rec1_Pusher_Eject_Speed					:LREAL;
+	Rec1_Pusher_Eject_Distance				:LREAL;
+	Rec1_Pusher_Retract_Speed				:LREAL;
+	Rec1_Pusher_tamp_initial_Speed			:LREAL;
+	Rec1_Pusher_tamp_initial_distance		:LREAL;
+	Rec1_Pusher_tamp_final_Speed			:LREAL;
+	Rec1_Pusher_tamp_final_distance			:LREAL;
+	Other1_Compress_Home_Offset				:LREAL;
+	Other1_Pusher_Home_Offset				:LREAL;
+	Other1_Shield_Home_Offset				:LREAL;
+	Other1_Axis_Acceleration				:LREAL;
+	Other1_Axis_Deceleration				:LREAL;
+	Other1_Axis_Jerk						:LREAL;
+	Other1_Memory_Free						:LREAL;
+	Clamp1_Release_Instance					:LREAL;	
+	
+	//Rec2_Name        						:STRING;
+	Rec2_Name_1								:UDINT;
+	Rec2_Name_2								:UDINT;
+	Rec2_Name_3								:UDINT;
+	Rec2_Name_4								:UDINT;
+	Rec2_Name_5								:UDINT;
+	
+	Rec2_Shield_Retract_Speed				:LREAL;
+	Rec2_Shield_Initial_Speed				:LREAL;
+	Rec2_Shield_Initial_Distance			:LREAL;
+	Rec2_Compress_Initial_Speed				:LREAL;
+	Rec2_Compress_Initial_Distance			:LREAL;
+	Rec2_Compress_Shield_Dwell				:LREAL;
+	Rec2_Compress_Relax_Distance			:LREAL;
+	Rec2_Compress_Retract_Speed				:LREAL;
+	Rec2_Pusher_Initial_Speed				:LREAL;
+	Rec2_Pusher_Initial_Distance			:LREAL;
+	Rec2_Pusher_Eject_Speed					:LREAL;
+	Rec2_Pusher_Eject_Distance				:LREAL;
+	Rec2_Pusher_Retract_Speed				:LREAL;
+	Rec2_Pusher_tamp_initial_Speed			:LREAL;
+	Rec2_Pusher_tamp_initial_distance		:LREAL;
+	Rec2_Pusher_tamp_final_Speed			:LREAL;
+	Rec2_Pusher_tamp_final_distance			:LREAL;
+	Other2_Compress_Home_Offset				:LREAL;
+	Other2_Pusher_Home_Offset				:LREAL;
+	Other2_Shield_Home_Offset				:LREAL;
+	Other2_Axis_Acceleration				:LREAL;
+	Other2_Axis_Deceleration				:LREAL;
+	Other2_Axis_Jerk						:LREAL;
+	Other2_Memory_Free						:LREAL;
+	Clamp2_Release_Instance					:LREAL;
+	
+	//Rec3_Name        						:STRING;
+	Rec3_Name_1								:UDINT;
+	Rec3_Name_2								:UDINT;
+	Rec3_Name_3								:UDINT;
+	Rec3_Name_4								:UDINT;
+	Rec3_Name_5								:UDINT;
+	
+	Rec3_Shield_Retract_Speed				:LREAL;
+	Rec3_Shield_Initial_Speed				:LREAL;
+	Rec3_Shield_Initial_Distance			:LREAL;
+	Rec3_Compress_Initial_Speed				:LREAL;
+	Rec3_Compress_Initial_Distance			:LREAL;
+	Rec3_Compress_Shield_Dwell				:LREAL;
+	Rec3_Compress_Relax_Distance			:LREAL;
+	Rec3_Compress_Retract_Speed				:LREAL;
+	Rec3_Pusher_Initial_Speed				:LREAL;
+	Rec3_Pusher_Initial_Distance			:LREAL;
+	Rec3_Pusher_Eject_Speed					:LREAL;
+	Rec3_Pusher_Eject_Distance				:LREAL;
+	Rec3_Pusher_Retract_Speed				:LREAL;
+	Rec3_Pusher_tamp_initial_Speed			:LREAL;
+	Rec3_Pusher_tamp_initial_distance		:LREAL;
+	Rec3_Pusher_tamp_final_Speed			:LREAL;
+	Rec3_Pusher_tamp_final_distance			:LREAL;	
+	Other3_Compress_Home_Offset				:LREAL;
+	Other3_Pusher_Home_Offset				:LREAL;
+	Other3_Shield_Home_Offset				:LREAL;
+	Other3_Axis_Acceleration				:LREAL;
+	Other3_Axis_Deceleration				:LREAL;
+	Other3_Axis_Jerk						:LREAL;
+	Other3_Memory_Free						:LREAL;	
+	Clamp3_Release_Instance					:LREAL;
+	
+	//Rec4_Name        						:STRING;
+	Rec4_Name_1								:UDINT;
+	Rec4_Name_2								:UDINT;
+	Rec4_Name_3								:UDINT;
+	Rec4_Name_4								:UDINT;
+	Rec4_Name_5								:UDINT;
+	
+	Rec4_Shield_Retract_Speed				:LREAL;
+	Rec4_Shield_Initial_Speed				:LREAL;
+	Rec4_Shield_Initial_Distance			:LREAL;
+	Rec4_Compress_Initial_Speed				:LREAL;
+	Rec4_Compress_Initial_Distance			:LREAL;
+	Rec4_Compress_Shield_Dwell				:LREAL;
+	Rec4_Compress_Relax_Distance			:LREAL;
+	Rec4_Compress_Retract_Speed				:LREAL;
+	Rec4_Pusher_Initial_Speed				:LREAL;
+	Rec4_Pusher_Initial_Distance			:LREAL;
+	Rec4_Pusher_Eject_Speed					:LREAL;
+	Rec4_Pusher_Eject_Distance				:LREAL;
+	Rec4_Pusher_Retract_Speed				:LREAL;
+	Rec4_Pusher_tamp_initial_Speed			:LREAL;
+	Rec4_Pusher_tamp_initial_distance		:LREAL;
+	Rec4_Pusher_tamp_final_Speed			:LREAL;
+	Rec4_Pusher_tamp_final_distance			:LREAL;
+	Other4_Compress_Home_Offset				:LREAL;
+	Other4_Pusher_Home_Offset				:LREAL;
+	Other4_Shield_Home_Offset				:LREAL;
+	Other4_Axis_Acceleration				:LREAL;
+	Other4_Axis_Deceleration				:LREAL;
+	Other4_Axis_Jerk						:LREAL;
+	Other4_Memory_Free						:LREAL;		
+	Clamp4_Release_Instance					:LREAL;
+	
+	//Rec5_Name        						:STRING;
+	Rec5_Name_1								:UDINT;
+	Rec5_Name_2								:UDINT;
+	Rec5_Name_3								:UDINT;
+	Rec5_Name_4								:UDINT;
+	Rec5_Name_5								:UDINT;
+	
+	Rec5_Shield_Retract_Speed				:LREAL;
+	Rec5_Shield_Initial_Speed				:LREAL;
+	Rec5_Shield_Initial_Distance			:LREAL;
+	Rec5_Compress_Initial_Speed				:LREAL;
+	Rec5_Compress_Initial_Distance			:LREAL;
+	Rec5_Compress_Shield_Dwell				:LREAL;
+	Rec5_Compress_Relax_Distance			:LREAL;
+	Rec5_Compress_Retract_Speed				:LREAL;
+	Rec5_Pusher_Initial_Speed				:LREAL;
+	Rec5_Pusher_Initial_Distance			:LREAL;
+	Rec5_Pusher_Eject_Speed					:LREAL;
+	Rec5_Pusher_Eject_Distance				:LREAL;
+	Rec5_Pusher_Retract_Speed				:LREAL;
+	Rec5_Pusher_tamp_initial_Speed			:LREAL;
+	Rec5_Pusher_tamp_initial_distance		:LREAL;
+	Rec5_Pusher_tamp_final_Speed			:LREAL;
+	Rec5_Pusher_tamp_final_distance			:LREAL;
+	Other5_Compress_Home_Offset				:LREAL;
+	Other5_Pusher_Home_Offset				:LREAL;
+	Other5_Shield_Home_Offset				:LREAL;
+	Other5_Axis_Acceleration				:LREAL;
+	Other5_Axis_Deceleration				:LREAL;
+	Other5_Axis_Jerk						:LREAL;
+	Other5_Memory_Free						:LREAL;		
+	Clamp5_Release_Instance					:LREAL;
+	
+	//Rec6_Name        						:STRING;
+	Rec6_Name_1								:UDINT;
+	Rec6_Name_2								:UDINT;
+	Rec6_Name_3								:UDINT;
+	Rec6_Name_4								:UDINT;
+	Rec6_Name_5								:UDINT;
+	
+	Rec6_Shield_Retract_Speed				:LREAL;
+	Rec6_Shield_Initial_Speed				:LREAL;
+	Rec6_Shield_Initial_Distance			:LREAL;
+	Rec6_Compress_Initial_Speed				:LREAL;
+	Rec6_Compress_Initial_Distance			:LREAL;
+	Rec6_Compress_Shield_Dwell				:LREAL;
+	Rec6_Compress_Relax_Distance			:LREAL;
+	Rec6_Compress_Retract_Speed				:LREAL;
+	Rec6_Pusher_Initial_Speed				:LREAL;
+	Rec6_Pusher_Initial_Distance			:LREAL;
+	Rec6_Pusher_Eject_Speed					:LREAL;
+	Rec6_Pusher_Eject_Distance				:LREAL;
+	Rec6_Pusher_Retract_Speed				:LREAL;
+	Rec6_Pusher_tamp_initial_Speed			:LREAL;
+	Rec6_Pusher_tamp_initial_distance		:LREAL;
+	Rec6_Pusher_tamp_final_Speed			:LREAL;
+	Rec6_Pusher_tamp_final_distance			:LREAL;
+	Other6_Compress_Home_Offset				:LREAL;
+	Other6_Pusher_Home_Offset				:LREAL;
+	Other6_Shield_Home_Offset				:LREAL;
+	Other6_Axis_Acceleration				:LREAL;
+	Other6_Axis_Deceleration				:LREAL;
+	Other6_Axis_Jerk						:LREAL;
+	Other6_Memory_Free						:LREAL;		
+	Clamp6_Release_Instance					:LREAL;
+	
+	//Rec7_Name        						:STRING;
+	Rec7_Name_1								:UDINT;
+	Rec7_Name_2								:UDINT;
+	Rec7_Name_3								:UDINT;
+	Rec7_Name_4								:UDINT;
+	Rec7_Name_5								:UDINT;
+	
+	Rec7_Shield_Retract_Speed				:LREAL;
+	Rec7_Shield_Initial_Speed				:LREAL;
+	Rec7_Shield_Initial_Distance			:LREAL;
+	Rec7_Compress_Initial_Speed				:LREAL;
+	Rec7_Compress_Initial_Distance			:LREAL;
+	Rec7_Compress_Shield_Dwell				:LREAL;
+	Rec7_Compress_Relax_Distance			:LREAL;
+	Rec7_Compress_Retract_Speed				:LREAL;
+	Rec7_Pusher_Initial_Speed				:LREAL;
+	Rec7_Pusher_Initial_Distance			:LREAL;
+	Rec7_Pusher_Eject_Speed					:LREAL;
+	Rec7_Pusher_Eject_Distance				:LREAL;
+	Rec7_Pusher_Retract_Speed				:LREAL;
+	Rec7_Pusher_tamp_initial_Speed			:LREAL;
+	Rec7_Pusher_tamp_initial_distance		:LREAL;
+	Rec7_Pusher_tamp_final_Speed			:LREAL;
+	Rec7_Pusher_tamp_final_distance			:LREAL;
+	Other7_Compress_Home_Offset				:LREAL;
+	Other7_Pusher_Home_Offset				:LREAL;
+	Other7_Shield_Home_Offset				:LREAL;
+	Other7_Axis_Acceleration				:LREAL;
+	Other7_Axis_Deceleration				:LREAL;
+	Other7_Axis_Jerk						:LREAL;
+	Other7_Memory_Free						:LREAL;	
+	Clamp7_Release_Instance					:LREAL;
+	
+	//Rec8_Name        						:STRING;
+	Rec8_Name_1								:UDINT;
+	Rec8_Name_2								:UDINT;
+	Rec8_Name_3								:UDINT;
+	Rec8_Name_4								:UDINT;
+	Rec8_Name_5								:UDINT;
+	
+	Rec8_Shield_Retract_Speed				:LREAL;
+	Rec8_Shield_Initial_Speed				:LREAL;
+	Rec8_Shield_Initial_Distance			:LREAL;
+	Rec8_Compress_Initial_Speed				:LREAL;
+	Rec8_Compress_Initial_Distance			:LREAL;
+	Rec8_Compress_Shield_Dwell				:LREAL;
+	Rec8_Compress_Relax_Distance			:LREAL;
+	Rec8_Compress_Retract_Speed				:LREAL;
+	Rec8_Pusher_Initial_Speed				:LREAL;
+	Rec8_Pusher_Initial_Distance			:LREAL;
+	Rec8_Pusher_Eject_Speed					:LREAL;
+	Rec8_Pusher_Eject_Distance				:LREAL;
+	Rec8_Pusher_Retract_Speed				:LREAL;
+	Rec8_Pusher_tamp_initial_Speed			:LREAL;
+	Rec8_Pusher_tamp_initial_distance		:LREAL;
+	Rec8_Pusher_tamp_final_Speed			:LREAL;
+	Rec8_Pusher_tamp_final_distance			:LREAL;
+	Other8_Compress_Home_Offset				:LREAL;
+	Other8_Pusher_Home_Offset				:LREAL;
+	Other8_Shield_Home_Offset				:LREAL;
+	Other8_Axis_Acceleration				:LREAL;
+	Other8_Axis_Deceleration				:LREAL;
+	Other8_Axis_Jerk						:LREAL;
+	Other8_Memory_Free						:LREAL;	
+	Clamp8_Release_Instance					:LREAL;
+	
+	//Rec9_Name        						:STRING;
+	Rec9_Name_1								:UDINT;
+	Rec9_Name_2								:UDINT;
+	Rec9_Name_3								:UDINT;
+	Rec9_Name_4								:UDINT;
+	Rec9_Name_5								:UDINT;
+	
+	Rec9_Shield_Retract_Speed				:LREAL;
+	Rec9_Shield_Initial_Speed				:LREAL;
+	Rec9_Shield_Initial_Distance			:LREAL;
+	Rec9_Compress_Initial_Speed				:LREAL;
+	Rec9_Compress_Initial_Distance			:LREAL;
+	Rec9_Compress_Shield_Dwell				:LREAL;
+	Rec9_Compress_Relax_Distance			:LREAL;
+	Rec9_Compress_Retract_Speed				:LREAL;
+	Rec9_Pusher_Initial_Speed				:LREAL;
+	Rec9_Pusher_Initial_Distance			:LREAL;
+	Rec9_Pusher_Eject_Speed					:LREAL;
+	Rec9_Pusher_Eject_Distance				:LREAL;
+	Rec9_Pusher_Retract_Speed				:LREAL;
+	Rec9_Pusher_tamp_initial_Speed			:LREAL;
+	Rec9_Pusher_tamp_initial_distance		:LREAL;
+	Rec9_Pusher_tamp_final_Speed			:LREAL;
+	Rec9_Pusher_tamp_final_distance			:LREAL;
+	Other9_Compress_Home_Offset				:LREAL;
+	Other9_Pusher_Home_Offset				:LREAL;
+	Other9_Shield_Home_Offset				:LREAL;
+	Other9_Axis_Acceleration				:LREAL;
+	Other9_Axis_Deceleration				:LREAL;
+	Other9_Axis_Jerk						:LREAL;
+	Other9_Memory_Free						:LREAL;	
+	Clamp9_Release_Instance					:LREAL;
+	
+	//Rec10_Name        					:STRING;
+	Rec10_Name_1							:UDINT;
+	Rec10_Name_2							:UDINT;
+	Rec10_Name_3							:UDINT;
+	Rec10_Name_4							:UDINT;
+	Rec10_Name_5							:UDINT;
+	
+	Rec10_Shield_Retract_Speed				:LREAL;
+	Rec10_Shield_Initial_Speed				:LREAL;
+	Rec10_Shield_Initial_Distance			:LREAL;
+	Rec10_Compress_Initial_Speed			:LREAL;
+	Rec10_Compress_Initial_Distance			:LREAL;
+	Rec10_Compress_Shield_Dwell				:LREAL;
+	Rec10_Compress_Relax_Distance			:LREAL;
+	Rec10_Compress_Retract_Speed			:LREAL;
+	Rec10_Pusher_Initial_Speed				:LREAL;
+	Rec10_Pusher_Initial_Distance			:LREAL;
+	Rec10_Pusher_Eject_Speed				:LREAL;
+	Rec10_Pusher_Eject_Distance				:LREAL;
+	Rec10_Pusher_Retract_Speed				:LREAL;
+	Rec10_Pusher_tamp_initial_Speed			:LREAL;
+	Rec10_Pusher_tamp_initial_distance		:LREAL;
+	Rec10_Pusher_tamp_final_Speed			:LREAL;
+	Rec10_Pusher_tamp_final_distance		:LREAL;
+	Other10_Compress_Home_Offset			:LREAL;
+	Other10_Pusher_Home_Offset				:LREAL;
+	Other10_Shield_Home_Offset				:LREAL;
+	Other10_Axis_Acceleration				:LREAL;
+	Other10_Axis_Deceleration				:LREAL;
+	Other10_Axis_Jerk						:LREAL;
+	Other10_Memory_Free						:LREAL;
+	Clamp10_Release_Instance				:LREAL;
+	
+
+	
+	(*Initialised - MUST BE LAST VARIABLE IN STUCTURE*)
+    Initialised : BOOL;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

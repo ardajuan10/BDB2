@@ -1,0 +1,1246 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <POU Name="TConfig" Id="{35e999a8-f2a4-4f91-9ae7-e767e722be8a}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK TConfig
+VAR
+    Recipe_mem_name 						AT %MD0: STRING(20);
+
+	
+	Rec_Name_1								AT %MD0 :UDINT;
+	Rec_Name_2								AT %MD1 :UDINT;
+	Rec_Name_3								AT %MD2 :UDINT;
+	Rec_Name_4								AT %MD3 :UDINT;
+	Rec_Name_5								AT %MD4 :UDINT;
+
+	
+	PersistentData 						: TPersistentData;
+	
+    
+	ConfigData							:  TConfigData;
+
+		
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="CopyConfigRecipiesToGlobal" Id="{9b1b7707-00ec-4826-b873-21f7d512abb3}">
+      <Declaration><![CDATA[METHOD CopyConfigRecipiesToGlobal : BOOL
+VAR_INPUT
+
+END_VAR
+
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+limits_save.max_limit_Compress:=ConfigData.con_max_limit_Compress;
+Limits_save.max_limit_Pusher:=ConfigData.con_max_limit_Pusher;
+Limits_save.max_limit_Shield:=ConfigData.con_max_limit_Shield;
+Limits_save.max_pusher_shield_diff:=ConfigData.con_max_pusher_shield_diff;	
+Limits_save.max_torque:=ConfigData.con_max_torque;
+
+//1
+Rec_Name_1:=ConfigData.rec1_Name_1;								
+Rec_Name_2:=ConfigData.rec1_Name_2;								
+Rec_Name_3:=ConfigData.rec1_Name_3;								
+Rec_Name_4:=ConfigData.rec1_Name_4;								
+Rec_Name_5:=ConfigData.rec1_Name_5;
+List_of_Recipes[1].Name:=Recipe_mem_name;
+
+List_of_Recipes[1].Shield.Retract_Speed :=ConfigData.rec1_Shield_Retract_Speed;
+List_of_Recipes[1].Shield.Speed[1] := ConfigData.rec1_Shield_Speed_1;
+List_of_Recipes[1].Shield.Speed[2] := ConfigData.rec1_Shield_Speed_2;
+List_of_Recipes[1].Shield.Speed[3] := ConfigData.rec1_Shield_Speed_3;
+List_of_Recipes[1].Shield.Speed[4] := ConfigData.rec1_Shield_Speed_4;
+List_of_Recipes[1].Shield.Speed[5] := ConfigData.rec1_Shield_Speed_5;
+List_of_Recipes[1].Shield.Speed[6] := ConfigData.rec1_Shield_Speed_6;
+List_of_Recipes[1].Shield.distance[1] := ConfigData.rec1_Shield_distance_1;
+List_of_Recipes[1].Shield.distance[2] := ConfigData.rec1_Shield_distance_2;
+List_of_Recipes[1].Shield.distance[3] := ConfigData.rec1_Shield_distance_3;
+List_of_Recipes[1].Shield.distance[4] := ConfigData.rec1_Shield_distance_4;
+List_of_Recipes[1].Shield.distance[5] := ConfigData.rec1_Shield_distance_5;
+List_of_Recipes[1].Shield.distance[6] := ConfigData.rec1_Shield_distance_6;
+
+
+List_of_Recipes[1].Pusher.Retract_Speed :=ConfigData.rec1_Pusher_Retract_Speed;
+List_of_Recipes[1].Pusher.Speed[1] := ConfigData.rec1_Pusher_Speed_1;
+List_of_Recipes[1].Pusher.Speed[2] := ConfigData.rec1_Pusher_Speed_2;
+List_of_Recipes[1].Pusher.Speed[3] := ConfigData.rec1_Pusher_Speed_3;
+List_of_Recipes[1].Pusher.Speed[4] := ConfigData.rec1_Pusher_Speed_4;
+List_of_Recipes[1].Pusher.Speed[5] := ConfigData.rec1_Pusher_Speed_5;
+List_of_Recipes[1].Pusher.Speed[6] := ConfigData.rec1_Pusher_Speed_6;
+List_of_Recipes[1].Pusher.distance[1] := ConfigData.rec1_Pusher_distance_1;
+List_of_Recipes[1].Pusher.distance[2] := ConfigData.rec1_Pusher_distance_2;
+List_of_Recipes[1].Pusher.distance[3] := ConfigData.rec1_Pusher_distance_3;
+List_of_Recipes[1].Pusher.distance[4] := ConfigData.rec1_Pusher_distance_4;
+List_of_Recipes[1].Pusher.distance[5] := ConfigData.rec1_Pusher_distance_5;
+List_of_Recipes[1].Pusher.distance[6] := ConfigData.rec1_Pusher_distance_6;
+
+List_of_Recipes[1].Compress.Initial_Distance := ConfigData.rec1_Compress_Initial_Distance;
+List_of_Recipes[1].Compress.Initial_Speed := ConfigData.rec1_Compress_Initial_Speed;
+List_of_Recipes[1].Compress.relax_Distance := ConfigData.rec1_Compress_Relax_Distance;
+List_of_Recipes[1].Compress.retract_speed := ConfigData.rec1_Compress_retract_speed;
+
+List_of_Recipes[1].Clamp.Release_Instance:=ConfigData.rec1_Clamp_Release_Instance;
+
+List_of_Recipes[1].Other.Compress_Home_Offset:=ConfigData.rec1_Other_Compress_Home_Offset;
+List_of_Recipes[1].Other.Shield_Home_Offset:=ConfigData.rec1_Other_Shield_Home_Offset;
+List_of_Recipes[1].Other.Pusher_Home_Offset:=ConfigData.rec1_Other_Pusher_Home_Offset;
+
+List_of_Recipes[1].Memory_Free:=LREAL_TO_BOOL(ConfigData.rec1_Memory_Free);
+
+//2
+Rec_Name_1:=ConfigData.rec2_Name_1;								
+Rec_Name_2:=ConfigData.rec2_Name_2;								
+Rec_Name_3:=ConfigData.rec2_Name_3;								
+Rec_Name_4:=ConfigData.rec2_Name_4;								
+Rec_Name_5:=ConfigData.rec2_Name_5;
+List_of_Recipes[2].Name:=Recipe_mem_name;
+
+List_of_Recipes[2].Shield.Retract_Speed :=ConfigData.rec2_Shield_Retract_Speed;
+List_of_Recipes[2].Shield.Speed[1] := ConfigData.rec2_Shield_Speed_1;
+List_of_Recipes[2].Shield.Speed[2] := ConfigData.rec2_Shield_Speed_2;
+List_of_Recipes[2].Shield.Speed[3] := ConfigData.rec2_Shield_Speed_3;
+List_of_Recipes[2].Shield.Speed[4] := ConfigData.rec2_Shield_Speed_4;
+List_of_Recipes[2].Shield.Speed[5] := ConfigData.rec2_Shield_Speed_5;
+List_of_Recipes[2].Shield.Speed[6] := ConfigData.rec2_Shield_Speed_6;
+List_of_Recipes[2].Shield.distance[1] := ConfigData.rec2_Shield_distance_1;
+List_of_Recipes[2].Shield.distance[2] := ConfigData.rec2_Shield_distance_2;
+List_of_Recipes[2].Shield.distance[3] := ConfigData.rec2_Shield_distance_3;
+List_of_Recipes[2].Shield.distance[4] := ConfigData.rec2_Shield_distance_4;
+List_of_Recipes[2].Shield.distance[5] := ConfigData.rec2_Shield_distance_5;
+List_of_Recipes[2].Shield.distance[6] := ConfigData.rec2_Shield_distance_6;
+
+
+List_of_Recipes[2].Pusher.Retract_Speed :=ConfigData.rec2_Pusher_Retract_Speed;
+List_of_Recipes[2].Pusher.Speed[1] := ConfigData.rec2_Pusher_Speed_1;
+List_of_Recipes[2].Pusher.Speed[2] := ConfigData.rec2_Pusher_Speed_2;
+List_of_Recipes[2].Pusher.Speed[3] := ConfigData.rec2_Pusher_Speed_3;
+List_of_Recipes[2].Pusher.Speed[4] := ConfigData.rec2_Pusher_Speed_4;
+List_of_Recipes[2].Pusher.Speed[5] := ConfigData.rec2_Pusher_Speed_5;
+List_of_Recipes[2].Pusher.Speed[6] := ConfigData.rec2_Pusher_Speed_6;
+List_of_Recipes[2].Pusher.distance[1] := ConfigData.rec2_Pusher_distance_1;
+List_of_Recipes[2].Pusher.distance[2] := ConfigData.rec2_Pusher_distance_2;
+List_of_Recipes[2].Pusher.distance[3] := ConfigData.rec2_Pusher_distance_3;
+List_of_Recipes[2].Pusher.distance[4] := ConfigData.rec2_Pusher_distance_4;
+List_of_Recipes[2].Pusher.distance[5] := ConfigData.rec2_Pusher_distance_5;
+List_of_Recipes[2].Pusher.distance[6] := ConfigData.rec2_Pusher_distance_6;
+
+List_of_Recipes[2].Compress.Initial_Distance := ConfigData.rec2_Compress_Initial_Distance;
+List_of_Recipes[2].Compress.Initial_Speed := ConfigData.rec2_Compress_Initial_Speed;
+List_of_Recipes[2].Compress.relax_Distance := ConfigData.rec2_Compress_Relax_Distance;
+List_of_Recipes[2].Compress.retract_speed := ConfigData.rec2_Compress_retract_speed;
+
+List_of_Recipes[2].Clamp.Release_Instance:=ConfigData.rec2_Clamp_Release_Instance;
+
+List_of_Recipes[2].Other.Compress_Home_Offset:=ConfigData.rec2_Other_Compress_Home_Offset;
+List_of_Recipes[2].Other.Shield_Home_Offset:=ConfigData.rec2_Other_Shield_Home_Offset;
+List_of_Recipes[2].Other.Pusher_Home_Offset:=ConfigData.rec2_Other_Pusher_Home_Offset;
+
+List_of_Recipes[2].Memory_Free:=LREAL_TO_BOOL(ConfigData.rec2_Memory_Free);
+
+//3
+Rec_Name_1:=ConfigData.rec3_Name_1;								
+Rec_Name_2:=ConfigData.rec3_Name_2;								
+Rec_Name_3:=ConfigData.rec3_Name_3;								
+Rec_Name_4:=ConfigData.rec3_Name_4;								
+Rec_Name_5:=ConfigData.rec3_Name_5;
+List_of_Recipes[3].Name:=Recipe_mem_name;
+
+List_of_Recipes[3].Shield.Retract_Speed :=ConfigData.rec3_Shield_Retract_Speed;
+List_of_Recipes[3].Shield.Speed[1] := ConfigData.rec3_Shield_Speed_1;
+List_of_Recipes[3].Shield.Speed[2] := ConfigData.rec3_Shield_Speed_2;
+List_of_Recipes[3].Shield.Speed[3] := ConfigData.rec3_Shield_Speed_3;
+List_of_Recipes[3].Shield.Speed[4] := ConfigData.rec3_Shield_Speed_4;
+List_of_Recipes[3].Shield.Speed[5] := ConfigData.rec3_Shield_Speed_5;
+List_of_Recipes[3].Shield.Speed[6] := ConfigData.rec3_Shield_Speed_6;
+List_of_Recipes[3].Shield.distance[1] := ConfigData.rec3_Shield_distance_1;
+List_of_Recipes[3].Shield.distance[2] := ConfigData.rec3_Shield_distance_2;
+List_of_Recipes[3].Shield.distance[3] := ConfigData.rec3_Shield_distance_3;
+List_of_Recipes[3].Shield.distance[4] := ConfigData.rec3_Shield_distance_4;
+List_of_Recipes[3].Shield.distance[5] := ConfigData.rec3_Shield_distance_5;
+List_of_Recipes[3].Shield.distance[6] := ConfigData.rec3_Shield_distance_6;
+
+
+List_of_Recipes[3].Pusher.Retract_Speed :=ConfigData.rec3_Pusher_Retract_Speed;
+List_of_Recipes[3].Pusher.Speed[1] := ConfigData.rec3_Pusher_Speed_1;
+List_of_Recipes[3].Pusher.Speed[2] := ConfigData.rec3_Pusher_Speed_2;
+List_of_Recipes[3].Pusher.Speed[3] := ConfigData.rec3_Pusher_Speed_3;
+List_of_Recipes[3].Pusher.Speed[4] := ConfigData.rec3_Pusher_Speed_4;
+List_of_Recipes[3].Pusher.Speed[5] := ConfigData.rec3_Pusher_Speed_5;
+List_of_Recipes[3].Pusher.Speed[6] := ConfigData.rec3_Pusher_Speed_6;
+List_of_Recipes[3].Pusher.distance[1] := ConfigData.rec3_Pusher_distance_1;
+List_of_Recipes[3].Pusher.distance[2] := ConfigData.rec3_Pusher_distance_2;
+List_of_Recipes[3].Pusher.distance[3] := ConfigData.rec3_Pusher_distance_3;
+List_of_Recipes[3].Pusher.distance[4] := ConfigData.rec3_Pusher_distance_4;
+List_of_Recipes[3].Pusher.distance[5] := ConfigData.rec3_Pusher_distance_5;
+List_of_Recipes[3].Pusher.distance[6] := ConfigData.rec3_Pusher_distance_6;
+
+List_of_Recipes[3].Compress.Initial_Distance := ConfigData.rec3_Compress_Initial_Distance;
+List_of_Recipes[3].Compress.Initial_Speed := ConfigData.rec3_Compress_Initial_Speed;
+List_of_Recipes[3].Compress.relax_Distance := ConfigData.rec3_Compress_Relax_Distance;
+List_of_Recipes[3].Compress.retract_speed := ConfigData.rec3_Compress_retract_speed;
+
+List_of_Recipes[3].Clamp.Release_Instance:=ConfigData.rec3_Clamp_Release_Instance;
+
+List_of_Recipes[3].Other.Compress_Home_Offset:=ConfigData.rec3_Other_Compress_Home_Offset;
+List_of_Recipes[3].Other.Shield_Home_Offset:=ConfigData.rec3_Other_Shield_Home_Offset;
+List_of_Recipes[3].Other.Pusher_Home_Offset:=ConfigData.rec3_Other_Pusher_Home_Offset;
+
+List_of_Recipes[3].Memory_Free:=LREAL_TO_BOOL(ConfigData.rec3_Memory_Free);
+
+//4
+Rec_Name_1:=ConfigData.rec4_Name_1;								
+Rec_Name_2:=ConfigData.rec4_Name_2;								
+Rec_Name_3:=ConfigData.rec4_Name_3;								
+Rec_Name_4:=ConfigData.rec4_Name_4;								
+Rec_Name_5:=ConfigData.rec4_Name_5;
+List_of_Recipes[4].Name:=Recipe_mem_name;
+
+List_of_Recipes[4].Shield.Retract_Speed :=ConfigData.rec4_Shield_Retract_Speed;
+List_of_Recipes[4].Shield.Speed[1] := ConfigData.rec4_Shield_Speed_1;
+List_of_Recipes[4].Shield.Speed[2] := ConfigData.rec4_Shield_Speed_2;
+List_of_Recipes[4].Shield.Speed[3] := ConfigData.rec4_Shield_Speed_3;
+List_of_Recipes[4].Shield.Speed[4] := ConfigData.rec4_Shield_Speed_4;
+List_of_Recipes[4].Shield.Speed[5] := ConfigData.rec4_Shield_Speed_5;
+List_of_Recipes[4].Shield.Speed[6] := ConfigData.rec4_Shield_Speed_6;
+List_of_Recipes[4].Shield.distance[1] := ConfigData.rec4_Shield_distance_1;
+List_of_Recipes[4].Shield.distance[2] := ConfigData.rec4_Shield_distance_2;
+List_of_Recipes[4].Shield.distance[3] := ConfigData.rec4_Shield_distance_3;
+List_of_Recipes[4].Shield.distance[4] := ConfigData.rec4_Shield_distance_4;
+List_of_Recipes[4].Shield.distance[5] := ConfigData.rec4_Shield_distance_5;
+List_of_Recipes[4].Shield.distance[6] := ConfigData.rec4_Shield_distance_6;
+
+
+List_of_Recipes[4].Pusher.Retract_Speed :=ConfigData.rec4_Pusher_Retract_Speed;
+List_of_Recipes[4].Pusher.Speed[1] := ConfigData.rec4_Pusher_Speed_1;
+List_of_Recipes[4].Pusher.Speed[2] := ConfigData.rec4_Pusher_Speed_2;
+List_of_Recipes[4].Pusher.Speed[3] := ConfigData.rec4_Pusher_Speed_3;
+List_of_Recipes[4].Pusher.Speed[4] := ConfigData.rec4_Pusher_Speed_4;
+List_of_Recipes[4].Pusher.Speed[5] := ConfigData.rec4_Pusher_Speed_5;
+List_of_Recipes[4].Pusher.Speed[6] := ConfigData.rec4_Pusher_Speed_6;
+List_of_Recipes[4].Pusher.distance[1] := ConfigData.rec4_Pusher_distance_1;
+List_of_Recipes[4].Pusher.distance[2] := ConfigData.rec4_Pusher_distance_2;
+List_of_Recipes[4].Pusher.distance[3] := ConfigData.rec4_Pusher_distance_3;
+List_of_Recipes[4].Pusher.distance[4] := ConfigData.rec4_Pusher_distance_4;
+List_of_Recipes[4].Pusher.distance[5] := ConfigData.rec4_Pusher_distance_5;
+List_of_Recipes[4].Pusher.distance[6] := ConfigData.rec4_Pusher_distance_6;
+
+List_of_Recipes[4].Compress.Initial_Distance := ConfigData.rec4_Compress_Initial_Distance;
+List_of_Recipes[4].Compress.Initial_Speed := ConfigData.rec4_Compress_Initial_Speed;
+List_of_Recipes[4].Compress.relax_Distance := ConfigData.rec4_Compress_Relax_Distance;
+List_of_Recipes[4].Compress.retract_speed := ConfigData.rec4_Compress_retract_speed;
+
+List_of_Recipes[4].Clamp.Release_Instance:=ConfigData.rec4_Clamp_Release_Instance;
+
+List_of_Recipes[4].Other.Compress_Home_Offset:=ConfigData.rec4_Other_Compress_Home_Offset;
+List_of_Recipes[4].Other.Shield_Home_Offset:=ConfigData.rec4_Other_Shield_Home_Offset;
+List_of_Recipes[4].Other.Pusher_Home_Offset:=ConfigData.rec4_Other_Pusher_Home_Offset;
+
+List_of_Recipes[4].Memory_Free:=LREAL_TO_BOOL(ConfigData.rec4_Memory_Free);		
+
+//5
+Rec_Name_1:=ConfigData.rec5_Name_1;								
+Rec_Name_2:=ConfigData.rec5_Name_2;								
+Rec_Name_3:=ConfigData.rec5_Name_3;								
+Rec_Name_4:=ConfigData.rec5_Name_4;								
+Rec_Name_5:=ConfigData.rec5_Name_5;
+List_of_Recipes[5].Name:=Recipe_mem_name;
+
+List_of_Recipes[5].Shield.Retract_Speed :=ConfigData.rec5_Shield_Retract_Speed;
+List_of_Recipes[5].Shield.Speed[1] := ConfigData.rec5_Shield_Speed_1;
+List_of_Recipes[5].Shield.Speed[2] := ConfigData.rec5_Shield_Speed_2;
+List_of_Recipes[5].Shield.Speed[3] := ConfigData.rec5_Shield_Speed_3;
+List_of_Recipes[5].Shield.Speed[4] := ConfigData.rec5_Shield_Speed_4;
+List_of_Recipes[5].Shield.Speed[5] := ConfigData.rec5_Shield_Speed_5;
+List_of_Recipes[5].Shield.Speed[6] := ConfigData.rec5_Shield_Speed_6;
+List_of_Recipes[5].Shield.distance[1] := ConfigData.rec5_Shield_distance_1;
+List_of_Recipes[5].Shield.distance[2] := ConfigData.rec5_Shield_distance_2;
+List_of_Recipes[5].Shield.distance[3] := ConfigData.rec5_Shield_distance_3;
+List_of_Recipes[5].Shield.distance[4] := ConfigData.rec5_Shield_distance_4;
+List_of_Recipes[5].Shield.distance[5] := ConfigData.rec5_Shield_distance_5;
+List_of_Recipes[5].Shield.distance[6] := ConfigData.rec5_Shield_distance_6;
+
+
+List_of_Recipes[5].Pusher.Retract_Speed :=ConfigData.rec5_Pusher_Retract_Speed;
+List_of_Recipes[5].Pusher.Speed[1] := ConfigData.rec5_Pusher_Speed_1;
+List_of_Recipes[5].Pusher.Speed[2] := ConfigData.rec5_Pusher_Speed_2;
+List_of_Recipes[5].Pusher.Speed[3] := ConfigData.rec5_Pusher_Speed_3;
+List_of_Recipes[5].Pusher.Speed[4] := ConfigData.rec5_Pusher_Speed_4;
+List_of_Recipes[5].Pusher.Speed[5] := ConfigData.rec5_Pusher_Speed_5;
+List_of_Recipes[5].Pusher.Speed[6] := ConfigData.rec5_Pusher_Speed_6;
+List_of_Recipes[5].Pusher.distance[1] := ConfigData.rec5_Pusher_distance_1;
+List_of_Recipes[5].Pusher.distance[2] := ConfigData.rec5_Pusher_distance_2;
+List_of_Recipes[5].Pusher.distance[3] := ConfigData.rec5_Pusher_distance_3;
+List_of_Recipes[5].Pusher.distance[4] := ConfigData.rec5_Pusher_distance_4;
+List_of_Recipes[5].Pusher.distance[5] := ConfigData.rec5_Pusher_distance_5;
+List_of_Recipes[5].Pusher.distance[6] := ConfigData.rec5_Pusher_distance_6;
+
+List_of_Recipes[5].Compress.Initial_Distance := ConfigData.rec5_Compress_Initial_Distance;
+List_of_Recipes[5].Compress.Initial_Speed := ConfigData.rec5_Compress_Initial_Speed;
+List_of_Recipes[5].Compress.relax_Distance := ConfigData.rec5_Compress_Relax_Distance;
+List_of_Recipes[5].Compress.retract_speed := ConfigData.rec5_Compress_retract_speed;
+
+List_of_Recipes[5].Clamp.Release_Instance:=ConfigData.rec5_Clamp_Release_Instance;
+
+List_of_Recipes[5].Other.Compress_Home_Offset:=ConfigData.rec5_Other_Compress_Home_Offset;
+List_of_Recipes[5].Other.Shield_Home_Offset:=ConfigData.rec5_Other_Shield_Home_Offset;
+List_of_Recipes[5].Other.Pusher_Home_Offset:=ConfigData.rec5_Other_Pusher_Home_Offset;
+
+List_of_Recipes[5].Memory_Free:=LREAL_TO_BOOL(ConfigData.rec5_Memory_Free);	
+
+//6
+Rec_Name_1:=ConfigData.rec6_Name_1;								
+Rec_Name_2:=ConfigData.rec6_Name_2;								
+Rec_Name_3:=ConfigData.rec6_Name_3;								
+Rec_Name_4:=ConfigData.rec6_Name_4;								
+Rec_Name_5:=ConfigData.rec6_Name_5;
+List_of_Recipes[6].Name:=Recipe_mem_name;
+
+List_of_Recipes[6].Shield.Retract_Speed :=ConfigData.rec6_Shield_Retract_Speed;
+List_of_Recipes[6].Shield.Speed[1] := ConfigData.rec6_Shield_Speed_1;
+List_of_Recipes[6].Shield.Speed[2] := ConfigData.rec6_Shield_Speed_2;
+List_of_Recipes[6].Shield.Speed[3] := ConfigData.rec6_Shield_Speed_3;
+List_of_Recipes[6].Shield.Speed[4] := ConfigData.rec6_Shield_Speed_4;
+List_of_Recipes[6].Shield.Speed[5] := ConfigData.rec6_Shield_Speed_5;
+List_of_Recipes[6].Shield.Speed[6] := ConfigData.rec6_Shield_Speed_6;
+List_of_Recipes[6].Shield.distance[1] := ConfigData.rec6_Shield_distance_1;
+List_of_Recipes[6].Shield.distance[2] := ConfigData.rec6_Shield_distance_2;
+List_of_Recipes[6].Shield.distance[3] := ConfigData.rec6_Shield_distance_3;
+List_of_Recipes[6].Shield.distance[4] := ConfigData.rec6_Shield_distance_4;
+List_of_Recipes[6].Shield.distance[5] := ConfigData.rec6_Shield_distance_5;
+List_of_Recipes[6].Shield.distance[6] := ConfigData.rec6_Shield_distance_6;
+
+
+List_of_Recipes[6].Pusher.Retract_Speed :=ConfigData.rec6_Pusher_Retract_Speed;
+List_of_Recipes[6].Pusher.Speed[1] := ConfigData.rec6_Pusher_Speed_1;
+List_of_Recipes[6].Pusher.Speed[2] := ConfigData.rec6_Pusher_Speed_2;
+List_of_Recipes[6].Pusher.Speed[3] := ConfigData.rec6_Pusher_Speed_3;
+List_of_Recipes[6].Pusher.Speed[4] := ConfigData.rec6_Pusher_Speed_4;
+List_of_Recipes[6].Pusher.Speed[5] := ConfigData.rec6_Pusher_Speed_5;
+List_of_Recipes[6].Pusher.Speed[6] := ConfigData.rec6_Pusher_Speed_6;
+List_of_Recipes[6].Pusher.distance[1] := ConfigData.rec6_Pusher_distance_1;
+List_of_Recipes[6].Pusher.distance[2] := ConfigData.rec6_Pusher_distance_2;
+List_of_Recipes[6].Pusher.distance[3] := ConfigData.rec6_Pusher_distance_3;
+List_of_Recipes[6].Pusher.distance[4] := ConfigData.rec6_Pusher_distance_4;
+List_of_Recipes[6].Pusher.distance[5] := ConfigData.rec6_Pusher_distance_5;
+List_of_Recipes[6].Pusher.distance[6] := ConfigData.rec6_Pusher_distance_6;
+
+List_of_Recipes[6].Compress.Initial_Distance := ConfigData.rec6_Compress_Initial_Distance;
+List_of_Recipes[6].Compress.Initial_Speed := ConfigData.rec6_Compress_Initial_Speed;
+List_of_Recipes[6].Compress.relax_Distance := ConfigData.rec6_Compress_Relax_Distance;
+List_of_Recipes[6].Compress.retract_speed := ConfigData.rec6_Compress_retract_speed;
+
+List_of_Recipes[6].Clamp.Release_Instance:=ConfigData.rec6_Clamp_Release_Instance;
+
+List_of_Recipes[6].Other.Compress_Home_Offset:=ConfigData.rec6_Other_Compress_Home_Offset;
+List_of_Recipes[6].Other.Shield_Home_Offset:=ConfigData.rec6_Other_Shield_Home_Offset;
+List_of_Recipes[6].Other.Pusher_Home_Offset:=ConfigData.rec6_Other_Pusher_Home_Offset;
+
+List_of_Recipes[6].Memory_Free:=LREAL_TO_BOOL(ConfigData.rec6_Memory_Free);
+
+//7
+Rec_Name_1:=ConfigData.rec7_Name_1;								
+Rec_Name_2:=ConfigData.rec7_Name_2;								
+Rec_Name_3:=ConfigData.rec7_Name_3;								
+Rec_Name_4:=ConfigData.rec7_Name_4;								
+Rec_Name_5:=ConfigData.rec7_Name_5;
+List_of_Recipes[7].Name:=Recipe_mem_name;
+
+List_of_Recipes[7].Shield.Retract_Speed :=ConfigData.rec7_Shield_Retract_Speed;
+List_of_Recipes[7].Shield.Speed[1] := ConfigData.rec7_Shield_Speed_1;
+List_of_Recipes[7].Shield.Speed[2] := ConfigData.rec7_Shield_Speed_2;
+List_of_Recipes[7].Shield.Speed[3] := ConfigData.rec7_Shield_Speed_3;
+List_of_Recipes[7].Shield.Speed[4] := ConfigData.rec7_Shield_Speed_4;
+List_of_Recipes[7].Shield.Speed[5] := ConfigData.rec7_Shield_Speed_5;
+List_of_Recipes[7].Shield.Speed[6] := ConfigData.rec7_Shield_Speed_6;
+List_of_Recipes[7].Shield.distance[1] := ConfigData.rec7_Shield_distance_1;
+List_of_Recipes[7].Shield.distance[2] := ConfigData.rec7_Shield_distance_2;
+List_of_Recipes[7].Shield.distance[3] := ConfigData.rec7_Shield_distance_3;
+List_of_Recipes[7].Shield.distance[4] := ConfigData.rec7_Shield_distance_4;
+List_of_Recipes[7].Shield.distance[5] := ConfigData.rec7_Shield_distance_5;
+List_of_Recipes[7].Shield.distance[6] := ConfigData.rec7_Shield_distance_6;
+
+
+List_of_Recipes[7].Pusher.Retract_Speed :=ConfigData.rec7_Pusher_Retract_Speed;
+List_of_Recipes[7].Pusher.Speed[1] := ConfigData.rec7_Pusher_Speed_1;
+List_of_Recipes[7].Pusher.Speed[2] := ConfigData.rec7_Pusher_Speed_2;
+List_of_Recipes[7].Pusher.Speed[3] := ConfigData.rec7_Pusher_Speed_3;
+List_of_Recipes[7].Pusher.Speed[4] := ConfigData.rec7_Pusher_Speed_4;
+List_of_Recipes[7].Pusher.Speed[5] := ConfigData.rec7_Pusher_Speed_5;
+List_of_Recipes[7].Pusher.Speed[6] := ConfigData.rec7_Pusher_Speed_6;
+List_of_Recipes[7].Pusher.distance[1] := ConfigData.rec7_Pusher_distance_1;
+List_of_Recipes[7].Pusher.distance[2] := ConfigData.rec7_Pusher_distance_2;
+List_of_Recipes[7].Pusher.distance[3] := ConfigData.rec7_Pusher_distance_3;
+List_of_Recipes[7].Pusher.distance[4] := ConfigData.rec7_Pusher_distance_4;
+List_of_Recipes[7].Pusher.distance[5] := ConfigData.rec7_Pusher_distance_5;
+List_of_Recipes[7].Pusher.distance[6] := ConfigData.rec7_Pusher_distance_6;
+
+List_of_Recipes[7].Compress.Initial_Distance := ConfigData.rec7_Compress_Initial_Distance;
+List_of_Recipes[7].Compress.Initial_Speed := ConfigData.rec7_Compress_Initial_Speed;
+List_of_Recipes[7].Compress.relax_Distance := ConfigData.rec7_Compress_Relax_Distance;
+List_of_Recipes[7].Compress.retract_speed := ConfigData.rec7_Compress_retract_speed;
+
+List_of_Recipes[7].Clamp.Release_Instance:=ConfigData.rec7_Clamp_Release_Instance;
+
+List_of_Recipes[7].Other.Compress_Home_Offset:=ConfigData.rec7_Other_Compress_Home_Offset;
+List_of_Recipes[7].Other.Shield_Home_Offset:=ConfigData.rec7_Other_Shield_Home_Offset;
+List_of_Recipes[7].Other.Pusher_Home_Offset:=ConfigData.rec7_Other_Pusher_Home_Offset;
+
+List_of_Recipes[7].Memory_Free:=LREAL_TO_BOOL(ConfigData.rec7_Memory_Free);	
+	
+//8
+Rec_Name_1:=ConfigData.rec8_Name_1;								
+Rec_Name_2:=ConfigData.rec8_Name_2;								
+Rec_Name_3:=ConfigData.rec8_Name_3;								
+Rec_Name_4:=ConfigData.rec8_Name_4;								
+Rec_Name_5:=ConfigData.rec8_Name_5;
+List_of_Recipes[8].Name:=Recipe_mem_name;
+
+List_of_Recipes[8].Shield.Retract_Speed :=ConfigData.rec8_Shield_Retract_Speed;
+List_of_Recipes[8].Shield.Speed[1] := ConfigData.rec8_Shield_Speed_1;
+List_of_Recipes[8].Shield.Speed[2] := ConfigData.rec8_Shield_Speed_2;
+List_of_Recipes[8].Shield.Speed[3] := ConfigData.rec8_Shield_Speed_3;
+List_of_Recipes[8].Shield.Speed[4] := ConfigData.rec8_Shield_Speed_4;
+List_of_Recipes[8].Shield.Speed[5] := ConfigData.rec8_Shield_Speed_5;
+List_of_Recipes[8].Shield.Speed[6] := ConfigData.rec8_Shield_Speed_6;
+List_of_Recipes[8].Shield.distance[1] := ConfigData.rec8_Shield_distance_1;
+List_of_Recipes[8].Shield.distance[2] := ConfigData.rec8_Shield_distance_2;
+List_of_Recipes[8].Shield.distance[3] := ConfigData.rec8_Shield_distance_3;
+List_of_Recipes[8].Shield.distance[4] := ConfigData.rec8_Shield_distance_4;
+List_of_Recipes[8].Shield.distance[5] := ConfigData.rec8_Shield_distance_5;
+List_of_Recipes[8].Shield.distance[6] := ConfigData.rec8_Shield_distance_6;
+
+
+List_of_Recipes[8].Pusher.Retract_Speed :=ConfigData.rec8_Pusher_Retract_Speed;
+List_of_Recipes[8].Pusher.Speed[1] := ConfigData.rec8_Pusher_Speed_1;
+List_of_Recipes[8].Pusher.Speed[2] := ConfigData.rec8_Pusher_Speed_2;
+List_of_Recipes[8].Pusher.Speed[3] := ConfigData.rec8_Pusher_Speed_3;
+List_of_Recipes[8].Pusher.Speed[4] := ConfigData.rec8_Pusher_Speed_4;
+List_of_Recipes[8].Pusher.Speed[5] := ConfigData.rec8_Pusher_Speed_5;
+List_of_Recipes[8].Pusher.Speed[6] := ConfigData.rec8_Pusher_Speed_6;
+List_of_Recipes[8].Pusher.distance[1] := ConfigData.rec8_Pusher_distance_1;
+List_of_Recipes[8].Pusher.distance[2] := ConfigData.rec8_Pusher_distance_2;
+List_of_Recipes[8].Pusher.distance[3] := ConfigData.rec8_Pusher_distance_3;
+List_of_Recipes[8].Pusher.distance[4] := ConfigData.rec8_Pusher_distance_4;
+List_of_Recipes[8].Pusher.distance[5] := ConfigData.rec8_Pusher_distance_5;
+List_of_Recipes[8].Pusher.distance[6] := ConfigData.rec8_Pusher_distance_6;
+
+List_of_Recipes[8].Compress.Initial_Distance := ConfigData.rec8_Compress_Initial_Distance;
+List_of_Recipes[8].Compress.Initial_Speed := ConfigData.rec8_Compress_Initial_Speed;
+List_of_Recipes[8].Compress.relax_Distance := ConfigData.rec8_Compress_Relax_Distance;
+List_of_Recipes[8].Compress.retract_speed := ConfigData.rec8_Compress_retract_speed;
+
+List_of_Recipes[8].Clamp.Release_Instance:=ConfigData.rec8_Clamp_Release_Instance;
+
+List_of_Recipes[8].Other.Compress_Home_Offset:=ConfigData.rec8_Other_Compress_Home_Offset;
+List_of_Recipes[8].Other.Shield_Home_Offset:=ConfigData.rec8_Other_Shield_Home_Offset;
+List_of_Recipes[8].Other.Pusher_Home_Offset:=ConfigData.rec8_Other_Pusher_Home_Offset;
+
+List_of_Recipes[8].Memory_Free:=LREAL_TO_BOOL(ConfigData.rec8_Memory_Free);	
+
+//9
+Rec_Name_1:=ConfigData.rec9_Name_1;								
+Rec_Name_2:=ConfigData.rec9_Name_2;								
+Rec_Name_3:=ConfigData.rec9_Name_3;								
+Rec_Name_4:=ConfigData.rec9_Name_4;								
+Rec_Name_5:=ConfigData.rec9_Name_5;
+List_of_Recipes[9].Name:=Recipe_mem_name;
+
+List_of_Recipes[9].Shield.Retract_Speed :=ConfigData.rec9_Shield_Retract_Speed;
+List_of_Recipes[9].Shield.Speed[1] := ConfigData.rec9_Shield_Speed_1;
+List_of_Recipes[9].Shield.Speed[2] := ConfigData.rec9_Shield_Speed_2;
+List_of_Recipes[9].Shield.Speed[3] := ConfigData.rec9_Shield_Speed_3;
+List_of_Recipes[9].Shield.Speed[4] := ConfigData.rec9_Shield_Speed_4;
+List_of_Recipes[9].Shield.Speed[5] := ConfigData.rec9_Shield_Speed_5;
+List_of_Recipes[9].Shield.Speed[6] := ConfigData.rec9_Shield_Speed_6;
+List_of_Recipes[9].Shield.distance[1] := ConfigData.rec9_Shield_distance_1;
+List_of_Recipes[9].Shield.distance[2] := ConfigData.rec9_Shield_distance_2;
+List_of_Recipes[9].Shield.distance[3] := ConfigData.rec9_Shield_distance_3;
+List_of_Recipes[9].Shield.distance[4] := ConfigData.rec9_Shield_distance_4;
+List_of_Recipes[9].Shield.distance[5] := ConfigData.rec9_Shield_distance_5;
+List_of_Recipes[9].Shield.distance[6] := ConfigData.rec9_Shield_distance_6;
+
+
+List_of_Recipes[9].Pusher.Retract_Speed :=ConfigData.rec9_Pusher_Retract_Speed;
+List_of_Recipes[9].Pusher.Speed[1] := ConfigData.rec9_Pusher_Speed_1;
+List_of_Recipes[9].Pusher.Speed[2] := ConfigData.rec9_Pusher_Speed_2;
+List_of_Recipes[9].Pusher.Speed[3] := ConfigData.rec9_Pusher_Speed_3;
+List_of_Recipes[9].Pusher.Speed[4] := ConfigData.rec9_Pusher_Speed_4;
+List_of_Recipes[9].Pusher.Speed[5] := ConfigData.rec9_Pusher_Speed_5;
+List_of_Recipes[9].Pusher.Speed[6] := ConfigData.rec9_Pusher_Speed_6;
+List_of_Recipes[9].Pusher.distance[1] := ConfigData.rec9_Pusher_distance_1;
+List_of_Recipes[9].Pusher.distance[2] := ConfigData.rec9_Pusher_distance_2;
+List_of_Recipes[9].Pusher.distance[3] := ConfigData.rec9_Pusher_distance_3;
+List_of_Recipes[9].Pusher.distance[4] := ConfigData.rec9_Pusher_distance_4;
+List_of_Recipes[9].Pusher.distance[5] := ConfigData.rec9_Pusher_distance_5;
+List_of_Recipes[9].Pusher.distance[6] := ConfigData.rec9_Pusher_distance_6;
+
+List_of_Recipes[9].Compress.Initial_Distance := ConfigData.rec9_Compress_Initial_Distance;
+List_of_Recipes[9].Compress.Initial_Speed := ConfigData.rec9_Compress_Initial_Speed;
+List_of_Recipes[9].Compress.relax_Distance := ConfigData.rec9_Compress_Relax_Distance;
+List_of_Recipes[9].Compress.retract_speed := ConfigData.rec9_Compress_retract_speed;
+
+List_of_Recipes[9].Clamp.Release_Instance:=ConfigData.rec9_Clamp_Release_Instance;
+
+List_of_Recipes[9].Other.Compress_Home_Offset:=ConfigData.rec9_Other_Compress_Home_Offset;
+List_of_Recipes[9].Other.Shield_Home_Offset:=ConfigData.rec9_Other_Shield_Home_Offset;
+List_of_Recipes[9].Other.Pusher_Home_Offset:=ConfigData.rec9_Other_Pusher_Home_Offset;
+
+List_of_Recipes[9].Memory_Free:=LREAL_TO_BOOL(ConfigData.rec9_Memory_Free);	
+
+//10
+Rec_Name_1:=ConfigData.rec10_Name_1;								
+Rec_Name_2:=ConfigData.rec10_Name_2;								
+Rec_Name_3:=ConfigData.rec10_Name_3;								
+Rec_Name_4:=ConfigData.rec10_Name_4;								
+Rec_Name_5:=ConfigData.rec10_Name_5;
+List_of_Recipes[10].Name:=Recipe_mem_name;
+
+List_of_Recipes[10].Shield.Retract_Speed :=ConfigData.rec10_Shield_Retract_Speed;
+List_of_Recipes[10].Shield.Speed[1] := ConfigData.rec10_Shield_Speed_1;
+List_of_Recipes[10].Shield.Speed[2] := ConfigData.rec10_Shield_Speed_2;
+List_of_Recipes[10].Shield.Speed[3] := ConfigData.rec10_Shield_Speed_3;
+List_of_Recipes[10].Shield.Speed[4] := ConfigData.rec10_Shield_Speed_4;
+List_of_Recipes[10].Shield.Speed[5] := ConfigData.rec10_Shield_Speed_5;
+List_of_Recipes[10].Shield.Speed[6] := ConfigData.rec10_Shield_Speed_6;
+List_of_Recipes[10].Shield.distance[1] := ConfigData.rec10_Shield_distance_1;
+List_of_Recipes[10].Shield.distance[2] := ConfigData.rec10_Shield_distance_2;
+List_of_Recipes[10].Shield.distance[3] := ConfigData.rec10_Shield_distance_3;
+List_of_Recipes[10].Shield.distance[4] := ConfigData.rec10_Shield_distance_4;
+List_of_Recipes[10].Shield.distance[5] := ConfigData.rec10_Shield_distance_5;
+List_of_Recipes[10].Shield.distance[6] := ConfigData.rec10_Shield_distance_6;
+
+
+List_of_Recipes[10].Pusher.Retract_Speed :=ConfigData.rec10_Pusher_Retract_Speed;
+List_of_Recipes[10].Pusher.Speed[1] := ConfigData.rec10_Pusher_Speed_1;
+List_of_Recipes[10].Pusher.Speed[2] := ConfigData.rec10_Pusher_Speed_2;
+List_of_Recipes[10].Pusher.Speed[3] := ConfigData.rec10_Pusher_Speed_3;
+List_of_Recipes[10].Pusher.Speed[4] := ConfigData.rec10_Pusher_Speed_4;
+List_of_Recipes[10].Pusher.Speed[5] := ConfigData.rec10_Pusher_Speed_5;
+List_of_Recipes[10].Pusher.Speed[6] := ConfigData.rec10_Pusher_Speed_6;
+List_of_Recipes[10].Pusher.distance[1] := ConfigData.rec10_Pusher_distance_1;
+List_of_Recipes[10].Pusher.distance[2] := ConfigData.rec10_Pusher_distance_2;
+List_of_Recipes[10].Pusher.distance[3] := ConfigData.rec10_Pusher_distance_3;
+List_of_Recipes[10].Pusher.distance[4] := ConfigData.rec10_Pusher_distance_4;
+List_of_Recipes[10].Pusher.distance[5] := ConfigData.rec10_Pusher_distance_5;
+List_of_Recipes[10].Pusher.distance[6] := ConfigData.rec10_Pusher_distance_6;
+
+List_of_Recipes[10].Compress.Initial_Distance := ConfigData.rec10_Compress_Initial_Distance;
+List_of_Recipes[10].Compress.Initial_Speed := ConfigData.rec10_Compress_Initial_Speed;
+List_of_Recipes[10].Compress.relax_Distance := ConfigData.rec10_Compress_Relax_Distance;
+List_of_Recipes[10].Compress.retract_speed := ConfigData.rec10_Compress_retract_speed;
+
+List_of_Recipes[10].Clamp.Release_Instance:=ConfigData.rec10_Clamp_Release_Instance;
+
+List_of_Recipes[10].Other.Compress_Home_Offset:=ConfigData.rec10_Other_Compress_Home_Offset;
+List_of_Recipes[10].Other.Shield_Home_Offset:=ConfigData.rec10_Other_Shield_Home_Offset;
+List_of_Recipes[10].Other.Pusher_Home_Offset:=ConfigData.rec10_Other_Pusher_Home_Offset;
+
+List_of_Recipes[10].Memory_Free:=LREAL_TO_BOOL(ConfigData.rec10_Memory_Free);			
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CopyGlobalRecipiesToConfig" Id="{45bca9e8-f1a4-4027-985b-8e67ca82c2ba}">
+      <Declaration><![CDATA[METHOD CopyGlobalRecipiesToConfig : BOOL
+VAR_INPUT
+
+END_VAR
+
+VAR
+	List_of_RRecipes: INT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+
+
+ConfigData.con_max_limit_Compress:=limits_save.max_limit_Compress;
+ConfigData.con_max_limit_Pusher:=Limits_save.max_limit_Pusher;
+ConfigData.con_max_limit_Shield:=Limits_save.max_limit_Shield;
+ConfigData.con_max_pusher_shield_diff:=Limits_save.max_pusher_shield_diff;
+ConfigData.con_max_torque:=Limits_save.max_torque;	
+
+//1
+
+Recipe_mem_name := List_of_Recipes[1].Name;
+
+ConfigData.rec1_Name_1:=Rec_Name_1;								
+ConfigData.rec1_Name_2:=Rec_Name_2;								
+ConfigData.rec1_Name_3:=Rec_Name_3;								
+ConfigData.rec1_Name_4:=Rec_Name_4;								
+ConfigData.rec1_Name_5:=Rec_Name_5;
+
+ConfigData.rec1_Shield_Retract_Speed := List_of_Recipes[1].Shield.Retract_Speed;
+ConfigData.rec1_Shield_Speed_1 := List_of_Recipes[1].Shield.Speed[1];
+ConfigData.rec1_Shield_Speed_2 := List_of_Recipes[1].Shield.Speed[2];
+ConfigData.rec1_Shield_Speed_3 := List_of_Recipes[1].Shield.Speed[3];
+ConfigData.rec1_Shield_Speed_4 := List_of_Recipes[1].Shield.Speed[4];
+ConfigData.rec1_Shield_Speed_5 := List_of_Recipes[1].Shield.Speed[5];
+ConfigData.rec1_Shield_Speed_6 := List_of_Recipes[1].Shield.Speed[6];
+ConfigData.rec1_Shield_distance_1 := List_of_Recipes[1].Shield.distance[1];
+ConfigData.rec1_Shield_distance_2 := List_of_Recipes[1].Shield.distance[2];
+ConfigData.rec1_Shield_distance_3 := List_of_Recipes[1].Shield.distance[3];
+ConfigData.rec1_Shield_distance_4 := List_of_Recipes[1].Shield.distance[4];
+ConfigData.rec1_Shield_distance_5 := List_of_Recipes[1].Shield.distance[5];
+ConfigData.rec1_Shield_distance_6 := List_of_Recipes[1].Shield.distance[6];
+
+
+ConfigData.rec1_Pusher_Retract_Speed := List_of_Recipes[1].Pusher.Retract_Speed;
+ConfigData.rec1_Pusher_Speed_1 := List_of_Recipes[1].Pusher.Speed[1];
+ConfigData.rec1_Pusher_Speed_2 := List_of_Recipes[1].Pusher.Speed[2];
+ConfigData.rec1_Pusher_Speed_3 := List_of_Recipes[1].Pusher.Speed[3];
+ConfigData.rec1_Pusher_Speed_4 := List_of_Recipes[1].Pusher.Speed[4];
+ConfigData.rec1_Pusher_Speed_5 := List_of_Recipes[1].Pusher.Speed[5];
+ConfigData.rec1_Pusher_Speed_6 := List_of_Recipes[1].Pusher.Speed[6];
+ConfigData.rec1_Pusher_distance_1 := List_of_Recipes[1].Pusher.distance[1];
+ConfigData.rec1_Pusher_distance_2 := List_of_Recipes[1].Pusher.distance[2];
+ConfigData.rec1_Pusher_distance_3 := List_of_Recipes[1].Pusher.distance[3];
+ConfigData.rec1_Pusher_distance_4 := List_of_Recipes[1].Pusher.distance[4];
+ConfigData.rec1_Pusher_distance_5 := List_of_Recipes[1].Pusher.distance[5];
+ConfigData.rec1_Pusher_distance_6 := List_of_Recipes[1].Pusher.distance[6];
+
+ConfigData.rec1_Compress_Initial_Distance:= List_of_Recipes[1].Compress.Initial_Distance;
+ConfigData.rec1_Compress_Initial_Speed:= List_of_Recipes[1].Compress.Initial_Speed;
+ConfigData.rec1_Compress_Relax_Distance:=List_of_Recipes[1].Compress.Relax_Distance;
+ConfigData.rec1_Compress_Retract_Speed:=List_of_Recipes[1].Compress.Retract_Speed;
+
+ConfigData.rec1_Clamp_Release_Instance:=List_of_Recipes[1].Clamp.Release_Instance;
+
+ConfigData.rec1_Other_Compress_Home_Offset:=List_of_Recipes[1].Other.Compress_Home_Offset;
+ConfigData.rec1_Other_Shield_Home_Offset:=List_of_Recipes[1].Other.Shield_Home_Offset;
+ConfigData.rec1_Other_Pusher_Home_Offset:=List_of_Recipes[1].Other.Pusher_Home_Offset;
+
+ConfigData.rec1_Memory_Free:=BOOL_TO_LREAL(List_of_Recipes[1].Memory_Free);
+
+
+//2
+
+
+Recipe_mem_name := List_of_Recipes[2].Name;
+
+ConfigData.rec2_Name_1:=Rec_Name_1;								
+ConfigData.rec2_Name_2:=Rec_Name_2;								
+ConfigData.rec2_Name_3:=Rec_Name_3;								
+ConfigData.rec2_Name_4:=Rec_Name_4;								
+ConfigData.rec2_Name_5:=Rec_Name_5;
+
+ConfigData.rec2_Shield_Retract_Speed := List_of_Recipes[2].Shield.Retract_Speed;
+ConfigData.rec2_Shield_Speed_1 := List_of_Recipes[2].Shield.Speed[1];
+ConfigData.rec2_Shield_Speed_2 := List_of_Recipes[2].Shield.Speed[2];
+ConfigData.rec2_Shield_Speed_3 := List_of_Recipes[2].Shield.Speed[3];
+ConfigData.rec2_Shield_Speed_4 := List_of_Recipes[2].Shield.Speed[4];
+ConfigData.rec2_Shield_Speed_5 := List_of_Recipes[2].Shield.Speed[5];
+ConfigData.rec2_Shield_Speed_6 := List_of_Recipes[2].Shield.Speed[6];
+ConfigData.rec2_Shield_distance_1 := List_of_Recipes[2].Shield.distance[1];
+ConfigData.rec2_Shield_distance_2 := List_of_Recipes[2].Shield.distance[2];
+ConfigData.rec2_Shield_distance_3 := List_of_Recipes[2].Shield.distance[3];
+ConfigData.rec2_Shield_distance_4 := List_of_Recipes[2].Shield.distance[4];
+ConfigData.rec2_Shield_distance_5 := List_of_Recipes[2].Shield.distance[5];
+ConfigData.rec2_Shield_distance_6 := List_of_Recipes[2].Shield.distance[6];
+
+
+ConfigData.rec2_Pusher_Retract_Speed := List_of_Recipes[2].Pusher.Retract_Speed;
+ConfigData.rec2_Pusher_Speed_1 := List_of_Recipes[2].Pusher.Speed[1];
+ConfigData.rec2_Pusher_Speed_2 := List_of_Recipes[2].Pusher.Speed[2];
+ConfigData.rec2_Pusher_Speed_3 := List_of_Recipes[2].Pusher.Speed[3];
+ConfigData.rec2_Pusher_Speed_4 := List_of_Recipes[2].Pusher.Speed[4];
+ConfigData.rec2_Pusher_Speed_5 := List_of_Recipes[2].Pusher.Speed[5];
+ConfigData.rec2_Pusher_Speed_6 := List_of_Recipes[2].Pusher.Speed[6];
+ConfigData.rec2_Pusher_distance_1 := List_of_Recipes[2].Pusher.distance[1];
+ConfigData.rec2_Pusher_distance_2 := List_of_Recipes[2].Pusher.distance[2];
+ConfigData.rec2_Pusher_distance_3 := List_of_Recipes[2].Pusher.distance[3];
+ConfigData.rec2_Pusher_distance_4 := List_of_Recipes[2].Pusher.distance[4];
+ConfigData.rec2_Pusher_distance_5 := List_of_Recipes[2].Pusher.distance[5];
+ConfigData.rec2_Pusher_distance_6 := List_of_Recipes[2].Pusher.distance[6];
+
+ConfigData.rec2_Compress_Initial_Distance:= List_of_Recipes[2].Compress.Initial_Distance;
+ConfigData.rec2_Compress_Initial_Speed:= List_of_Recipes[2].Compress.Initial_Speed;
+ConfigData.rec2_Compress_Relax_Distance:=List_of_Recipes[2].Compress.Relax_Distance;
+ConfigData.rec2_Compress_Retract_Speed:=List_of_Recipes[2].Compress.Retract_Speed;
+
+ConfigData.rec2_Clamp_Release_Instance:=List_of_Recipes[2].Clamp.Release_Instance;
+
+ConfigData.rec2_Other_Compress_Home_Offset:=List_of_Recipes[2].Other.Compress_Home_Offset;
+ConfigData.rec2_Other_Shield_Home_Offset:=List_of_Recipes[2].Other.Shield_Home_Offset;
+ConfigData.rec2_Other_Pusher_Home_Offset:=List_of_Recipes[2].Other.Pusher_Home_Offset;
+
+ConfigData.rec2_Memory_Free:=BOOL_TO_LREAL(List_of_Recipes[2].Memory_Free);
+
+//3
+
+
+Recipe_mem_name := List_of_Recipes[3].Name;
+
+ConfigData.rec3_Name_1:=Rec_Name_1;								
+ConfigData.rec3_Name_2:=Rec_Name_2;								
+ConfigData.rec3_Name_3:=Rec_Name_3;								
+ConfigData.rec3_Name_4:=Rec_Name_4;								
+ConfigData.rec3_Name_5:=Rec_Name_5;
+
+ConfigData.rec3_Shield_Retract_Speed := List_of_Recipes[3].Shield.Retract_Speed;
+ConfigData.rec3_Shield_Speed_1 := List_of_Recipes[3].Shield.Speed[1];
+ConfigData.rec3_Shield_Speed_2 := List_of_Recipes[3].Shield.Speed[2];
+ConfigData.rec3_Shield_Speed_3 := List_of_Recipes[3].Shield.Speed[3];
+ConfigData.rec3_Shield_Speed_4 := List_of_Recipes[3].Shield.Speed[4];
+ConfigData.rec3_Shield_Speed_5 := List_of_Recipes[3].Shield.Speed[5];
+ConfigData.rec3_Shield_Speed_6 := List_of_Recipes[3].Shield.Speed[6];
+ConfigData.rec3_Shield_distance_1 := List_of_Recipes[3].Shield.distance[1];
+ConfigData.rec3_Shield_distance_2 := List_of_Recipes[3].Shield.distance[2];
+ConfigData.rec3_Shield_distance_3 := List_of_Recipes[3].Shield.distance[3];
+ConfigData.rec3_Shield_distance_4 := List_of_Recipes[3].Shield.distance[4];
+ConfigData.rec3_Shield_distance_5 := List_of_Recipes[3].Shield.distance[5];
+ConfigData.rec3_Shield_distance_6 := List_of_Recipes[3].Shield.distance[6];
+
+
+ConfigData.rec3_Pusher_Retract_Speed := List_of_Recipes[3].Pusher.Retract_Speed;
+ConfigData.rec3_Pusher_Speed_1 := List_of_Recipes[3].Pusher.Speed[1];
+ConfigData.rec3_Pusher_Speed_2 := List_of_Recipes[3].Pusher.Speed[2];
+ConfigData.rec3_Pusher_Speed_3 := List_of_Recipes[3].Pusher.Speed[3];
+ConfigData.rec3_Pusher_Speed_4 := List_of_Recipes[3].Pusher.Speed[4];
+ConfigData.rec3_Pusher_Speed_5 := List_of_Recipes[3].Pusher.Speed[5];
+ConfigData.rec3_Pusher_Speed_6 := List_of_Recipes[3].Pusher.Speed[6];
+ConfigData.rec3_Pusher_distance_1 := List_of_Recipes[3].Pusher.distance[1];
+ConfigData.rec3_Pusher_distance_2 := List_of_Recipes[3].Pusher.distance[2];
+ConfigData.rec3_Pusher_distance_3 := List_of_Recipes[3].Pusher.distance[3];
+ConfigData.rec3_Pusher_distance_4 := List_of_Recipes[3].Pusher.distance[4];
+ConfigData.rec3_Pusher_distance_5 := List_of_Recipes[3].Pusher.distance[5];
+ConfigData.rec3_Pusher_distance_6 := List_of_Recipes[3].Pusher.distance[6];
+
+ConfigData.rec3_Compress_Initial_Distance:= List_of_Recipes[3].Compress.Initial_Distance;
+ConfigData.rec3_Compress_Initial_Speed:= List_of_Recipes[3].Compress.Initial_Speed;
+ConfigData.rec3_Compress_Relax_Distance:=List_of_Recipes[3].Compress.Relax_Distance;
+ConfigData.rec3_Compress_Retract_Speed:=List_of_Recipes[3].Compress.Retract_Speed;
+
+ConfigData.rec3_Clamp_Release_Instance:=List_of_Recipes[3].Clamp.Release_Instance;
+
+ConfigData.rec3_Other_Compress_Home_Offset:=List_of_Recipes[3].Other.Compress_Home_Offset;
+ConfigData.rec3_Other_Shield_Home_Offset:=List_of_Recipes[3].Other.Shield_Home_Offset;
+ConfigData.rec3_Other_Pusher_Home_Offset:=List_of_Recipes[3].Other.Pusher_Home_Offset;
+
+ConfigData.rec3_Memory_Free:=BOOL_TO_LREAL(List_of_Recipes[3].Memory_Free);
+
+//4
+
+
+Recipe_mem_name := List_of_Recipes[4].Name;
+
+ConfigData.rec4_Name_1:=Rec_Name_1;								
+ConfigData.rec4_Name_2:=Rec_Name_2;								
+ConfigData.rec4_Name_3:=Rec_Name_3;								
+ConfigData.rec4_Name_4:=Rec_Name_4;								
+ConfigData.rec4_Name_5:=Rec_Name_5;
+
+ConfigData.rec4_Shield_Retract_Speed := List_of_Recipes[4].Shield.Retract_Speed;
+ConfigData.rec4_Shield_Speed_1 := List_of_Recipes[4].Shield.Speed[1];
+ConfigData.rec4_Shield_Speed_2 := List_of_Recipes[4].Shield.Speed[2];
+ConfigData.rec4_Shield_Speed_3 := List_of_Recipes[4].Shield.Speed[3];
+ConfigData.rec4_Shield_Speed_4 := List_of_Recipes[4].Shield.Speed[4];
+ConfigData.rec4_Shield_Speed_5 := List_of_Recipes[4].Shield.Speed[5];
+ConfigData.rec4_Shield_Speed_6 := List_of_Recipes[4].Shield.Speed[6];
+ConfigData.rec4_Shield_distance_1 := List_of_Recipes[4].Shield.distance[1];
+ConfigData.rec4_Shield_distance_2 := List_of_Recipes[4].Shield.distance[2];
+ConfigData.rec4_Shield_distance_3 := List_of_Recipes[4].Shield.distance[3];
+ConfigData.rec4_Shield_distance_4 := List_of_Recipes[4].Shield.distance[4];
+ConfigData.rec4_Shield_distance_5 := List_of_Recipes[4].Shield.distance[5];
+ConfigData.rec4_Shield_distance_6 := List_of_Recipes[4].Shield.distance[6];
+
+
+ConfigData.rec4_Pusher_Retract_Speed := List_of_Recipes[4].Pusher.Retract_Speed;
+ConfigData.rec4_Pusher_Speed_1 := List_of_Recipes[4].Pusher.Speed[1];
+ConfigData.rec4_Pusher_Speed_2 := List_of_Recipes[4].Pusher.Speed[2];
+ConfigData.rec4_Pusher_Speed_3 := List_of_Recipes[4].Pusher.Speed[3];
+ConfigData.rec4_Pusher_Speed_4 := List_of_Recipes[4].Pusher.Speed[4];
+ConfigData.rec4_Pusher_Speed_5 := List_of_Recipes[4].Pusher.Speed[5];
+ConfigData.rec4_Pusher_Speed_6 := List_of_Recipes[4].Pusher.Speed[6];
+ConfigData.rec4_Pusher_distance_1 := List_of_Recipes[4].Pusher.distance[1];
+ConfigData.rec4_Pusher_distance_2 := List_of_Recipes[4].Pusher.distance[2];
+ConfigData.rec4_Pusher_distance_3 := List_of_Recipes[4].Pusher.distance[3];
+ConfigData.rec4_Pusher_distance_4 := List_of_Recipes[4].Pusher.distance[4];
+ConfigData.rec4_Pusher_distance_5 := List_of_Recipes[4].Pusher.distance[5];
+ConfigData.rec4_Pusher_distance_6 := List_of_Recipes[4].Pusher.distance[6];
+
+ConfigData.rec4_Compress_Initial_Distance:= List_of_Recipes[4].Compress.Initial_Distance;
+ConfigData.rec4_Compress_Initial_Speed:= List_of_Recipes[4].Compress.Initial_Speed;
+ConfigData.rec4_Compress_Relax_Distance:=List_of_Recipes[4].Compress.Relax_Distance;
+ConfigData.rec4_Compress_Retract_Speed:=List_of_Recipes[4].Compress.Retract_Speed;
+
+ConfigData.rec4_Clamp_Release_Instance:=List_of_Recipes[4].Clamp.Release_Instance;
+
+ConfigData.rec4_Other_Compress_Home_Offset:=List_of_Recipes[4].Other.Compress_Home_Offset;
+ConfigData.rec4_Other_Shield_Home_Offset:=List_of_Recipes[4].Other.Shield_Home_Offset;
+ConfigData.rec4_Other_Pusher_Home_Offset:=List_of_Recipes[4].Other.Pusher_Home_Offset;
+
+ConfigData.rec4_Memory_Free:=BOOL_TO_LREAL(List_of_Recipes[4].Memory_Free);
+
+//5
+
+
+Recipe_mem_name := List_of_Recipes[5].Name;
+
+ConfigData.rec5_Name_1:=Rec_Name_1;								
+ConfigData.rec5_Name_2:=Rec_Name_2;								
+ConfigData.rec5_Name_3:=Rec_Name_3;								
+ConfigData.rec5_Name_4:=Rec_Name_4;								
+ConfigData.rec5_Name_5:=Rec_Name_5;
+
+ConfigData.rec5_Shield_Retract_Speed := List_of_Recipes[5].Shield.Retract_Speed;
+ConfigData.rec5_Shield_Speed_1 := List_of_Recipes[5].Shield.Speed[1];
+ConfigData.rec5_Shield_Speed_2 := List_of_Recipes[5].Shield.Speed[2];
+ConfigData.rec5_Shield_Speed_3 := List_of_Recipes[5].Shield.Speed[3];
+ConfigData.rec5_Shield_Speed_4 := List_of_Recipes[5].Shield.Speed[4];
+ConfigData.rec5_Shield_Speed_5 := List_of_Recipes[5].Shield.Speed[5];
+ConfigData.rec5_Shield_Speed_6 := List_of_Recipes[5].Shield.Speed[6];
+ConfigData.rec5_Shield_distance_1 := List_of_Recipes[5].Shield.distance[1];
+ConfigData.rec5_Shield_distance_2 := List_of_Recipes[5].Shield.distance[2];
+ConfigData.rec5_Shield_distance_3 := List_of_Recipes[5].Shield.distance[3];
+ConfigData.rec5_Shield_distance_4 := List_of_Recipes[5].Shield.distance[4];
+ConfigData.rec5_Shield_distance_5 := List_of_Recipes[5].Shield.distance[5];
+ConfigData.rec5_Shield_distance_6 := List_of_Recipes[5].Shield.distance[6];
+
+
+ConfigData.rec5_Pusher_Retract_Speed := List_of_Recipes[5].Pusher.Retract_Speed;
+ConfigData.rec5_Pusher_Speed_1 := List_of_Recipes[5].Pusher.Speed[1];
+ConfigData.rec5_Pusher_Speed_2 := List_of_Recipes[5].Pusher.Speed[2];
+ConfigData.rec5_Pusher_Speed_3 := List_of_Recipes[5].Pusher.Speed[3];
+ConfigData.rec5_Pusher_Speed_4 := List_of_Recipes[5].Pusher.Speed[4];
+ConfigData.rec5_Pusher_Speed_5 := List_of_Recipes[5].Pusher.Speed[5];
+ConfigData.rec5_Pusher_Speed_6 := List_of_Recipes[5].Pusher.Speed[6];
+ConfigData.rec5_Pusher_distance_1 := List_of_Recipes[5].Pusher.distance[1];
+ConfigData.rec5_Pusher_distance_2 := List_of_Recipes[5].Pusher.distance[2];
+ConfigData.rec5_Pusher_distance_3 := List_of_Recipes[5].Pusher.distance[3];
+ConfigData.rec5_Pusher_distance_4 := List_of_Recipes[5].Pusher.distance[4];
+ConfigData.rec5_Pusher_distance_5 := List_of_Recipes[5].Pusher.distance[5];
+ConfigData.rec5_Pusher_distance_6 := List_of_Recipes[5].Pusher.distance[6];
+
+ConfigData.rec5_Compress_Initial_Distance:= List_of_Recipes[5].Compress.Initial_Distance;
+ConfigData.rec5_Compress_Initial_Speed:= List_of_Recipes[5].Compress.Initial_Speed;
+ConfigData.rec5_Compress_Relax_Distance:=List_of_Recipes[5].Compress.Relax_Distance;
+ConfigData.rec5_Compress_Retract_Speed:=List_of_Recipes[5].Compress.Retract_Speed;
+
+ConfigData.rec5_Clamp_Release_Instance:=List_of_Recipes[5].Clamp.Release_Instance;
+
+ConfigData.rec5_Other_Compress_Home_Offset:=List_of_Recipes[5].Other.Compress_Home_Offset;
+ConfigData.rec5_Other_Shield_Home_Offset:=List_of_Recipes[5].Other.Shield_Home_Offset;
+ConfigData.rec5_Other_Pusher_Home_Offset:=List_of_Recipes[5].Other.Pusher_Home_Offset;
+
+ConfigData.rec5_Memory_Free:=BOOL_TO_LREAL(List_of_Recipes[5].Memory_Free);
+
+//6
+
+
+Recipe_mem_name := List_of_Recipes[6].Name;
+
+ConfigData.rec6_Name_1:=Rec_Name_1;								
+ConfigData.rec6_Name_2:=Rec_Name_2;								
+ConfigData.rec6_Name_3:=Rec_Name_3;								
+ConfigData.rec6_Name_4:=Rec_Name_4;								
+ConfigData.rec6_Name_5:=Rec_Name_5;
+
+ConfigData.rec6_Shield_Retract_Speed := List_of_Recipes[6].Shield.Retract_Speed;
+ConfigData.rec6_Shield_Speed_1 := List_of_Recipes[6].Shield.Speed[1];
+ConfigData.rec6_Shield_Speed_2 := List_of_Recipes[6].Shield.Speed[2];
+ConfigData.rec6_Shield_Speed_3 := List_of_Recipes[6].Shield.Speed[3];
+ConfigData.rec6_Shield_Speed_4 := List_of_Recipes[6].Shield.Speed[4];
+ConfigData.rec6_Shield_Speed_5 := List_of_Recipes[6].Shield.Speed[5];
+ConfigData.rec6_Shield_Speed_6 := List_of_Recipes[6].Shield.Speed[6];
+ConfigData.rec6_Shield_distance_1 := List_of_Recipes[6].Shield.distance[1];
+ConfigData.rec6_Shield_distance_2 := List_of_Recipes[6].Shield.distance[2];
+ConfigData.rec6_Shield_distance_3 := List_of_Recipes[6].Shield.distance[3];
+ConfigData.rec6_Shield_distance_4 := List_of_Recipes[6].Shield.distance[4];
+ConfigData.rec6_Shield_distance_5 := List_of_Recipes[6].Shield.distance[5];
+ConfigData.rec6_Shield_distance_6 := List_of_Recipes[6].Shield.distance[6];
+
+
+ConfigData.rec6_Pusher_Retract_Speed := List_of_Recipes[6].Pusher.Retract_Speed;
+ConfigData.rec6_Pusher_Speed_1 := List_of_Recipes[6].Pusher.Speed[1];
+ConfigData.rec6_Pusher_Speed_2 := List_of_Recipes[6].Pusher.Speed[2];
+ConfigData.rec6_Pusher_Speed_3 := List_of_Recipes[6].Pusher.Speed[3];
+ConfigData.rec6_Pusher_Speed_4 := List_of_Recipes[6].Pusher.Speed[4];
+ConfigData.rec6_Pusher_Speed_5 := List_of_Recipes[6].Pusher.Speed[5];
+ConfigData.rec6_Pusher_Speed_6 := List_of_Recipes[6].Pusher.Speed[6];
+ConfigData.rec6_Pusher_distance_1 := List_of_Recipes[6].Pusher.distance[1];
+ConfigData.rec6_Pusher_distance_2 := List_of_Recipes[6].Pusher.distance[2];
+ConfigData.rec6_Pusher_distance_3 := List_of_Recipes[6].Pusher.distance[3];
+ConfigData.rec6_Pusher_distance_4 := List_of_Recipes[6].Pusher.distance[4];
+ConfigData.rec6_Pusher_distance_5 := List_of_Recipes[6].Pusher.distance[5];
+ConfigData.rec6_Pusher_distance_6 := List_of_Recipes[6].Pusher.distance[6];
+
+ConfigData.rec6_Compress_Initial_Distance:= List_of_Recipes[6].Compress.Initial_Distance;
+ConfigData.rec6_Compress_Initial_Speed:= List_of_Recipes[6].Compress.Initial_Speed;
+ConfigData.rec6_Compress_Relax_Distance:=List_of_Recipes[6].Compress.Relax_Distance;
+ConfigData.rec6_Compress_Retract_Speed:=List_of_Recipes[6].Compress.Retract_Speed;
+
+ConfigData.rec6_Clamp_Release_Instance:=List_of_Recipes[6].Clamp.Release_Instance;
+
+ConfigData.rec6_Other_Compress_Home_Offset:=List_of_Recipes[6].Other.Compress_Home_Offset;
+ConfigData.rec6_Other_Shield_Home_Offset:=List_of_Recipes[6].Other.Shield_Home_Offset;
+ConfigData.rec6_Other_Pusher_Home_Offset:=List_of_Recipes[6].Other.Pusher_Home_Offset;
+
+ConfigData.rec6_Memory_Free:=BOOL_TO_LREAL(List_of_Recipes[6].Memory_Free);
+
+
+//7
+
+
+Recipe_mem_name := List_of_Recipes[7].Name;
+
+ConfigData.rec7_Name_1:=Rec_Name_1;								
+ConfigData.rec7_Name_2:=Rec_Name_2;								
+ConfigData.rec7_Name_3:=Rec_Name_3;								
+ConfigData.rec7_Name_4:=Rec_Name_4;								
+ConfigData.rec7_Name_5:=Rec_Name_5;
+
+ConfigData.rec7_Shield_Retract_Speed := List_of_Recipes[7].Shield.Retract_Speed;
+ConfigData.rec7_Shield_Speed_1 := List_of_Recipes[7].Shield.Speed[1];
+ConfigData.rec7_Shield_Speed_2 := List_of_Recipes[7].Shield.Speed[2];
+ConfigData.rec7_Shield_Speed_3 := List_of_Recipes[7].Shield.Speed[3];
+ConfigData.rec7_Shield_Speed_4 := List_of_Recipes[7].Shield.Speed[4];
+ConfigData.rec7_Shield_Speed_5 := List_of_Recipes[7].Shield.Speed[5];
+ConfigData.rec7_Shield_Speed_6 := List_of_Recipes[7].Shield.Speed[6];
+ConfigData.rec7_Shield_distance_1 := List_of_Recipes[7].Shield.distance[1];
+ConfigData.rec7_Shield_distance_2 := List_of_Recipes[7].Shield.distance[2];
+ConfigData.rec7_Shield_distance_3 := List_of_Recipes[7].Shield.distance[3];
+ConfigData.rec7_Shield_distance_4 := List_of_Recipes[7].Shield.distance[4];
+ConfigData.rec7_Shield_distance_5 := List_of_Recipes[7].Shield.distance[5];
+ConfigData.rec7_Shield_distance_6 := List_of_Recipes[7].Shield.distance[6];
+
+
+ConfigData.rec7_Pusher_Retract_Speed := List_of_Recipes[7].Pusher.Retract_Speed;
+ConfigData.rec7_Pusher_Speed_1 := List_of_Recipes[7].Pusher.Speed[1];
+ConfigData.rec7_Pusher_Speed_2 := List_of_Recipes[7].Pusher.Speed[2];
+ConfigData.rec7_Pusher_Speed_3 := List_of_Recipes[7].Pusher.Speed[3];
+ConfigData.rec7_Pusher_Speed_4 := List_of_Recipes[7].Pusher.Speed[4];
+ConfigData.rec7_Pusher_Speed_5 := List_of_Recipes[7].Pusher.Speed[5];
+ConfigData.rec7_Pusher_Speed_6 := List_of_Recipes[7].Pusher.Speed[6];
+ConfigData.rec7_Pusher_distance_1 := List_of_Recipes[7].Pusher.distance[1];
+ConfigData.rec7_Pusher_distance_2 := List_of_Recipes[7].Pusher.distance[2];
+ConfigData.rec7_Pusher_distance_3 := List_of_Recipes[7].Pusher.distance[3];
+ConfigData.rec7_Pusher_distance_4 := List_of_Recipes[7].Pusher.distance[4];
+ConfigData.rec7_Pusher_distance_5 := List_of_Recipes[7].Pusher.distance[5];
+ConfigData.rec7_Pusher_distance_6 := List_of_Recipes[7].Pusher.distance[6];
+
+ConfigData.rec7_Compress_Initial_Distance:= List_of_Recipes[7].Compress.Initial_Distance;
+ConfigData.rec7_Compress_Initial_Speed:= List_of_Recipes[7].Compress.Initial_Speed;
+ConfigData.rec7_Compress_Relax_Distance:=List_of_Recipes[7].Compress.Relax_Distance;
+ConfigData.rec7_Compress_Retract_Speed:=List_of_Recipes[7].Compress.Retract_Speed;
+
+ConfigData.rec7_Clamp_Release_Instance:=List_of_Recipes[7].Clamp.Release_Instance;
+
+ConfigData.rec7_Other_Compress_Home_Offset:=List_of_Recipes[7].Other.Compress_Home_Offset;
+ConfigData.rec7_Other_Shield_Home_Offset:=List_of_Recipes[7].Other.Shield_Home_Offset;
+ConfigData.rec7_Other_Pusher_Home_Offset:=List_of_Recipes[7].Other.Pusher_Home_Offset;
+
+ConfigData.rec7_Memory_Free:=BOOL_TO_LREAL(List_of_Recipes[7].Memory_Free);
+
+//8
+
+
+Recipe_mem_name := List_of_Recipes[8].Name;
+
+ConfigData.rec8_Name_1:=Rec_Name_1;								
+ConfigData.rec8_Name_2:=Rec_Name_2;								
+ConfigData.rec8_Name_3:=Rec_Name_3;								
+ConfigData.rec8_Name_4:=Rec_Name_4;								
+ConfigData.rec8_Name_5:=Rec_Name_5;
+
+ConfigData.rec8_Shield_Retract_Speed := List_of_Recipes[8].Shield.Retract_Speed;
+ConfigData.rec8_Shield_Speed_1 := List_of_Recipes[8].Shield.Speed[1];
+ConfigData.rec8_Shield_Speed_2 := List_of_Recipes[8].Shield.Speed[2];
+ConfigData.rec8_Shield_Speed_3 := List_of_Recipes[8].Shield.Speed[3];
+ConfigData.rec8_Shield_Speed_4 := List_of_Recipes[8].Shield.Speed[4];
+ConfigData.rec8_Shield_Speed_5 := List_of_Recipes[8].Shield.Speed[5];
+ConfigData.rec8_Shield_Speed_6 := List_of_Recipes[8].Shield.Speed[6];
+ConfigData.rec8_Shield_distance_1 := List_of_Recipes[8].Shield.distance[1];
+ConfigData.rec8_Shield_distance_2 := List_of_Recipes[8].Shield.distance[2];
+ConfigData.rec8_Shield_distance_3 := List_of_Recipes[8].Shield.distance[3];
+ConfigData.rec8_Shield_distance_4 := List_of_Recipes[8].Shield.distance[4];
+ConfigData.rec8_Shield_distance_5 := List_of_Recipes[8].Shield.distance[5];
+ConfigData.rec8_Shield_distance_6 := List_of_Recipes[8].Shield.distance[6];
+
+
+ConfigData.rec8_Pusher_Retract_Speed := List_of_Recipes[8].Pusher.Retract_Speed;
+ConfigData.rec8_Pusher_Speed_1 := List_of_Recipes[8].Pusher.Speed[1];
+ConfigData.rec8_Pusher_Speed_2 := List_of_Recipes[8].Pusher.Speed[2];
+ConfigData.rec8_Pusher_Speed_3 := List_of_Recipes[8].Pusher.Speed[3];
+ConfigData.rec8_Pusher_Speed_4 := List_of_Recipes[8].Pusher.Speed[4];
+ConfigData.rec8_Pusher_Speed_5 := List_of_Recipes[8].Pusher.Speed[5];
+ConfigData.rec8_Pusher_Speed_6 := List_of_Recipes[8].Pusher.Speed[6];
+ConfigData.rec8_Pusher_distance_1 := List_of_Recipes[8].Pusher.distance[1];
+ConfigData.rec8_Pusher_distance_2 := List_of_Recipes[8].Pusher.distance[2];
+ConfigData.rec8_Pusher_distance_3 := List_of_Recipes[8].Pusher.distance[3];
+ConfigData.rec8_Pusher_distance_4 := List_of_Recipes[8].Pusher.distance[4];
+ConfigData.rec8_Pusher_distance_5 := List_of_Recipes[8].Pusher.distance[5];
+ConfigData.rec8_Pusher_distance_6 := List_of_Recipes[8].Pusher.distance[6];
+
+ConfigData.rec8_Compress_Initial_Distance:= List_of_Recipes[8].Compress.Initial_Distance;
+ConfigData.rec8_Compress_Initial_Speed:= List_of_Recipes[8].Compress.Initial_Speed;
+ConfigData.rec8_Compress_Relax_Distance:=List_of_Recipes[8].Compress.Relax_Distance;
+ConfigData.rec8_Compress_Retract_Speed:=List_of_Recipes[8].Compress.Retract_Speed;
+
+ConfigData.rec8_Clamp_Release_Instance:=List_of_Recipes[8].Clamp.Release_Instance;
+
+ConfigData.rec8_Other_Compress_Home_Offset:=List_of_Recipes[8].Other.Compress_Home_Offset;
+ConfigData.rec8_Other_Shield_Home_Offset:=List_of_Recipes[8].Other.Shield_Home_Offset;
+ConfigData.rec8_Other_Pusher_Home_Offset:=List_of_Recipes[8].Other.Pusher_Home_Offset;
+
+ConfigData.rec8_Memory_Free:=BOOL_TO_LREAL(List_of_Recipes[8].Memory_Free);
+
+//9
+
+
+Recipe_mem_name := List_of_Recipes[9].Name;
+
+ConfigData.rec9_Name_1:=Rec_Name_1;								
+ConfigData.rec9_Name_2:=Rec_Name_2;								
+ConfigData.rec9_Name_3:=Rec_Name_3;								
+ConfigData.rec9_Name_4:=Rec_Name_4;								
+ConfigData.rec9_Name_5:=Rec_Name_5;
+
+ConfigData.rec9_Shield_Retract_Speed := List_of_Recipes[9].Shield.Retract_Speed;
+ConfigData.rec9_Shield_Speed_1 := List_of_Recipes[9].Shield.Speed[1];
+ConfigData.rec9_Shield_Speed_2 := List_of_Recipes[9].Shield.Speed[2];
+ConfigData.rec9_Shield_Speed_3 := List_of_Recipes[9].Shield.Speed[3];
+ConfigData.rec9_Shield_Speed_4 := List_of_Recipes[9].Shield.Speed[4];
+ConfigData.rec9_Shield_Speed_5 := List_of_Recipes[9].Shield.Speed[5];
+ConfigData.rec9_Shield_Speed_6 := List_of_Recipes[9].Shield.Speed[6];
+ConfigData.rec9_Shield_distance_1 := List_of_Recipes[9].Shield.distance[1];
+ConfigData.rec9_Shield_distance_2 := List_of_Recipes[9].Shield.distance[2];
+ConfigData.rec9_Shield_distance_3 := List_of_Recipes[9].Shield.distance[3];
+ConfigData.rec9_Shield_distance_4 := List_of_Recipes[9].Shield.distance[4];
+ConfigData.rec9_Shield_distance_5 := List_of_Recipes[9].Shield.distance[5];
+ConfigData.rec9_Shield_distance_6 := List_of_Recipes[9].Shield.distance[6];
+
+
+ConfigData.rec9_Pusher_Retract_Speed := List_of_Recipes[9].Pusher.Retract_Speed;
+ConfigData.rec9_Pusher_Speed_1 := List_of_Recipes[9].Pusher.Speed[1];
+ConfigData.rec9_Pusher_Speed_2 := List_of_Recipes[9].Pusher.Speed[2];
+ConfigData.rec9_Pusher_Speed_3 := List_of_Recipes[9].Pusher.Speed[3];
+ConfigData.rec9_Pusher_Speed_4 := List_of_Recipes[9].Pusher.Speed[4];
+ConfigData.rec9_Pusher_Speed_5 := List_of_Recipes[9].Pusher.Speed[5];
+ConfigData.rec9_Pusher_Speed_6 := List_of_Recipes[9].Pusher.Speed[6];
+ConfigData.rec9_Pusher_distance_1 := List_of_Recipes[9].Pusher.distance[1];
+ConfigData.rec9_Pusher_distance_2 := List_of_Recipes[9].Pusher.distance[2];
+ConfigData.rec9_Pusher_distance_3 := List_of_Recipes[9].Pusher.distance[3];
+ConfigData.rec9_Pusher_distance_4 := List_of_Recipes[9].Pusher.distance[4];
+ConfigData.rec9_Pusher_distance_5 := List_of_Recipes[9].Pusher.distance[5];
+ConfigData.rec9_Pusher_distance_6 := List_of_Recipes[9].Pusher.distance[6];
+
+ConfigData.rec9_Compress_Initial_Distance:= List_of_Recipes[9].Compress.Initial_Distance;
+ConfigData.rec9_Compress_Initial_Speed:= List_of_Recipes[9].Compress.Initial_Speed;
+ConfigData.rec9_Compress_Relax_Distance:=List_of_Recipes[9].Compress.Relax_Distance;
+ConfigData.rec9_Compress_Retract_Speed:=List_of_Recipes[9].Compress.Retract_Speed;
+
+ConfigData.rec9_Clamp_Release_Instance:=List_of_Recipes[9].Clamp.Release_Instance;
+
+ConfigData.rec9_Other_Compress_Home_Offset:=List_of_Recipes[9].Other.Compress_Home_Offset;
+ConfigData.rec9_Other_Shield_Home_Offset:=List_of_Recipes[9].Other.Shield_Home_Offset;
+ConfigData.rec9_Other_Pusher_Home_Offset:=List_of_Recipes[9].Other.Pusher_Home_Offset;
+
+ConfigData.rec9_Memory_Free:=BOOL_TO_LREAL(List_of_Recipes[9].Memory_Free);
+
+//10
+
+
+Recipe_mem_name := List_of_Recipes[10].Name;
+
+ConfigData.rec10_Name_1:=Rec_Name_1;								
+ConfigData.rec10_Name_2:=Rec_Name_2;								
+ConfigData.rec10_Name_3:=Rec_Name_3;								
+ConfigData.rec10_Name_4:=Rec_Name_4;								
+ConfigData.rec10_Name_5:=Rec_Name_5;
+
+ConfigData.rec10_Shield_Retract_Speed := List_of_Recipes[10].Shield.Retract_Speed;
+ConfigData.rec10_Shield_Speed_1 := List_of_Recipes[10].Shield.Speed[1];
+ConfigData.rec10_Shield_Speed_2 := List_of_Recipes[10].Shield.Speed[2];
+ConfigData.rec10_Shield_Speed_3 := List_of_Recipes[10].Shield.Speed[3];
+ConfigData.rec10_Shield_Speed_4 := List_of_Recipes[10].Shield.Speed[4];
+ConfigData.rec10_Shield_Speed_5 := List_of_Recipes[10].Shield.Speed[5];
+ConfigData.rec10_Shield_Speed_6 := List_of_Recipes[10].Shield.Speed[6];
+ConfigData.rec10_Shield_distance_1 := List_of_Recipes[10].Shield.distance[1];
+ConfigData.rec10_Shield_distance_2 := List_of_Recipes[10].Shield.distance[2];
+ConfigData.rec10_Shield_distance_3 := List_of_Recipes[10].Shield.distance[3];
+ConfigData.rec10_Shield_distance_4 := List_of_Recipes[10].Shield.distance[4];
+ConfigData.rec10_Shield_distance_5 := List_of_Recipes[10].Shield.distance[5];
+ConfigData.rec10_Shield_distance_6 := List_of_Recipes[10].Shield.distance[6];
+
+
+ConfigData.rec10_Pusher_Retract_Speed := List_of_Recipes[10].Pusher.Retract_Speed;
+ConfigData.rec10_Pusher_Speed_1 := List_of_Recipes[10].Pusher.Speed[1];
+ConfigData.rec10_Pusher_Speed_2 := List_of_Recipes[10].Pusher.Speed[2];
+ConfigData.rec10_Pusher_Speed_3 := List_of_Recipes[10].Pusher.Speed[3];
+ConfigData.rec10_Pusher_Speed_4 := List_of_Recipes[10].Pusher.Speed[4];
+ConfigData.rec10_Pusher_Speed_5 := List_of_Recipes[10].Pusher.Speed[5];
+ConfigData.rec10_Pusher_Speed_6 := List_of_Recipes[10].Pusher.Speed[6];
+ConfigData.rec10_Pusher_distance_1 := List_of_Recipes[10].Pusher.distance[1];
+ConfigData.rec10_Pusher_distance_2 := List_of_Recipes[10].Pusher.distance[2];
+ConfigData.rec10_Pusher_distance_3 := List_of_Recipes[10].Pusher.distance[3];
+ConfigData.rec10_Pusher_distance_4 := List_of_Recipes[10].Pusher.distance[4];
+ConfigData.rec10_Pusher_distance_5 := List_of_Recipes[10].Pusher.distance[5];
+ConfigData.rec10_Pusher_distance_6 := List_of_Recipes[10].Pusher.distance[6];
+
+ConfigData.rec10_Compress_Initial_Distance:= List_of_Recipes[10].Compress.Initial_Distance;
+ConfigData.rec10_Compress_Initial_Speed:= List_of_Recipes[10].Compress.Initial_Speed;
+ConfigData.rec10_Compress_Relax_Distance:=List_of_Recipes[10].Compress.Relax_Distance;
+ConfigData.rec10_Compress_Retract_Speed:=List_of_Recipes[10].Compress.Retract_Speed;
+
+ConfigData.rec10_Clamp_Release_Instance:=List_of_Recipes[10].Clamp.Release_Instance;
+
+ConfigData.rec10_Other_Compress_Home_Offset:=List_of_Recipes[10].Other.Compress_Home_Offset;
+ConfigData.rec10_Other_Shield_Home_Offset:=List_of_Recipes[10].Other.Shield_Home_Offset;
+ConfigData.rec10_Other_Pusher_Home_Offset:=List_of_Recipes[10].Other.Pusher_Home_Offset;
+
+ConfigData.rec10_Memory_Free:=BOOL_TO_LREAL(List_of_Recipes[10].Memory_Free);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Initialised" Id="{d002e097-bc11-4ad5-bb76-737f95b49dcf}">
+      <Declaration><![CDATA[METHOD Initialised : BOOL
+VAR_INPUT
+
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[Initialised := ConfigData.Initialised;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Update" Id="{05c42cc8-49e0-4af7-90b3-41521351f178}">
+      <Declaration><![CDATA[METHOD Update : BOOL
+VAR_INPUT
+	
+	
+END_VAR
+VAR
+	recipe_file_name			:STRING;
+	ThisErrrorId				: UDINT;
+	ThisErrorText				: STRING;
+	ThisError					: BOOL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+recipe_file_name:='Hard Disk\TwinCAT\3.1\Boot\all_recipes_limits';
+
+PersistentData(
+	//DataAddress:= ADR(ConfigData[save_load_no_u]), 
+	//DataLength:= SIZEOF(ConfigData[save_load_no_u]), 
+	DataAddress:= ADR(ConfigData), 
+	DataLength:= SIZEOF(ConfigData), 
+	Filename:= recipe_file_name, 
+	Timestamp:= Clock.DateTimeAsString, 
+	LoadFromFile:= NOT ConfigData.Initialised, 
+	AutoSave:= TRUE, 
+	ValuesReadFromFile=> ConfigData.Initialised, 
+	Error=>ThisError , 
+	ErrorId=> ThisErrrorId, 
+	ErrorText=>ThisErrorText );
+	
+IF (ThisError) THEN
+	ThisErrrorId:=ThisErrrorId;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="TConfig">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="TConfig.CopyConfigRecipiesToGlobal">
+      <LineId Id="444" Count="3" />
+      <LineId Id="1015" Count="0" />
+      <LineId Id="448" Count="0" />
+      <LineId Id="515" Count="6" />
+      <LineId Id="449" Count="3" />
+      <LineId Id="492" Count="1" />
+      <LineId Id="534" Count="1" />
+      <LineId Id="457" Count="0" />
+      <LineId Id="536" Count="4" />
+      <LineId Id="463" Count="2" />
+      <LineId Id="541" Count="12" />
+      <LineId Id="479" Count="0" />
+      <LineId Id="511" Count="3" />
+      <LineId Id="484" Count="4" />
+      <LineId Id="990" Count="1" />
+      <LineId Id="523" Count="0" />
+      <LineId Id="528" Count="0" />
+      <LineId Id="554" Count="45" />
+      <LineId Id="992" Count="1" />
+      <LineId Id="600" Count="47" />
+      <LineId Id="994" Count="1" />
+      <LineId Id="648" Count="47" />
+      <LineId Id="996" Count="1" />
+      <LineId Id="696" Count="47" />
+      <LineId Id="998" Count="1" />
+      <LineId Id="744" Count="47" />
+      <LineId Id="1000" Count="1" />
+      <LineId Id="793" Count="47" />
+      <LineId Id="1002" Count="1" />
+      <LineId Id="841" Count="0" />
+      <LineId Id="792" Count="0" />
+      <LineId Id="842" Count="45" />
+      <LineId Id="1004" Count="1" />
+      <LineId Id="888" Count="47" />
+      <LineId Id="1006" Count="1" />
+      <LineId Id="936" Count="47" />
+      <LineId Id="1008" Count="1" />
+      <LineId Id="984" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="TConfig.CopyGlobalRecipiesToConfig">
+      <LineId Id="475" Count="0" />
+      <LineId Id="480" Count="0" />
+      <LineId Id="476" Count="3" />
+      <LineId Id="1031" Count="0" />
+      <LineId Id="444" Count="0" />
+      <LineId Id="494" Count="0" />
+      <LineId Id="1030" Count="0" />
+      <LineId Id="495" Count="6" />
+      <LineId Id="481" Count="0" />
+      <LineId Id="251" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="445" Count="0" />
+      <LineId Id="506" Count="3" />
+      <LineId Id="257" Count="0" />
+      <LineId Id="510" Count="4" />
+      <LineId Id="468" Count="0" />
+      <LineId Id="461" Count="0" />
+      <LineId Id="256" Count="0" />
+      <LineId Id="515" Count="11" />
+      <LineId Id="482" Count="9" />
+      <LineId Id="493" Count="0" />
+      <LineId Id="1003" Count="1" />
+      <LineId Id="492" Count="0" />
+      <LineId Id="528" Count="3" />
+      <LineId Id="537" Count="46" />
+      <LineId Id="1005" Count="1" />
+      <LineId Id="584" Count="50" />
+      <LineId Id="527" Count="0" />
+      <LineId Id="1007" Count="1" />
+      <LineId Id="638" Count="50" />
+      <LineId Id="1009" Count="1" />
+      <LineId Id="689" Count="49" />
+      <LineId Id="1011" Count="1" />
+      <LineId Id="739" Count="51" />
+      <LineId Id="1013" Count="1" />
+      <LineId Id="791" Count="51" />
+      <LineId Id="1015" Count="1" />
+      <LineId Id="843" Count="49" />
+      <LineId Id="1017" Count="1" />
+      <LineId Id="893" Count="51" />
+      <LineId Id="1019" Count="1" />
+      <LineId Id="945" Count="49" />
+      <LineId Id="1021" Count="1" />
+      <LineId Id="995" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="TConfig.Initialised">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="TConfig.Update">
+      <LineId Id="19" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="8" Count="1" />
+      <LineId Id="31" Count="1" />
+      <LineId Id="10" Count="7" />
+      <LineId Id="43" Count="3" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

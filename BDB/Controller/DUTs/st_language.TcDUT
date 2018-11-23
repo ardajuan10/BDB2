@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <DUT Name="st_language" Id="{4d14fcd5-f410-4e5e-bcbf-84743af48247}">
+    <Declaration><![CDATA[TYPE st_language :
+STRUCT
+	portuguese				:BOOL:=FALSE;
+	english					:BOOL:=TRUE;
+END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

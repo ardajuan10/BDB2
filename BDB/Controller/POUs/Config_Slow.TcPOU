@@ -1,0 +1,178 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <POU Name="Config_Slow" Id="{68820ce0-f190-48fe-919d-63c0e6e8e6eb}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM Config_Slow
+VAR
+	//temp					:INT;
+	//temp_load				:INT :=1;
+	//temp_save				:INT :=0;
+	Once					:BOOL :=TRUE;
+	juan					:INT;
+	//saving_config			:BOOL :=FALSE;
+	//config_status			:BOOL :=FALSE;
+	config_count			:INT;		
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[
+IF Clock.DateTimeInitialised THEN
+	
+	FOR juan := 1 TO config_speed DO
+		Config.Update();
+	END_FOR
+
+	
+	
+	load_config();
+	
+	IF config.Initialised() THEN
+		save_config();	
+	END_IF
+
+END_IF]]></ST>
+    </Implementation>
+    <Method Name="load_config" Id="{097443b6-b1ac-4abf-8692-1b8c84698695}">
+      <Declaration><![CDATA[METHOD load_config : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[(*//IF once =TRUE THEN
+	IF Config.Initialised(temp_load) = FALSE THEN
+		Config.Update(temp_load);
+
+
+	ELSIF temp_load = 11 THEN
+		Message:='Data Loaded';
+		Once:=FALSE;
+	ELSE
+		Config.Update(temp_load);
+		Config.Update(temp_load);
+		temp_load:=temp_load+1;
+	END_IF
+//END_IF
+*)	
+//2500
+//Config.Update(1);
+//Config.Update(2);
+//Config.Update(3);
+//Config.Update(4);
+//Config.Update(5);
+//Config.Update(6);
+//Config.Update(7);
+//Config.Update(8);
+//Config.Update(9);
+//Config.Update(10);
+//Config.Update(11);
+
+IF once AND config.Initialised() THEN
+	once:=FALSE;
+	IF language.english THEN
+		Message:='Data loaded';
+	ELSE
+		Message:='Dados carregados';
+	END_IF
+END_IF
+
+
+(*
+IF config_count = 1000 THEN
+	config_count:=0;
+	IF temp_load = 11 THEN
+		temp_load:=0;
+	END_IF 
+	temp_load:=temp_load+1;
+END_IF
+*)
+
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="save_config" Id="{ede5b518-086f-4687-bb4d-0480b77911be}">
+      <Declaration><![CDATA[METHOD save_config : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+	
+IF Config_Request= TRUE THEN
+	Config_Request:=FALSE;
+
+	config_count:=0;
+	//temp_save:=temp_save+1;
+		
+END_IF
+
+config_count:=config_count+config_speed;
+
+IF config_count > 7000 THEN
+	config_count := 0;
+	IF configuring THEN
+		Message:=Config_Message;
+		configuring:=FALSE;
+	END_IF
+	
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="Config_Slow">
+      <LineId Id="184" Count="0" />
+      <LineId Id="6" Count="0" />
+      <LineId Id="201" Count="0" />
+      <LineId Id="227" Count="1" />
+      <LineId Id="214" Count="0" />
+      <LineId Id="202" Count="0" />
+      <LineId Id="195" Count="1" />
+      <LineId Id="203" Count="0" />
+      <LineId Id="197" Count="1" />
+      <LineId Id="105" Count="0" />
+      <LineId Id="91" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="Config_Slow.load_config">
+      <LineId Id="6" Count="7" />
+      <LineId Id="20" Count="2" />
+      <LineId Id="15" Count="1" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="24" Count="10" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="62" Count="0" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="61" Count="0" />
+      <LineId Id="56" Count="0" />
+      <LineId Id="64" Count="0" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="47" Count="0" />
+      <LineId Id="43" Count="1" />
+      <LineId Id="48" Count="2" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="40" Count="1" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="Config_Slow.save_config">
+      <LineId Id="8" Count="8" />
+      <LineId Id="66" Count="0" />
+      <LineId Id="70" Count="0" />
+      <LineId Id="79" Count="0" />
+      <LineId Id="71" Count="0" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="73" Count="0" />
+      <LineId Id="80" Count="0" />
+      <LineId Id="74" Count="0" />
+      <LineId Id="72" Count="0" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="75" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

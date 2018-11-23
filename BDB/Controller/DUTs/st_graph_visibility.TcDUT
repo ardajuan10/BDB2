@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <DUT Name="st_graph_visibility" Id="{4aa1e309-d406-41f1-9252-98759935abc5}">
+    <Declaration><![CDATA[TYPE st_graph_visibility :
+	STRUCT
+		shield_speed_1						:BOOL;
+		shield_speed_2						:BOOL;
+		shield_speed_3						:BOOL;
+		shield_speed_4						:BOOL;
+		shield_speed_5						:BOOL;
+		shield_speed_6						:BOOL;
+		shield_distance_1					:BOOL;
+		shield_distance_2					:BOOL;
+		shield_distance_3					:BOOL;
+		shield_distance_4					:BOOL;
+		shield_distance_5					:BOOL;
+		shield_distance_6					:BOOL;
+		shield_retract						:BOOL;
+		
+		pusher_speed_1						:BOOL;
+		pusher_speed_2						:BOOL;
+		pusher_speed_3						:BOOL;
+		pusher_speed_4						:BOOL;
+		pusher_speed_5						:BOOL;
+		pusher_speed_6						:BOOL;
+		pusher_distance_1					:BOOL;
+		pusher_distance_2					:BOOL;
+		pusher_distance_3					:BOOL;
+		pusher_distance_4					:BOOL;
+		pusher_distance_5					:BOOL;
+		pusher_distance_6					:BOOL;
+		pusher_retract						:BOOL;
+		
+		compress_initial_speed				:BOOL;
+		compress_initial_distance			:BOOL;
+		compress_relax_distance				:BOOL;
+		compress_retract_speed				:BOOL;
+	END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

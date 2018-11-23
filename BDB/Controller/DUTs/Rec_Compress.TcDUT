@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <DUT Name="Rec_Compress" Id="{ebb9e94e-f8ca-41b2-9119-d21a16b1d90d}">
+    <Declaration><![CDATA[TYPE Rec_Compress :
+	STRUCT
+		Initial_Speed				:LREAL;
+		Initial_Distance			:LREAL;
+		Relax_Distance				:LREAL;
+		Retract_Speed				:LREAL;
+	END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>

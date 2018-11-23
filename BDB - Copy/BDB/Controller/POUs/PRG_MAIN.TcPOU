@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <POU Name="PRG_MAIN" Id="{d04c0ba0-8ee8-4b1d-b9a8-6a748878b094}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM PRG_MAIN
+VAR
+
+	test: BOOL;
+	debug: INT;
+
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//Recipes
+Clock();
+
+
+IF Config.Initialised() THEN   
+	debug := debug+1;
+	PRG_IO();
+	PRG_Machine();
+END_IF
+
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="PRG_MAIN">
+      <LineId Id="76" Count="0" />
+      <LineId Id="82" Count="0" />
+      <LineId Id="72" Count="0" />
+      <LineId Id="74" Count="0" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="75" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="52" Count="0" />
+      <LineId Id="29" Count="1" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

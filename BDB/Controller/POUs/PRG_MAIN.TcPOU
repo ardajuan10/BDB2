@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4022.9">
+  <POU Name="PRG_MAIN" Id="{d04c0ba0-8ee8-4b1d-b9a8-6a748878b094}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM PRG_MAIN
+VAR
+
+	//test: BOOL;
+	//debug: INT;
+	all_config_initialised: BOOL;
+	FirstScan			  : BOOL:=TRUE;
+	temp: INT;
+	arda: INT;
+	bruce: INT;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[//Recipes
+Clock();
+
+
+		
+IF Config.Initialised() AND bruce < 70 THEN
+	bruce:=bruce+1;
+ELSIF Config.Initialised() THEN   
+	arda := arda+1;
+	PRG_IO();
+	PRG_Machine();
+END_IF
+
+FirstSCan:=FALSE;
+
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="PRG_MAIN">
+      <LineId Id="76" Count="0" />
+      <LineId Id="82" Count="0" />
+      <LineId Id="94" Count="0" />
+      <LineId Id="126" Count="0" />
+      <LineId Id="116" Count="0" />
+      <LineId Id="120" Count="0" />
+      <LineId Id="127" Count="0" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="75" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="118" Count="1" />
+      <LineId Id="52" Count="0" />
+      <LineId Id="29" Count="1" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

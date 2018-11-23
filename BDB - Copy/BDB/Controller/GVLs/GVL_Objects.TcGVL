@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <GVL Name="GVL_Objects" Id="{065d5605-db40-49f0-8c53-de89a8f7f7d0}">
+    <Declaration><![CDATA[VAR_GLOBAL
+	Clock 						: TClock;
+	Config 						: TConfig;
+	config_request				:BOOL;
+	config_count				:INT;
+	List_of_Recipes				: ARRAY[1..10] OF Recipe;
+END_VAR
+
+
+
+]]></Declaration>
+  </GVL>
+</TcPlcObject>

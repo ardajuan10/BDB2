@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <GVL Name="GVL_IO" Id="{b9181614-eac6-4060-9ae1-3f07bde2d57f}">
+    <Declaration><![CDATA[VAR_GLOBAL
+	CompressAxis :AXIS_REF;	
+	PusherAxis :AXIS_REF;	
+	ShieldAxis :AXIS_REF;	
+	ResetLampController : FB_LampController;
+	StartLampController : FB_LampController;
+	
+	Name_String	AT%IB10 :STRING;
+	Name_DINT1	AT%IB10	:DINT;
+		
+	// Cabinet Digital Inputs 1 - Device 1, Term 2
+	ixCabinetE_StopButtonOkay AT%IX0.0 :BOOL;
+	ixE_StopRelayOkay AT%IX0.1 :BOOL;
+	ixGuardRelayOkay AT%IX0.2 :BOOL;
+	ixSpareIN4 AT%IX0.3 :BOOL;
+	ixSpareIN5 AT%IX0.4 :BOOL;
+	ixResetButton AT%IX0.5 :BOOL;
+	ixSpareIN7 AT%IX0.6 :BOOL;
+	ixSpareIN8 AT%IX0.7 :BOOL;
+	ixStart_Button_Machine AT%IX1.0 :BOOL;
+	ixStop_Button AT%IX1.1 :BOOL;
+	ixSpareIN11 AT%IX1.2 :BOOL;
+	ixSpareIN12 AT%IX1.3 :BOOL;
+	ixSpareIN13 AT%IX1.4 :BOOL;
+	ixSpareIN14 AT%IX1.5 :BOOL;
+	ixSpareIN15 AT%IX1.6 :BOOL;
+	ixSpareIN16 AT%IX1.7 :BOOL;
+	
+	// Cabinet Digital Outputs 1 - Device 1, Term 3
+	qxEnableE_Stop AT%QX0.0 :BOOL;
+	qxClamp		 AT%QX0.1 :BOOL :=FALSE;
+	qxSpareOUT3 AT%QX0.2 :BOOL;
+	qxStartButtonLamp AT%QX0.3:BOOL;
+	qxResetButtonLamp AT%QX0.4 :BOOL;
+	qxSpareOUT6 AT%QX0.5 :BOOL;
+	qxSpareOUT7 AT%QX0.6 :BOOL;
+	qxSpareOUT8 AT%QX0.7 :BOOL;
+	
+	// Servo Analogue Inputs 1- Device 2, Term 2
+	ibCompressServoTorque AT%IB120 :INT;
+	ibCompressServoFollowingError AT%IB124 :DINT;
+	qbCompressServoTorqueLimit AT%QB120 :UINT;
+	
+	// Servo Analogue Inputs 1- Device 2, Term 3
+	ibPusherServoTorque AT%IB130 :INT;
+	ibPusherServoFollowingError AT%IB134 :DINT;
+	qbPusherServoTorqueLimit AT%QB130 :UINT;
+	
+	// Servo Analogue Inputs 1- Device 2, Term 3
+	ibShieldServoTorque AT%IB140 :INT;
+	ibShieldServoFollowingError AT%IB144 :DINT;
+	qbShieldServoTorqueLimit AT%QB140 :UINT;
+	
+	// Analogue Inputs - Device 2, Term 4
+	(*iiAnalogueIn7_HeaterTemperature AT%IB112 :INT;
+	iiAnalogueIn8_UserProbeTemperature AT%IB114 :INT;
+	// Status Inputs - Device 2, Term 4
+	ixHeaterTC_Error AT%IX2.0 :BOOL;
+	ixUserTC_Error AT%IX2.1 :BOOL;*)
+	
+	// Machine Digital Inputs 1 - Device 2, Term 5
+	ixCompressHomeSwitch AT%IX2.0 :BOOL;
+	ixPusherHomeSwitch AT%IX2.1 :BOOL;
+	ixShieldHomeSwitch AT%IX2.2 :BOOL;
+	ixStartButton AT%IX2.3 :BOOL;
+	ixSpareIN25 AT%IX2.4 :BOOL;
+	ixspareIN26 AT%IX2.5 :BOOL;
+	ixspareIN27 AT%IX2.6 :BOOL;
+	ixSpareIN28 AT%IX2.7 :BOOL;
+	ixGuardOkay AT%IX3.0 :BOOL;
+	ixMachineE_StopButtonOkay AT%IX3.1 :BOOL;
+	ixFanCartridgeDiagnostics AT%IX3.2 :BOOL;
+	ixSpareIN32 AT%IX3.3 :BOOL;
+	ixSpareIN33 AT%IX3.4 :BOOL;
+	ixSpareIN34 AT%IX3.5 :BOOL;
+	ixSpareIN35 AT%IX3.6 :BOOL;
+	ixSpareIN36 AT%IX3.7 :BOOL;
+
+	CompressServoErrorID: UDINT;
+	PusherServoErrorID: UDINT;	
+	ShieldServoErrorID: UDINT;
+	
+	sSystemStateHi : STRING;
+	sSystemStateMed : STRING;
+	sSystemStateLo : STRING;
+	
+END_VAR]]></Declaration>
+  </GVL>
+</TcPlcObject>

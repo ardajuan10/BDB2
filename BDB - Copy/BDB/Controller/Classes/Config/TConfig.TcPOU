@@ -1,0 +1,1211 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <POU Name="TConfig" Id="{35e999a8-f2a4-4f91-9ae7-e767e722be8a}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK TConfig
+VAR
+    Recipe_mem_1 						AT %MD0: STRING(20);
+	Recipe_mem_2 						AT %MD5: STRING(20);
+	Recipe_mem_3 						AT %MD10: STRING(20);
+	Recipe_mem_4 						AT %MD15: STRING(20);
+	Recipe_mem_5 						AT %MD20: STRING(20);
+	Recipe_mem_6 						AT %MD25: STRING(20);
+	Recipe_mem_7 						AT %MD30: STRING(20);
+	Recipe_mem_8 						AT %MD35: STRING(20);
+	Recipe_mem_9 						AT %MD40: STRING(20);
+	Recipe_mem_10 						AT %MD45: STRING(20);
+	
+	Rec1_Name_1								AT %MD0 :UDINT;
+	Rec1_Name_2								AT %MD1 :UDINT;
+	Rec1_Name_3								AT %MD2 :UDINT;
+	Rec1_Name_4								AT %MD3 :UDINT;
+	Rec1_Name_5								AT %MD4 :UDINT;
+	
+	Rec2_Name_1								AT %MD5 :UDINT;
+	Rec2_Name_2								AT %MD6 :UDINT;
+	Rec2_Name_3								AT %MD7 :UDINT;
+	Rec2_Name_4								AT %MD8 :UDINT;
+	Rec2_Name_5								AT %MD9 :UDINT;
+	
+	Rec3_Name_1								AT %MD10 :UDINT;
+	Rec3_Name_2								AT %MD11 :UDINT;
+	Rec3_Name_3								AT %MD12 :UDINT;
+	Rec3_Name_4								AT %MD13 :UDINT;
+	Rec3_Name_5								AT %MD14:UDINT;
+	
+	Rec4_Name_1								AT %MD15 :UDINT;
+	Rec4_Name_2								AT %MD16 :UDINT;
+	Rec4_Name_3								AT %MD17 :UDINT;
+	Rec4_Name_4								AT %MD18 :UDINT;
+	Rec4_Name_5								AT %MD19 :UDINT;
+	
+	Rec5_Name_1								AT %MD20 :UDINT;
+	Rec5_Name_2								AT %MD21 :UDINT;
+	Rec5_Name_3								AT %MD22 :UDINT;
+	Rec5_Name_4								AT %MD23 :UDINT;
+	Rec5_Name_5								AT %MD24 :UDINT;
+	
+	Rec6_Name_1								AT %MD25 :UDINT;
+	Rec6_Name_2								AT %MD26 :UDINT;
+	Rec6_Name_3								AT %MD27 :UDINT;
+	Rec6_Name_4								AT %MD28 :UDINT;
+	Rec6_Name_5								AT %MD29 :UDINT;
+	
+	Rec7_Name_1								AT %MD30 :UDINT;
+	Rec7_Name_2								AT %MD31 :UDINT;
+	Rec7_Name_3								AT %MD32 :UDINT;
+	Rec7_Name_4								AT %MD33 :UDINT;
+	Rec7_Name_5								AT %MD34 :UDINT;
+	
+	Rec8_Name_1								AT %MD35 :UDINT;
+	Rec8_Name_2								AT %MD36 :UDINT;
+	Rec8_Name_3								AT %MD37 :UDINT;
+	Rec8_Name_4								AT %MD38 :UDINT;
+	Rec8_Name_5								AT %MD39 :UDINT;
+	
+	Rec9_Name_1								AT %MD40 :UDINT;
+	Rec9_Name_2								AT %MD41 :UDINT;
+	Rec9_Name_3								AT %MD42 :UDINT;
+	Rec9_Name_4								AT %MD43 :UDINT;
+	Rec9_Name_5								AT %MD44 :UDINT;
+	
+	Rec10_Name_1							AT %MD45 :UDINT;
+	Rec10_Name_2							AT %MD46 :UDINT;
+	Rec10_Name_3							AT %MD47 :UDINT;
+	Rec10_Name_4							AT %MD48 :UDINT;
+	Rec10_Name_5							AT %MD49 :UDINT;
+	
+	PersistentData : TPersistentData;
+	
+    ConfigData : TConfigData := (
+		Other1_Memory_Free := 1,
+		Other2_Memory_Free := 1,		
+		Other3_Memory_Free := 1,				
+		Other4_Memory_Free := 1,
+		Other5_Memory_Free := 1,
+		Other6_Memory_Free := 1,
+		Other7_Memory_Free := 1,
+		Other8_Memory_Free := 1,
+		Other9_Memory_Free := 1,
+		Other10_Memory_Free := 1);		
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[PersistentData(
+	DataAddress:= ADR(ConfigData), 
+	DataLength:= SIZEOF(ConfigData), 
+	Filename:= 'Hard Disk\TwinCAT\3.1\Boot\Config.txt', 
+	Timestamp:= Clock.DateTimeAsString, 
+	LoadFromFile:= NOT ConfigData.Initialised, 
+	AutoSave:= TRUE, 
+	ValuesReadFromFile=> ConfigData.Initialised, 
+	Error=> , 
+	ErrorId=> , 
+	ErrorText=> );]]></ST>
+    </Implementation>
+    <Method Name="CopyConfigRecipiesToGlobal" Id="{9b1b7707-00ec-4826-b873-21f7d512abb3}">
+      <Declaration><![CDATA[METHOD CopyConfigRecipiesToGlobal : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//GVL_Objects.List_of_Recipes[1].Name := ConfigData.Rec1_Name;
+
+Rec1_Name_1:=ConfigData.Rec1_Name_1;								
+Rec1_Name_2:=ConfigData.Rec1_Name_2;								
+Rec1_Name_3:=ConfigData.Rec1_Name_3;								
+Rec1_Name_4:=ConfigData.Rec1_Name_4;								
+Rec1_Name_5:=ConfigData.Rec1_Name_5;
+List_of_Recipes[1].Name := Recipe_mem_1;
+
+GVL_Objects.List_of_Recipes[1].Shield.Retract_Speed := ConfigData.Rec1_Shield_Retract_Speed;
+GVL_Objects.List_of_Recipes[1].Shield.Initial_Speed := ConfigData.Rec1_Shield_Initial_Speed;
+GVL_Objects.List_of_Recipes[1].Shield.Initial_Distance := ConfigData.Rec1_Shield_Initial_Distance;
+
+GVL_Objects.List_of_Recipes[1].Compress.Initial_Speed :=  ConfigData.Rec1_Compress_Initial_Speed;
+GVL_Objects.List_of_Recipes[1].Compress.Initial_Distance := ConfigData.Rec1_Compress_Initial_Distance;
+GVL_Objects.List_of_Recipes[1].Compress.Shield_Dwell := ConfigData.Rec1_Compress_Shield_Dwell;
+GVL_Objects.List_of_Recipes[1].Compress.Relax_Distance := ConfigData.Rec1_Compress_Relax_Distance;
+GVL_Objects.List_of_Recipes[1].Compress.Retract_Speed := ConfigData.Rec1_Compress_Retract_Speed;
+
+GVL_Objects.List_of_Recipes[1].Pusher.Initial_Speed := ConfigData.Rec1_Pusher_Initial_Speed;
+GVL_Objects.List_of_Recipes[1].Pusher.Initial_Distance := ConfigData.Rec1_Pusher_Initial_Distance;
+GVL_Objects.List_of_Recipes[1].Pusher.Eject_Speed := ConfigData.Rec1_Pusher_Eject_Speed;
+GVL_Objects.List_of_Recipes[1].Pusher.Eject_Distance := ConfigData.Rec1_Pusher_Eject_Distance;
+GVL_Objects.List_of_Recipes[1].Pusher.Retract_Speed := ConfigData.Rec1_Pusher_Retract_Speed;
+
+GVL_Objects.List_of_Recipes[1].Pusher.tamp_final_distance := ConfigData.Rec1_Pusher_tamp_final_distance;
+GVL_Objects.List_of_Recipes[1].Pusher.tamp_final_speed := ConfigData.Rec1_Pusher_tamp_final_speed;
+GVL_Objects.List_of_Recipes[1].Pusher.tamp_initial_distance := ConfigData.Rec1_Pusher_tamp_initial_distance;
+GVL_Objects.List_of_Recipes[1].Pusher.tamp_initial_speed := ConfigData.Rec1_Pusher_tamp_initial_speed;
+
+GVL_Objects.List_of_Recipes[1].Other.Compress_Home_Offset := ConfigData.Other1_Compress_Home_Offset;
+GVL_Objects.List_of_Recipes[1].Other.Pusher_Home_Offset := ConfigData.Other1_Pusher_Home_Offset;
+GVL_Objects.List_of_Recipes[1].Other.Shield_Home_Offset := ConfigData.Other1_Shield_Home_Offset;
+GVL_Objects.List_of_Recipes[1].Other.Axis_Acceleration := ConfigData.Other1_Axis_Acceleration;
+GVL_Objects.List_of_Recipes[1].Other.Axis_Deceleration := ConfigData.Other1_Axis_Deceleration;
+GVL_Objects.List_of_Recipes[1].Other.Axis_Jerk := ConfigData.Other1_Axis_Jerk;
+GVL_Objects.List_of_Recipes[1].Memory_Free := LREAL_TO_BOOL(ConfigData.Other1_Memory_Free);
+
+GVL_Objects.List_of_Recipes[1].Clamp.Release_Instance := ConfigData.Clamp1_Release_Instance;
+
+//u are here
+Rec2_Name_1:=ConfigData.Rec2_Name_1;								
+Rec2_Name_2:=ConfigData.Rec2_Name_2;								
+Rec2_Name_3:=ConfigData.Rec2_Name_3;								
+Rec2_Name_4:=ConfigData.Rec2_Name_4;								
+Rec2_Name_5:=ConfigData.Rec2_Name_5;
+List_of_Recipes[2].Name := Recipe_mem_2;
+
+GVL_Objects.List_of_Recipes[2].Shield.Retract_Speed := ConfigData.Rec2_Shield_Retract_Speed;
+GVL_Objects.List_of_Recipes[2].Shield.Initial_Speed := ConfigData.Rec2_Shield_Initial_Speed;
+GVL_Objects.List_of_Recipes[2].Shield.Initial_Distance := ConfigData.Rec2_Shield_Initial_Distance;
+
+GVL_Objects.List_of_Recipes[2].Compress.Initial_Speed :=  ConfigData.Rec2_Compress_Initial_Speed;
+GVL_Objects.List_of_Recipes[2].Compress.Initial_Distance := ConfigData.Rec2_Compress_Initial_Distance;
+GVL_Objects.List_of_Recipes[2].Compress.Shield_Dwell := ConfigData.Rec2_Compress_Shield_Dwell;
+GVL_Objects.List_of_Recipes[2].Compress.Relax_Distance := ConfigData.Rec2_Compress_Relax_Distance;
+GVL_Objects.List_of_Recipes[2].Compress.Retract_Speed := ConfigData.Rec2_Compress_Retract_Speed;
+
+GVL_Objects.List_of_Recipes[2].Pusher.Initial_Speed := ConfigData.Rec2_Pusher_Initial_Speed;
+GVL_Objects.List_of_Recipes[2].Pusher.Initial_Distance := ConfigData.Rec2_Pusher_Initial_Distance;
+GVL_Objects.List_of_Recipes[2].Pusher.Eject_Speed := ConfigData.Rec2_Pusher_Eject_Speed;
+GVL_Objects.List_of_Recipes[2].Pusher.Eject_Distance := ConfigData.Rec2_Pusher_Eject_Distance;
+GVL_Objects.List_of_Recipes[2].Pusher.Retract_Speed := ConfigData.Rec2_Pusher_Retract_Speed;
+
+GVL_Objects.List_of_Recipes[2].Pusher.tamp_final_distance := ConfigData.Rec2_Pusher_tamp_final_distance;
+GVL_Objects.List_of_Recipes[2].Pusher.tamp_final_speed := ConfigData.Rec2_Pusher_tamp_final_speed;
+GVL_Objects.List_of_Recipes[2].Pusher.tamp_initial_distance := ConfigData.Rec2_Pusher_tamp_initial_distance;
+GVL_Objects.List_of_Recipes[2].Pusher.tamp_initial_speed := ConfigData.Rec2_Pusher_tamp_initial_speed;
+
+GVL_Objects.List_of_Recipes[2].Other.Compress_Home_Offset := ConfigData.Other2_Compress_Home_Offset;
+GVL_Objects.List_of_Recipes[2].Other.Pusher_Home_Offset := ConfigData.Other2_Pusher_Home_Offset;
+GVL_Objects.List_of_Recipes[2].Other.Shield_Home_Offset := ConfigData.Other2_Shield_Home_Offset;
+GVL_Objects.List_of_Recipes[2].Other.Axis_Acceleration := ConfigData.Other2_Axis_Acceleration;
+GVL_Objects.List_of_Recipes[2].Other.Axis_Deceleration := ConfigData.Other2_Axis_Deceleration;
+GVL_Objects.List_of_Recipes[2].Other.Axis_Jerk := ConfigData.Other2_Axis_Jerk;
+GVL_Objects.List_of_Recipes[2].Memory_Free := LREAL_TO_BOOL(ConfigData.Other2_Memory_Free);
+
+GVL_Objects.List_of_Recipes[2].Clamp.Release_Instance := ConfigData.Clamp2_Release_Instance;
+
+Rec3_Name_1:=ConfigData.Rec3_Name_1;								
+Rec3_Name_2:=ConfigData.Rec3_Name_2;								
+Rec3_Name_3:=ConfigData.Rec3_Name_3;								
+Rec3_Name_4:=ConfigData.Rec3_Name_4;								
+Rec3_Name_5:=ConfigData.Rec3_Name_5;
+List_of_Recipes[3].Name := Recipe_mem_3;
+
+GVL_Objects.List_of_Recipes[3].Shield.Retract_Speed := ConfigData.Rec3_Shield_Retract_Speed;
+GVL_Objects.List_of_Recipes[3].Shield.Initial_Speed := ConfigData.Rec3_Shield_Initial_Speed;
+GVL_Objects.List_of_Recipes[3].Shield.Initial_Distance := ConfigData.Rec3_Shield_Initial_Distance;
+
+GVL_Objects.List_of_Recipes[3].Compress.Initial_Speed :=  ConfigData.Rec3_Compress_Initial_Speed;
+GVL_Objects.List_of_Recipes[3].Compress.Initial_Distance := ConfigData.Rec3_Compress_Initial_Distance;
+GVL_Objects.List_of_Recipes[3].Compress.Shield_Dwell := ConfigData.Rec3_Compress_Shield_Dwell;
+GVL_Objects.List_of_Recipes[3].Compress.Relax_Distance := ConfigData.Rec3_Compress_Relax_Distance;
+GVL_Objects.List_of_Recipes[3].Compress.Retract_Speed := ConfigData.Rec3_Compress_Retract_Speed;
+
+GVL_Objects.List_of_Recipes[3].Pusher.Initial_Speed := ConfigData.Rec3_Pusher_Initial_Speed;
+GVL_Objects.List_of_Recipes[3].Pusher.Initial_Distance := ConfigData.Rec3_Pusher_Initial_Distance;
+GVL_Objects.List_of_Recipes[3].Pusher.Eject_Speed := ConfigData.Rec3_Pusher_Eject_Speed;
+GVL_Objects.List_of_Recipes[3].Pusher.Eject_Distance := ConfigData.Rec3_Pusher_Eject_Distance;
+GVL_Objects.List_of_Recipes[3].Pusher.Retract_Speed := ConfigData.Rec3_Pusher_Retract_Speed;
+
+GVL_Objects.List_of_Recipes[3].Pusher.tamp_final_distance := ConfigData.Rec3_Pusher_tamp_final_distance;
+GVL_Objects.List_of_Recipes[3].Pusher.tamp_final_speed := ConfigData.Rec3_Pusher_tamp_final_speed;
+GVL_Objects.List_of_Recipes[3].Pusher.tamp_initial_distance := ConfigData.Rec3_Pusher_tamp_initial_distance;
+GVL_Objects.List_of_Recipes[3].Pusher.tamp_initial_speed := ConfigData.Rec3_Pusher_tamp_initial_speed;
+
+GVL_Objects.List_of_Recipes[3].Other.Compress_Home_Offset := ConfigData.Other3_Compress_Home_Offset;
+GVL_Objects.List_of_Recipes[3].Other.Pusher_Home_Offset := ConfigData.Other3_Pusher_Home_Offset;
+GVL_Objects.List_of_Recipes[3].Other.Shield_Home_Offset := ConfigData.Other3_Shield_Home_Offset;
+GVL_Objects.List_of_Recipes[3].Other.Axis_Acceleration := ConfigData.Other3_Axis_Acceleration;
+GVL_Objects.List_of_Recipes[3].Other.Axis_Deceleration := ConfigData.Other3_Axis_Deceleration;
+GVL_Objects.List_of_Recipes[3].Other.Axis_Jerk := ConfigData.Other3_Axis_Jerk;
+GVL_Objects.List_of_Recipes[3].Memory_Free := LREAL_TO_BOOL(ConfigData.Other3_Memory_Free);
+
+GVL_Objects.List_of_Recipes[3].Clamp.Release_Instance := ConfigData.Clamp3_Release_Instance;
+
+Rec4_Name_1:=ConfigData.Rec4_Name_1;								
+Rec4_Name_2:=ConfigData.Rec4_Name_2;								
+Rec4_Name_3:=ConfigData.Rec4_Name_3;								
+Rec4_Name_4:=ConfigData.Rec4_Name_4;								
+Rec4_Name_5:=ConfigData.Rec4_Name_5;
+List_of_Recipes[4].Name := Recipe_mem_4;
+
+GVL_Objects.List_of_Recipes[4].Shield.Retract_Speed := ConfigData.Rec4_Shield_Retract_Speed;
+GVL_Objects.List_of_Recipes[4].Shield.Initial_Speed := ConfigData.Rec4_Shield_Initial_Speed;
+GVL_Objects.List_of_Recipes[4].Shield.Initial_Distance := ConfigData.Rec4_Shield_Initial_Distance;
+
+GVL_Objects.List_of_Recipes[4].Compress.Initial_Speed :=  ConfigData.Rec4_Compress_Initial_Speed;
+GVL_Objects.List_of_Recipes[4].Compress.Initial_Distance := ConfigData.Rec4_Compress_Initial_Distance;
+GVL_Objects.List_of_Recipes[4].Compress.Shield_Dwell := ConfigData.Rec4_Compress_Shield_Dwell;
+GVL_Objects.List_of_Recipes[4].Compress.Relax_Distance := ConfigData.Rec4_Compress_Relax_Distance;
+GVL_Objects.List_of_Recipes[4].Compress.Retract_Speed := ConfigData.Rec4_Compress_Retract_Speed;
+
+GVL_Objects.List_of_Recipes[4].Pusher.Initial_Speed := ConfigData.Rec4_Pusher_Initial_Speed;
+GVL_Objects.List_of_Recipes[4].Pusher.Initial_Distance := ConfigData.Rec4_Pusher_Initial_Distance;
+GVL_Objects.List_of_Recipes[4].Pusher.Eject_Speed := ConfigData.Rec4_Pusher_Eject_Speed;
+GVL_Objects.List_of_Recipes[4].Pusher.Eject_Distance := ConfigData.Rec4_Pusher_Eject_Distance;
+GVL_Objects.List_of_Recipes[4].Pusher.Retract_Speed := ConfigData.Rec4_Pusher_Retract_Speed;
+
+GVL_Objects.List_of_Recipes[4].Pusher.tamp_final_distance := ConfigData.Rec4_Pusher_tamp_final_distance;
+GVL_Objects.List_of_Recipes[4].Pusher.tamp_final_speed := ConfigData.Rec4_Pusher_tamp_final_speed;
+GVL_Objects.List_of_Recipes[4].Pusher.tamp_initial_distance := ConfigData.Rec4_Pusher_tamp_initial_distance;
+GVL_Objects.List_of_Recipes[4].Pusher.tamp_initial_speed := ConfigData.Rec4_Pusher_tamp_initial_speed;
+
+GVL_Objects.List_of_Recipes[4].Other.Compress_Home_Offset := ConfigData.Other4_Compress_Home_Offset;
+GVL_Objects.List_of_Recipes[4].Other.Pusher_Home_Offset := ConfigData.Other4_Pusher_Home_Offset;
+GVL_Objects.List_of_Recipes[4].Other.Shield_Home_Offset := ConfigData.Other4_Shield_Home_Offset;
+GVL_Objects.List_of_Recipes[4].Other.Axis_Acceleration := ConfigData.Other4_Axis_Acceleration;
+GVL_Objects.List_of_Recipes[4].Other.Axis_Deceleration := ConfigData.Other4_Axis_Deceleration;
+GVL_Objects.List_of_Recipes[4].Other.Axis_Jerk := ConfigData.Other4_Axis_Jerk;
+GVL_Objects.List_of_Recipes[4].Memory_Free := LREAL_TO_BOOL(ConfigData.Other4_Memory_Free);
+
+GVL_Objects.List_of_Recipes[4].Clamp.Release_Instance := ConfigData.Clamp4_Release_Instance;
+
+Rec5_Name_1:=ConfigData.Rec5_Name_1;								
+Rec5_Name_2:=ConfigData.Rec5_Name_2;								
+Rec5_Name_3:=ConfigData.Rec5_Name_3;								
+Rec5_Name_4:=ConfigData.Rec5_Name_4;								
+Rec5_Name_5:=ConfigData.Rec5_Name_5;
+List_of_Recipes[5].Name := Recipe_mem_5;
+
+GVL_Objects.List_of_Recipes[5].Shield.Retract_Speed := ConfigData.Rec5_Shield_Retract_Speed;
+GVL_Objects.List_of_Recipes[5].Shield.Initial_Speed := ConfigData.Rec5_Shield_Initial_Speed;
+GVL_Objects.List_of_Recipes[5].Shield.Initial_Distance := ConfigData.Rec5_Shield_Initial_Distance;
+
+GVL_Objects.List_of_Recipes[5].Compress.Initial_Speed :=  ConfigData.Rec5_Compress_Initial_Speed;
+GVL_Objects.List_of_Recipes[5].Compress.Initial_Distance := ConfigData.Rec5_Compress_Initial_Distance;
+GVL_Objects.List_of_Recipes[5].Compress.Shield_Dwell := ConfigData.Rec5_Compress_Shield_Dwell;
+GVL_Objects.List_of_Recipes[5].Compress.Relax_Distance := ConfigData.Rec5_Compress_Relax_Distance;
+GVL_Objects.List_of_Recipes[5].Compress.Retract_Speed := ConfigData.Rec5_Compress_Retract_Speed;
+
+GVL_Objects.List_of_Recipes[5].Pusher.Initial_Speed := ConfigData.Rec5_Pusher_Initial_Speed;
+GVL_Objects.List_of_Recipes[5].Pusher.Initial_Distance := ConfigData.Rec5_Pusher_Initial_Distance;
+GVL_Objects.List_of_Recipes[5].Pusher.Eject_Speed := ConfigData.Rec5_Pusher_Eject_Speed;
+GVL_Objects.List_of_Recipes[5].Pusher.Eject_Distance := ConfigData.Rec5_Pusher_Eject_Distance;
+GVL_Objects.List_of_Recipes[5].Pusher.Retract_Speed := ConfigData.Rec5_Pusher_Retract_Speed;
+
+GVL_Objects.List_of_Recipes[5].Pusher.tamp_final_distance := ConfigData.Rec5_Pusher_tamp_final_distance;
+GVL_Objects.List_of_Recipes[5].Pusher.tamp_final_speed := ConfigData.Rec5_Pusher_tamp_final_speed;
+GVL_Objects.List_of_Recipes[5].Pusher.tamp_initial_distance := ConfigData.Rec5_Pusher_tamp_initial_distance;
+GVL_Objects.List_of_Recipes[5].Pusher.tamp_initial_speed := ConfigData.Rec5_Pusher_tamp_initial_speed;
+
+GVL_Objects.List_of_Recipes[5].Other.Compress_Home_Offset := ConfigData.Other5_Compress_Home_Offset;
+GVL_Objects.List_of_Recipes[5].Other.Pusher_Home_Offset := ConfigData.Other5_Pusher_Home_Offset;
+GVL_Objects.List_of_Recipes[5].Other.Shield_Home_Offset := ConfigData.Other5_Shield_Home_Offset;
+GVL_Objects.List_of_Recipes[5].Other.Axis_Acceleration := ConfigData.Other5_Axis_Acceleration;
+GVL_Objects.List_of_Recipes[5].Other.Axis_Deceleration := ConfigData.Other5_Axis_Deceleration;
+GVL_Objects.List_of_Recipes[5].Other.Axis_Jerk := ConfigData.Other5_Axis_Jerk;
+GVL_Objects.List_of_Recipes[5].Memory_Free := LREAL_TO_BOOL(ConfigData.Other5_Memory_Free);
+
+GVL_Objects.List_of_Recipes[5].Clamp.Release_Instance := ConfigData.Clamp5_Release_Instance;
+
+Rec6_Name_1:=ConfigData.Rec6_Name_1;								
+Rec6_Name_2:=ConfigData.Rec6_Name_2;								
+Rec6_Name_3:=ConfigData.Rec6_Name_3;								
+Rec6_Name_4:=ConfigData.Rec6_Name_4;								
+Rec6_Name_5:=ConfigData.Rec6_Name_5;
+List_of_Recipes[6].Name := Recipe_mem_6;
+
+GVL_Objects.List_of_Recipes[6].Shield.Retract_Speed := ConfigData.Rec6_Shield_Retract_Speed;
+GVL_Objects.List_of_Recipes[6].Shield.Initial_Speed := ConfigData.Rec6_Shield_Initial_Speed;
+GVL_Objects.List_of_Recipes[6].Shield.Initial_Distance := ConfigData.Rec6_Shield_Initial_Distance;
+
+GVL_Objects.List_of_Recipes[6].Compress.Initial_Speed :=  ConfigData.Rec6_Compress_Initial_Speed;
+GVL_Objects.List_of_Recipes[6].Compress.Initial_Distance := ConfigData.Rec6_Compress_Initial_Distance;
+GVL_Objects.List_of_Recipes[6].Compress.Shield_Dwell := ConfigData.Rec6_Compress_Shield_Dwell;
+GVL_Objects.List_of_Recipes[6].Compress.Relax_Distance := ConfigData.Rec6_Compress_Relax_Distance;
+GVL_Objects.List_of_Recipes[6].Compress.Retract_Speed := ConfigData.Rec6_Compress_Retract_Speed;
+
+GVL_Objects.List_of_Recipes[6].Pusher.Initial_Speed := ConfigData.Rec6_Pusher_Initial_Speed;
+GVL_Objects.List_of_Recipes[6].Pusher.Initial_Distance := ConfigData.Rec6_Pusher_Initial_Distance;
+GVL_Objects.List_of_Recipes[6].Pusher.Eject_Speed := ConfigData.Rec6_Pusher_Eject_Speed;
+GVL_Objects.List_of_Recipes[6].Pusher.Eject_Distance := ConfigData.Rec6_Pusher_Eject_Distance;
+GVL_Objects.List_of_Recipes[6].Pusher.Retract_Speed := ConfigData.Rec6_Pusher_Retract_Speed;
+
+GVL_Objects.List_of_Recipes[6].Pusher.tamp_final_distance := ConfigData.Rec6_Pusher_tamp_final_distance;
+GVL_Objects.List_of_Recipes[6].Pusher.tamp_final_speed := ConfigData.Rec6_Pusher_tamp_final_speed;
+GVL_Objects.List_of_Recipes[6].Pusher.tamp_initial_distance := ConfigData.Rec6_Pusher_tamp_initial_distance;
+GVL_Objects.List_of_Recipes[6].Pusher.tamp_initial_speed := ConfigData.Rec6_Pusher_tamp_initial_speed;
+
+GVL_Objects.List_of_Recipes[6].Other.Compress_Home_Offset := ConfigData.Other6_Compress_Home_Offset;
+GVL_Objects.List_of_Recipes[6].Other.Pusher_Home_Offset := ConfigData.Other6_Pusher_Home_Offset;
+GVL_Objects.List_of_Recipes[6].Other.Shield_Home_Offset := ConfigData.Other6_Shield_Home_Offset;
+GVL_Objects.List_of_Recipes[6].Other.Axis_Acceleration := ConfigData.Other6_Axis_Acceleration;
+GVL_Objects.List_of_Recipes[6].Other.Axis_Deceleration := ConfigData.Other6_Axis_Deceleration;
+GVL_Objects.List_of_Recipes[6].Other.Axis_Jerk := ConfigData.Other6_Axis_Jerk;
+GVL_Objects.List_of_Recipes[6].Memory_Free := LREAL_TO_BOOL(ConfigData.Other6_Memory_Free);
+
+GVL_Objects.List_of_Recipes[6].Clamp.Release_Instance := ConfigData.Clamp6_Release_Instance;
+
+Rec7_Name_1:=ConfigData.Rec7_Name_1;								
+Rec7_Name_2:=ConfigData.Rec7_Name_2;								
+Rec7_Name_3:=ConfigData.Rec7_Name_3;								
+Rec7_Name_4:=ConfigData.Rec7_Name_4;								
+Rec7_Name_5:=ConfigData.Rec7_Name_5;
+List_of_Recipes[7].Name := Recipe_mem_7;
+
+GVL_Objects.List_of_Recipes[7].Shield.Retract_Speed := ConfigData.Rec7_Shield_Retract_Speed;
+GVL_Objects.List_of_Recipes[7].Shield.Initial_Speed := ConfigData.Rec7_Shield_Initial_Speed;
+GVL_Objects.List_of_Recipes[7].Shield.Initial_Distance := ConfigData.Rec7_Shield_Initial_Distance;
+
+GVL_Objects.List_of_Recipes[7].Compress.Initial_Speed :=  ConfigData.Rec7_Compress_Initial_Speed;
+GVL_Objects.List_of_Recipes[7].Compress.Initial_Distance := ConfigData.Rec7_Compress_Initial_Distance;
+GVL_Objects.List_of_Recipes[7].Compress.Shield_Dwell := ConfigData.Rec7_Compress_Shield_Dwell;
+GVL_Objects.List_of_Recipes[7].Compress.Relax_Distance := ConfigData.Rec7_Compress_Relax_Distance;
+GVL_Objects.List_of_Recipes[7].Compress.Retract_Speed := ConfigData.Rec7_Compress_Retract_Speed;
+
+GVL_Objects.List_of_Recipes[7].Pusher.Initial_Speed := ConfigData.Rec7_Pusher_Initial_Speed;
+GVL_Objects.List_of_Recipes[7].Pusher.Initial_Distance := ConfigData.Rec7_Pusher_Initial_Distance;
+GVL_Objects.List_of_Recipes[7].Pusher.Eject_Speed := ConfigData.Rec7_Pusher_Eject_Speed;
+GVL_Objects.List_of_Recipes[7].Pusher.Eject_Distance := ConfigData.Rec7_Pusher_Eject_Distance;
+GVL_Objects.List_of_Recipes[7].Pusher.Retract_Speed := ConfigData.Rec7_Pusher_Retract_Speed;
+
+GVL_Objects.List_of_Recipes[7].Pusher.tamp_final_distance := ConfigData.Rec7_Pusher_tamp_final_distance;
+GVL_Objects.List_of_Recipes[7].Pusher.tamp_final_speed := ConfigData.Rec7_Pusher_tamp_final_speed;
+GVL_Objects.List_of_Recipes[7].Pusher.tamp_initial_distance := ConfigData.Rec7_Pusher_tamp_initial_distance;
+GVL_Objects.List_of_Recipes[7].Pusher.tamp_initial_speed := ConfigData.Rec7_Pusher_tamp_initial_speed;
+
+GVL_Objects.List_of_Recipes[7].Other.Compress_Home_Offset := ConfigData.Other7_Compress_Home_Offset;
+GVL_Objects.List_of_Recipes[7].Other.Pusher_Home_Offset := ConfigData.Other7_Pusher_Home_Offset;
+GVL_Objects.List_of_Recipes[7].Other.Shield_Home_Offset := ConfigData.Other7_Shield_Home_Offset;
+GVL_Objects.List_of_Recipes[7].Other.Axis_Acceleration := ConfigData.Other7_Axis_Acceleration;
+GVL_Objects.List_of_Recipes[7].Other.Axis_Deceleration := ConfigData.Other7_Axis_Deceleration;
+GVL_Objects.List_of_Recipes[7].Other.Axis_Jerk := ConfigData.Other7_Axis_Jerk;
+GVL_Objects.List_of_Recipes[7].Memory_Free := LREAL_TO_BOOL(ConfigData.Other7_Memory_Free);
+
+GVL_Objects.List_of_Recipes[7].Clamp.Release_Instance := ConfigData.Clamp7_Release_Instance;
+
+Rec8_Name_1:=ConfigData.Rec8_Name_1;								
+Rec8_Name_2:=ConfigData.Rec8_Name_2;								
+Rec8_Name_3:=ConfigData.Rec8_Name_3;								
+Rec8_Name_4:=ConfigData.Rec8_Name_4;								
+Rec8_Name_5:=ConfigData.Rec8_Name_5;
+List_of_Recipes[8].Name := Recipe_mem_8;
+
+GVL_Objects.List_of_Recipes[8].Shield.Retract_Speed := ConfigData.Rec8_Shield_Retract_Speed;
+GVL_Objects.List_of_Recipes[8].Shield.Initial_Speed := ConfigData.Rec8_Shield_Initial_Speed;
+GVL_Objects.List_of_Recipes[8].Shield.Initial_Distance := ConfigData.Rec8_Shield_Initial_Distance;
+
+GVL_Objects.List_of_Recipes[8].Compress.Initial_Speed :=  ConfigData.Rec8_Compress_Initial_Speed;
+GVL_Objects.List_of_Recipes[8].Compress.Initial_Distance := ConfigData.Rec8_Compress_Initial_Distance;
+GVL_Objects.List_of_Recipes[8].Compress.Shield_Dwell := ConfigData.Rec8_Compress_Shield_Dwell;
+GVL_Objects.List_of_Recipes[8].Compress.Relax_Distance := ConfigData.Rec8_Compress_Relax_Distance;
+GVL_Objects.List_of_Recipes[8].Compress.Retract_Speed := ConfigData.Rec8_Compress_Retract_Speed;
+
+GVL_Objects.List_of_Recipes[8].Pusher.Initial_Speed := ConfigData.Rec8_Pusher_Initial_Speed;
+GVL_Objects.List_of_Recipes[8].Pusher.Initial_Distance := ConfigData.Rec8_Pusher_Initial_Distance;
+GVL_Objects.List_of_Recipes[8].Pusher.Eject_Speed := ConfigData.Rec8_Pusher_Eject_Speed;
+GVL_Objects.List_of_Recipes[8].Pusher.Eject_Distance := ConfigData.Rec8_Pusher_Eject_Distance;
+GVL_Objects.List_of_Recipes[8].Pusher.Retract_Speed := ConfigData.Rec8_Pusher_Retract_Speed;
+
+GVL_Objects.List_of_Recipes[8].Pusher.tamp_final_distance := ConfigData.Rec8_Pusher_tamp_final_distance;
+GVL_Objects.List_of_Recipes[8].Pusher.tamp_final_speed := ConfigData.Rec8_Pusher_tamp_final_speed;
+GVL_Objects.List_of_Recipes[8].Pusher.tamp_initial_distance := ConfigData.Rec8_Pusher_tamp_initial_distance;
+GVL_Objects.List_of_Recipes[8].Pusher.tamp_initial_speed := ConfigData.Rec8_Pusher_tamp_initial_speed;
+
+GVL_Objects.List_of_Recipes[8].Other.Compress_Home_Offset := ConfigData.Other8_Compress_Home_Offset;
+GVL_Objects.List_of_Recipes[8].Other.Pusher_Home_Offset := ConfigData.Other8_Pusher_Home_Offset;
+GVL_Objects.List_of_Recipes[8].Other.Shield_Home_Offset := ConfigData.Other8_Shield_Home_Offset;
+GVL_Objects.List_of_Recipes[8].Other.Axis_Acceleration := ConfigData.Other8_Axis_Acceleration;
+GVL_Objects.List_of_Recipes[8].Other.Axis_Deceleration := ConfigData.Other8_Axis_Deceleration;
+GVL_Objects.List_of_Recipes[8].Other.Axis_Jerk := ConfigData.Other8_Axis_Jerk;
+GVL_Objects.List_of_Recipes[8].Memory_Free := LREAL_TO_BOOL(ConfigData.Other8_Memory_Free);
+
+GVL_Objects.List_of_Recipes[8].Clamp.Release_Instance := ConfigData.Clamp8_Release_Instance;
+
+Rec9_Name_1:=ConfigData.Rec9_Name_1;								
+Rec9_Name_2:=ConfigData.Rec9_Name_2;								
+Rec9_Name_3:=ConfigData.Rec9_Name_3;								
+Rec9_Name_4:=ConfigData.Rec9_Name_4;								
+Rec9_Name_5:=ConfigData.Rec9_Name_5;
+List_of_Recipes[9].Name := Recipe_mem_9;
+
+GVL_Objects.List_of_Recipes[9].Shield.Retract_Speed := ConfigData.Rec9_Shield_Retract_Speed;
+GVL_Objects.List_of_Recipes[9].Shield.Initial_Speed := ConfigData.Rec9_Shield_Initial_Speed;
+GVL_Objects.List_of_Recipes[9].Shield.Initial_Distance := ConfigData.Rec9_Shield_Initial_Distance;
+
+GVL_Objects.List_of_Recipes[9].Compress.Initial_Speed :=  ConfigData.Rec9_Compress_Initial_Speed;
+GVL_Objects.List_of_Recipes[9].Compress.Initial_Distance := ConfigData.Rec9_Compress_Initial_Distance;
+GVL_Objects.List_of_Recipes[9].Compress.Shield_Dwell := ConfigData.Rec9_Compress_Shield_Dwell;
+GVL_Objects.List_of_Recipes[9].Compress.Relax_Distance := ConfigData.Rec9_Compress_Relax_Distance;
+GVL_Objects.List_of_Recipes[9].Compress.Retract_Speed := ConfigData.Rec9_Compress_Retract_Speed;
+
+GVL_Objects.List_of_Recipes[9].Pusher.Initial_Speed := ConfigData.Rec9_Pusher_Initial_Speed;
+GVL_Objects.List_of_Recipes[9].Pusher.Initial_Distance := ConfigData.Rec9_Pusher_Initial_Distance;
+GVL_Objects.List_of_Recipes[9].Pusher.Eject_Speed := ConfigData.Rec9_Pusher_Eject_Speed;
+GVL_Objects.List_of_Recipes[9].Pusher.Eject_Distance := ConfigData.Rec9_Pusher_Eject_Distance;
+GVL_Objects.List_of_Recipes[9].Pusher.Retract_Speed := ConfigData.Rec9_Pusher_Retract_Speed;
+
+GVL_Objects.List_of_Recipes[9].Pusher.tamp_final_distance := ConfigData.Rec9_Pusher_tamp_final_distance;
+GVL_Objects.List_of_Recipes[9].Pusher.tamp_final_speed := ConfigData.Rec9_Pusher_tamp_final_speed;
+GVL_Objects.List_of_Recipes[9].Pusher.tamp_initial_distance := ConfigData.Rec9_Pusher_tamp_initial_distance;
+GVL_Objects.List_of_Recipes[9].Pusher.tamp_initial_speed := ConfigData.Rec9_Pusher_tamp_initial_speed;
+
+GVL_Objects.List_of_Recipes[9].Other.Compress_Home_Offset := ConfigData.Other9_Compress_Home_Offset;
+GVL_Objects.List_of_Recipes[9].Other.Pusher_Home_Offset := ConfigData.Other9_Pusher_Home_Offset;
+GVL_Objects.List_of_Recipes[9].Other.Shield_Home_Offset := ConfigData.Other9_Shield_Home_Offset;
+GVL_Objects.List_of_Recipes[9].Other.Axis_Acceleration := ConfigData.Other9_Axis_Acceleration;
+GVL_Objects.List_of_Recipes[9].Other.Axis_Deceleration := ConfigData.Other9_Axis_Deceleration;
+GVL_Objects.List_of_Recipes[9].Other.Axis_Jerk := ConfigData.Other9_Axis_Jerk;
+GVL_Objects.List_of_Recipes[9].Memory_Free := LREAL_TO_BOOL(ConfigData.Other9_Memory_Free);
+
+GVL_Objects.List_of_Recipes[9].Clamp.Release_Instance := ConfigData.Clamp9_Release_Instance;
+
+Rec10_Name_1:=ConfigData.Rec10_Name_1;								
+Rec10_Name_2:=ConfigData.Rec10_Name_2;								
+Rec10_Name_3:=ConfigData.Rec10_Name_3;								
+Rec10_Name_4:=ConfigData.Rec10_Name_4;								
+Rec10_Name_5:=ConfigData.Rec10_Name_5;
+List_of_Recipes[10].Name := Recipe_mem_10;
+
+GVL_Objects.List_of_Recipes[10].Shield.Retract_Speed := ConfigData.Rec10_Shield_Retract_Speed;
+GVL_Objects.List_of_Recipes[10].Shield.Initial_Speed := ConfigData.Rec10_Shield_Initial_Speed;
+GVL_Objects.List_of_Recipes[10].Shield.Initial_Distance := ConfigData.Rec10_Shield_Initial_Distance;
+
+GVL_Objects.List_of_Recipes[10].Compress.Initial_Speed :=  ConfigData.Rec10_Compress_Initial_Speed;
+GVL_Objects.List_of_Recipes[10].Compress.Initial_Distance := ConfigData.Rec10_Compress_Initial_Distance;
+GVL_Objects.List_of_Recipes[10].Compress.Shield_Dwell := ConfigData.Rec10_Compress_Shield_Dwell;
+GVL_Objects.List_of_Recipes[10].Compress.Relax_Distance := ConfigData.Rec10_Compress_Relax_Distance;
+GVL_Objects.List_of_Recipes[10].Compress.Retract_Speed := ConfigData.Rec10_Compress_Retract_Speed;
+
+GVL_Objects.List_of_Recipes[10].Pusher.Initial_Speed := ConfigData.Rec10_Pusher_Initial_Speed;
+GVL_Objects.List_of_Recipes[10].Pusher.Initial_Distance := ConfigData.Rec10_Pusher_Initial_Distance;
+GVL_Objects.List_of_Recipes[10].Pusher.Eject_Speed := ConfigData.Rec10_Pusher_Eject_Speed;
+GVL_Objects.List_of_Recipes[10].Pusher.Eject_Distance := ConfigData.Rec10_Pusher_Eject_Distance;
+GVL_Objects.List_of_Recipes[10].Pusher.Retract_Speed := ConfigData.Rec10_Pusher_Retract_Speed;
+
+GVL_Objects.List_of_Recipes[10].Pusher.tamp_final_distance := ConfigData.Rec10_Pusher_tamp_final_distance;
+GVL_Objects.List_of_Recipes[10].Pusher.tamp_final_speed := ConfigData.Rec10_Pusher_tamp_final_speed;
+GVL_Objects.List_of_Recipes[10].Pusher.tamp_initial_distance := ConfigData.Rec10_Pusher_tamp_initial_distance;
+GVL_Objects.List_of_Recipes[10].Pusher.tamp_initial_speed := ConfigData.Rec10_Pusher_tamp_initial_speed;
+
+GVL_Objects.List_of_Recipes[10].Other.Compress_Home_Offset := ConfigData.Other10_Compress_Home_Offset;
+GVL_Objects.List_of_Recipes[10].Other.Pusher_Home_Offset := ConfigData.Other10_Pusher_Home_Offset;
+GVL_Objects.List_of_Recipes[10].Other.Shield_Home_Offset := ConfigData.Other10_Shield_Home_Offset;
+GVL_Objects.List_of_Recipes[10].Other.Axis_Acceleration := ConfigData.Other10_Axis_Acceleration;
+GVL_Objects.List_of_Recipes[10].Other.Axis_Deceleration := ConfigData.Other10_Axis_Deceleration;
+GVL_Objects.List_of_Recipes[10].Other.Axis_Jerk := ConfigData.Other10_Axis_Jerk;
+GVL_Objects.List_of_Recipes[10].Memory_Free := LREAL_TO_BOOL(ConfigData.Other10_Memory_Free);
+
+GVL_Objects.List_of_Recipes[10].Clamp.Release_Instance := ConfigData.Clamp10_Release_Instance;
+
+
+//limits
+GVL_Zenon.limits_save.max_limit_Compress := ConfigData.con_max_limit_Compress ; 					
+GVL_Zenon.limits_save.max_limit_Shield := ConfigData.con_max_limit_Shield; 					
+GVL_Zenon.limits_save.max_limit_Pusher := ConfigData.con_max_limit_Pusher;					
+GVL_Zenon.limits_save.max_pusher_shield_diff := ConfigData.con_max_pusher_shield_diff;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CopyConfigSettingsToGlobal" Id="{8cb017c1-6148-46cf-b01c-1792a299feab}">
+      <Declaration><![CDATA[METHOD CopyConfigSettingsToGlobal : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CopyGlobalRecipiesToConfig" Id="{45bca9e8-f1a4-4027-985b-8e67ca82c2ba}">
+      <Declaration><![CDATA[METHOD CopyGlobalRecipiesToConfig : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//ConfigData.Rec1_Name := GVL_Objects.List_of_Recipes[1].Name;
+
+ 
+Recipe_mem_1:= List_of_Recipes[1].Name;
+
+ConfigData.Rec1_Name_1:=Rec1_Name_1;								
+ConfigData.Rec1_Name_2:=Rec1_Name_2;								
+ConfigData.Rec1_Name_3:=Rec1_Name_3;								
+ConfigData.Rec1_Name_4:=Rec1_Name_4;								
+ConfigData.Rec1_Name_5:=Rec1_Name_5;	
+
+ConfigData.Rec1_Shield_Retract_Speed := GVL_Objects.List_of_Recipes[1].Shield.Retract_Speed;
+ConfigData.Rec1_Shield_Initial_Speed := GVL_Objects.List_of_Recipes[1].Shield.Initial_Speed;
+ConfigData.Rec1_Shield_Initial_Distance := GVL_Objects.List_of_Recipes[1].Shield.Initial_distance;
+
+ConfigData.Rec1_Compress_Initial_Speed := GVL_Objects.List_of_Recipes[1].Compress.Initial_Speed;
+ConfigData.Rec1_Compress_Initial_Distance := GVL_Objects.List_of_Recipes[1].Compress.Initial_Distance;
+ConfigData.Rec1_Compress_Shield_Dwell := GVL_Objects.List_of_Recipes[1].Compress.Shield_Dwell;
+ConfigData.Rec1_Compress_Relax_Distance := GVL_Objects.List_of_Recipes[1].Compress.Relax_Distance;
+ConfigData.Rec1_Compress_Retract_Speed := GVL_Objects.List_of_Recipes[1].Compress.Retract_Speed;
+
+
+ConfigData.Rec1_Pusher_Initial_Speed := GVL_Objects.List_of_Recipes[1].Pusher.Initial_Speed;
+ConfigData.Rec1_Pusher_Initial_Distance := GVL_Objects.List_of_Recipes[1].Pusher.Initial_Distance;
+ConfigData.Rec1_Pusher_Eject_Speed := GVL_Objects.List_of_Recipes[1].Pusher.Eject_Speed;
+ConfigData.Rec1_Pusher_Eject_Distance := GVL_Objects.List_of_Recipes[1].Pusher.Eject_Distance;
+ConfigData.Rec1_Pusher_Retract_Speed := GVL_Objects.List_of_Recipes[1].Pusher.Retract_Speed;
+
+ConfigData.Rec1_Pusher_tamp_initial_distance := GVL_Objects.List_of_Recipes[1].Pusher.tamp_initial_distance;
+ConfigData.Rec1_Pusher_tamp_initial_speed := GVL_Objects.List_of_Recipes[1].Pusher.tamp_initial_speed;
+ConfigData.Rec1_Pusher_tamp_final_distance := GVL_Objects.List_of_Recipes[1].Pusher.tamp_final_distance;
+ConfigData.Rec1_Pusher_tamp_final_speed := GVL_Objects.List_of_Recipes[1].Pusher.tamp_final_speed;
+
+ConfigData.Other1_Compress_Home_Offset := GVL_Objects.List_of_Recipes[1].Other.Compress_Home_Offset;
+ConfigData.Other1_Pusher_Home_Offset := GVL_Objects.List_of_Recipes[1].Other.Pusher_Home_Offset;
+ConfigData.Other1_Shield_Home_Offset := GVL_Objects.List_of_Recipes[1].Other.Shield_Home_Offset;
+ConfigData.Other1_Axis_Acceleration := GVL_Objects.List_of_Recipes[1].Other.Axis_Acceleration;
+ConfigData.Other1_Axis_Deceleration :=GVL_Objects.List_of_Recipes[1].Other.Axis_Deceleration;
+ConfigData.Other1_Axis_Jerk := GVL_Objects.List_of_Recipes[1].Other.Axis_Jerk;
+ConfigData.Other1_Memory_Free := BOOL_TO_LREAL(GVL_Objects.List_of_Recipes[1].Memory_Free);
+
+ConfigData.Clamp1_Release_Instance := GVL_Objects.List_of_Recipes[1].Clamp.Release_Instance;
+
+Recipe_mem_2:= List_of_Recipes[2].Name;
+ConfigData.Rec2_Name_1:=Rec2_Name_1;								
+ConfigData.Rec2_Name_2:=Rec2_Name_2;								
+ConfigData.Rec2_Name_3:=Rec2_Name_3;								
+ConfigData.Rec2_Name_4:=Rec2_Name_4;								
+ConfigData.Rec2_Name_5:=Rec2_Name_5;
+
+ConfigData.Rec2_Shield_Retract_Speed := GVL_Objects.List_of_Recipes[2].Shield.Retract_Speed;
+ConfigData.Rec2_Shield_Initial_Speed := GVL_Objects.List_of_Recipes[2].Shield.Initial_Speed;
+ConfigData.Rec2_Shield_Initial_Distance := GVL_Objects.List_of_Recipes[2].Shield.Initial_distance;
+
+ConfigData.Rec2_Compress_Initial_Speed := GVL_Objects.List_of_Recipes[2].Compress.Initial_Speed;
+ConfigData.Rec2_Compress_Initial_Distance := GVL_Objects.List_of_Recipes[2].Compress.Initial_Distance;
+ConfigData.Rec2_Compress_Shield_Dwell := GVL_Objects.List_of_Recipes[2].Compress.Shield_Dwell;
+ConfigData.Rec2_Compress_Relax_Distance := GVL_Objects.List_of_Recipes[2].Compress.Relax_Distance;
+ConfigData.Rec2_Compress_Retract_Speed := GVL_Objects.List_of_Recipes[2].Compress.Retract_Speed;
+
+ConfigData.Rec2_Pusher_Initial_Speed := GVL_Objects.List_of_Recipes[2].Pusher.Initial_Speed;
+ConfigData.Rec2_Pusher_Initial_Distance := GVL_Objects.List_of_Recipes[2].Pusher.Initial_Distance;
+ConfigData.Rec2_Pusher_Eject_Speed := GVL_Objects.List_of_Recipes[2].Pusher.Eject_Speed;
+ConfigData.Rec2_Pusher_Eject_Distance := GVL_Objects.List_of_Recipes[2].Pusher.Eject_Distance;
+ConfigData.Rec2_Pusher_Retract_Speed := GVL_Objects.List_of_Recipes[2].Pusher.Retract_Speed;
+
+ConfigData.Rec2_Pusher_tamp_initial_distance := GVL_Objects.List_of_Recipes[2].Pusher.tamp_initial_distance;
+ConfigData.Rec2_Pusher_tamp_initial_speed := GVL_Objects.List_of_Recipes[2].Pusher.tamp_initial_speed;
+ConfigData.Rec2_Pusher_tamp_final_distance := GVL_Objects.List_of_Recipes[2].Pusher.tamp_final_distance;
+ConfigData.Rec2_Pusher_tamp_final_speed := GVL_Objects.List_of_Recipes[2].Pusher.tamp_final_speed;
+
+ConfigData.Other2_Compress_Home_Offset := GVL_Objects.List_of_Recipes[2].Other.Compress_Home_Offset;
+ConfigData.Other2_Pusher_Home_Offset := GVL_Objects.List_of_Recipes[2].Other.Pusher_Home_Offset;
+ConfigData.Other2_Shield_Home_Offset := GVL_Objects.List_of_Recipes[2].Other.Shield_Home_Offset;
+ConfigData.Other2_Axis_Acceleration := GVL_Objects.List_of_Recipes[2].Other.Axis_Acceleration;
+ConfigData.Other2_Axis_Deceleration :=GVL_Objects.List_of_Recipes[2].Other.Axis_Deceleration;
+ConfigData.Other2_Axis_Jerk := GVL_Objects.List_of_Recipes[2].Other.Axis_Jerk;
+ConfigData.Other2_Memory_Free := BOOL_TO_LREAL(GVL_Objects.List_of_Recipes[2].Memory_Free);
+
+ConfigData.Clamp2_Release_Instance := GVL_Objects.List_of_Recipes[2].Clamp.Release_Instance;
+
+Recipe_mem_3:= List_of_Recipes[3].Name;
+ConfigData.Rec3_Name_1:=Rec3_Name_1;								
+ConfigData.Rec3_Name_2:=Rec3_Name_2;								
+ConfigData.Rec3_Name_3:=Rec3_Name_3;								
+ConfigData.Rec3_Name_4:=Rec3_Name_4;								
+ConfigData.Rec3_Name_5:=Rec3_Name_5;
+
+ConfigData.Rec3_Shield_Retract_Speed := GVL_Objects.List_of_Recipes[3].Shield.Retract_Speed;
+ConfigData.Rec3_Shield_Initial_Speed := GVL_Objects.List_of_Recipes[3].Shield.Initial_Speed;
+ConfigData.Rec3_Shield_Initial_Distance := GVL_Objects.List_of_Recipes[3].Shield.Initial_distance;
+
+ConfigData.Rec3_Compress_Initial_Speed := GVL_Objects.List_of_Recipes[3].Compress.Initial_Speed;
+ConfigData.Rec3_Compress_Initial_Distance := GVL_Objects.List_of_Recipes[3].Compress.Initial_Distance;
+ConfigData.Rec3_Compress_Shield_Dwell := GVL_Objects.List_of_Recipes[3].Compress.Shield_Dwell;
+ConfigData.Rec3_Compress_Relax_Distance := GVL_Objects.List_of_Recipes[3].Compress.Relax_Distance;
+ConfigData.Rec3_Compress_Retract_Speed := GVL_Objects.List_of_Recipes[3].Compress.Retract_Speed;
+
+ConfigData.Rec3_Pusher_Initial_Speed := GVL_Objects.List_of_Recipes[3].Pusher.Initial_Speed;
+ConfigData.Rec3_Pusher_Initial_Distance := GVL_Objects.List_of_Recipes[3].Pusher.Initial_Distance;
+ConfigData.Rec3_Pusher_Eject_Speed := GVL_Objects.List_of_Recipes[3].Pusher.Eject_Speed;
+ConfigData.Rec3_Pusher_Eject_Distance := GVL_Objects.List_of_Recipes[3].Pusher.Eject_Distance;
+ConfigData.Rec3_Pusher_Retract_Speed := GVL_Objects.List_of_Recipes[3].Pusher.Retract_Speed;
+
+ConfigData.Rec3_Pusher_tamp_initial_distance := GVL_Objects.List_of_Recipes[3].Pusher.tamp_initial_distance;
+ConfigData.Rec3_Pusher_tamp_initial_speed := GVL_Objects.List_of_Recipes[3].Pusher.tamp_initial_speed;
+ConfigData.Rec3_Pusher_tamp_final_distance := GVL_Objects.List_of_Recipes[3].Pusher.tamp_final_distance;
+ConfigData.Rec3_Pusher_tamp_final_speed := GVL_Objects.List_of_Recipes[3].Pusher.tamp_final_speed;
+
+ConfigData.Other3_Compress_Home_Offset := GVL_Objects.List_of_Recipes[3].Other.Compress_Home_Offset;
+ConfigData.Other3_Pusher_Home_Offset := GVL_Objects.List_of_Recipes[3].Other.Pusher_Home_Offset;
+ConfigData.Other3_Shield_Home_Offset := GVL_Objects.List_of_Recipes[3].Other.Shield_Home_Offset;
+ConfigData.Other3_Axis_Acceleration := GVL_Objects.List_of_Recipes[3].Other.Axis_Acceleration;
+ConfigData.Other3_Axis_Deceleration :=GVL_Objects.List_of_Recipes[3].Other.Axis_Deceleration;
+ConfigData.Other3_Axis_Jerk := GVL_Objects.List_of_Recipes[3].Other.Axis_Jerk;
+ConfigData.Other3_Memory_Free := BOOL_TO_LREAL(GVL_Objects.List_of_Recipes[3].Memory_Free);
+
+ConfigData.Clamp3_Release_Instance := GVL_Objects.List_of_Recipes[3].Clamp.Release_Instance;
+
+Recipe_mem_4:= List_of_Recipes[4].Name;
+ConfigData.Rec4_Name_1:=Rec4_Name_1;								
+ConfigData.Rec4_Name_2:=Rec4_Name_2;								
+ConfigData.Rec4_Name_3:=Rec4_Name_3;								
+ConfigData.Rec4_Name_4:=Rec4_Name_4;								
+ConfigData.Rec4_Name_5:=Rec4_Name_5;
+
+ConfigData.Rec4_Shield_Retract_Speed := GVL_Objects.List_of_Recipes[4].Shield.Retract_Speed;
+ConfigData.Rec4_Shield_Initial_Speed := GVL_Objects.List_of_Recipes[4].Shield.Initial_Speed;
+ConfigData.Rec4_Shield_Initial_Distance := GVL_Objects.List_of_Recipes[4].Shield.Initial_distance;
+
+ConfigData.Rec4_Compress_Initial_Speed := GVL_Objects.List_of_Recipes[4].Compress.Initial_Speed;
+ConfigData.Rec4_Compress_Initial_Distance := GVL_Objects.List_of_Recipes[4].Compress.Initial_Distance;
+ConfigData.Rec4_Compress_Shield_Dwell := GVL_Objects.List_of_Recipes[4].Compress.Shield_Dwell;
+ConfigData.Rec4_Compress_Relax_Distance := GVL_Objects.List_of_Recipes[4].Compress.Relax_Distance;
+ConfigData.Rec4_Compress_Retract_Speed := GVL_Objects.List_of_Recipes[4].Compress.Retract_Speed;
+
+ConfigData.Rec4_Pusher_Initial_Speed := GVL_Objects.List_of_Recipes[4].Pusher.Initial_Speed;
+ConfigData.Rec4_Pusher_Initial_Distance := GVL_Objects.List_of_Recipes[4].Pusher.Initial_Distance;
+ConfigData.Rec4_Pusher_Eject_Speed := GVL_Objects.List_of_Recipes[4].Pusher.Eject_Speed;
+ConfigData.Rec4_Pusher_Eject_Distance := GVL_Objects.List_of_Recipes[4].Pusher.Eject_Distance;
+ConfigData.Rec4_Pusher_Retract_Speed := GVL_Objects.List_of_Recipes[4].Pusher.Retract_Speed;
+
+ConfigData.Rec4_Pusher_tamp_initial_distance := GVL_Objects.List_of_Recipes[4].Pusher.tamp_initial_distance;
+ConfigData.Rec4_Pusher_tamp_initial_speed := GVL_Objects.List_of_Recipes[4].Pusher.tamp_initial_speed;
+ConfigData.Rec4_Pusher_tamp_final_distance := GVL_Objects.List_of_Recipes[4].Pusher.tamp_final_distance;
+ConfigData.Rec4_Pusher_tamp_final_speed := GVL_Objects.List_of_Recipes[4].Pusher.tamp_final_speed;
+
+ConfigData.Other4_Compress_Home_Offset := GVL_Objects.List_of_Recipes[4].Other.Compress_Home_Offset;
+ConfigData.Other4_Pusher_Home_Offset := GVL_Objects.List_of_Recipes[4].Other.Pusher_Home_Offset;
+ConfigData.Other4_Shield_Home_Offset := GVL_Objects.List_of_Recipes[4].Other.Shield_Home_Offset;
+ConfigData.Other4_Axis_Acceleration := GVL_Objects.List_of_Recipes[4].Other.Axis_Acceleration;
+ConfigData.Other4_Axis_Deceleration :=GVL_Objects.List_of_Recipes[4].Other.Axis_Deceleration;
+ConfigData.Other4_Axis_Jerk := GVL_Objects.List_of_Recipes[4].Other.Axis_Jerk;
+ConfigData.Other4_Memory_Free := BOOL_TO_LREAL(GVL_Objects.List_of_Recipes[4].Memory_Free);
+
+ConfigData.Clamp4_Release_Instance := GVL_Objects.List_of_Recipes[4].Clamp.Release_Instance;
+
+Recipe_mem_5:= List_of_Recipes[5].Name;
+ConfigData.Rec5_Name_1:=Rec5_Name_1;								
+ConfigData.Rec5_Name_2:=Rec5_Name_2;								
+ConfigData.Rec5_Name_3:=Rec5_Name_3;								
+ConfigData.Rec5_Name_4:=Rec5_Name_4;								
+ConfigData.Rec5_Name_5:=Rec5_Name_5;
+
+ConfigData.Rec5_Shield_Retract_Speed := GVL_Objects.List_of_Recipes[5].Shield.Retract_Speed;
+ConfigData.Rec5_Shield_Initial_Speed := GVL_Objects.List_of_Recipes[5].Shield.Initial_Speed;
+ConfigData.Rec5_Shield_Initial_Distance := GVL_Objects.List_of_Recipes[5].Shield.Initial_distance;
+
+ConfigData.Rec5_Compress_Initial_Speed := GVL_Objects.List_of_Recipes[5].Compress.Initial_Speed;
+ConfigData.Rec5_Compress_Initial_Distance := GVL_Objects.List_of_Recipes[5].Compress.Initial_Distance;
+ConfigData.Rec5_Compress_Shield_Dwell := GVL_Objects.List_of_Recipes[5].Compress.Shield_Dwell;
+ConfigData.Rec5_Compress_Relax_Distance := GVL_Objects.List_of_Recipes[5].Compress.Relax_Distance;
+ConfigData.Rec5_Compress_Retract_Speed := GVL_Objects.List_of_Recipes[5].Compress.Retract_Speed;
+
+ConfigData.Rec5_Pusher_Initial_Speed := GVL_Objects.List_of_Recipes[5].Pusher.Initial_Speed;
+ConfigData.Rec5_Pusher_Initial_Distance := GVL_Objects.List_of_Recipes[5].Pusher.Initial_Distance;
+ConfigData.Rec5_Pusher_Eject_Speed := GVL_Objects.List_of_Recipes[5].Pusher.Eject_Speed;
+ConfigData.Rec5_Pusher_Eject_Distance := GVL_Objects.List_of_Recipes[5].Pusher.Eject_Distance;
+ConfigData.Rec5_Pusher_Retract_Speed := GVL_Objects.List_of_Recipes[5].Pusher.Retract_Speed;
+
+ConfigData.Rec5_Pusher_tamp_initial_distance := GVL_Objects.List_of_Recipes[5].Pusher.tamp_initial_distance;
+ConfigData.Rec5_Pusher_tamp_initial_speed := GVL_Objects.List_of_Recipes[5].Pusher.tamp_initial_speed;
+ConfigData.Rec5_Pusher_tamp_final_distance := GVL_Objects.List_of_Recipes[5].Pusher.tamp_final_distance;
+ConfigData.Rec5_Pusher_tamp_final_speed := GVL_Objects.List_of_Recipes[5].Pusher.tamp_final_speed;
+
+ConfigData.Other5_Compress_Home_Offset := GVL_Objects.List_of_Recipes[5].Other.Compress_Home_Offset;
+ConfigData.Other5_Pusher_Home_Offset := GVL_Objects.List_of_Recipes[5].Other.Pusher_Home_Offset;
+ConfigData.Other5_Shield_Home_Offset := GVL_Objects.List_of_Recipes[5].Other.Shield_Home_Offset;
+ConfigData.Other5_Axis_Acceleration := GVL_Objects.List_of_Recipes[5].Other.Axis_Acceleration;
+ConfigData.Other5_Axis_Deceleration :=GVL_Objects.List_of_Recipes[5].Other.Axis_Deceleration;
+ConfigData.Other5_Axis_Jerk := GVL_Objects.List_of_Recipes[5].Other.Axis_Jerk;
+ConfigData.Other5_Memory_Free := BOOL_TO_LREAL(GVL_Objects.List_of_Recipes[5].Memory_Free);
+
+ConfigData.Clamp5_Release_Instance := GVL_Objects.List_of_Recipes[5].Clamp.Release_Instance;
+
+Recipe_mem_6:= List_of_Recipes[6].Name;
+ConfigData.Rec6_Name_1:=Rec6_Name_1;								
+ConfigData.Rec6_Name_2:=Rec6_Name_2;								
+ConfigData.Rec6_Name_3:=Rec6_Name_3;								
+ConfigData.Rec6_Name_4:=Rec6_Name_4;								
+ConfigData.Rec6_Name_5:=Rec6_Name_5;
+
+ConfigData.Rec6_Shield_Retract_Speed := GVL_Objects.List_of_Recipes[6].Shield.Retract_Speed;
+ConfigData.Rec6_Shield_Initial_Speed := GVL_Objects.List_of_Recipes[6].Shield.Initial_Speed;
+ConfigData.Rec6_Shield_Initial_Distance := GVL_Objects.List_of_Recipes[6].Shield.Initial_distance;
+
+ConfigData.Rec6_Compress_Initial_Speed := GVL_Objects.List_of_Recipes[6].Compress.Initial_Speed;
+ConfigData.Rec6_Compress_Initial_Distance := GVL_Objects.List_of_Recipes[6].Compress.Initial_Distance;
+ConfigData.Rec6_Compress_Shield_Dwell := GVL_Objects.List_of_Recipes[6].Compress.Shield_Dwell;
+ConfigData.Rec6_Compress_Relax_Distance := GVL_Objects.List_of_Recipes[6].Compress.Relax_Distance;
+ConfigData.Rec6_Compress_Retract_Speed := GVL_Objects.List_of_Recipes[6].Compress.Retract_Speed;
+
+ConfigData.Rec6_Pusher_Initial_Speed := GVL_Objects.List_of_Recipes[6].Pusher.Initial_Speed;
+ConfigData.Rec6_Pusher_Initial_Distance := GVL_Objects.List_of_Recipes[6].Pusher.Initial_Distance;
+ConfigData.Rec6_Pusher_Eject_Speed := GVL_Objects.List_of_Recipes[6].Pusher.Eject_Speed;
+ConfigData.Rec6_Pusher_Eject_Distance := GVL_Objects.List_of_Recipes[6].Pusher.Eject_Distance;
+ConfigData.Rec6_Pusher_Retract_Speed := GVL_Objects.List_of_Recipes[6].Pusher.Retract_Speed;
+
+ConfigData.Rec6_Pusher_tamp_initial_distance := GVL_Objects.List_of_Recipes[6].Pusher.tamp_initial_distance;
+ConfigData.Rec6_Pusher_tamp_initial_speed := GVL_Objects.List_of_Recipes[6].Pusher.tamp_initial_speed;
+ConfigData.Rec6_Pusher_tamp_final_distance := GVL_Objects.List_of_Recipes[6].Pusher.tamp_final_distance;
+ConfigData.Rec6_Pusher_tamp_final_speed := GVL_Objects.List_of_Recipes[6].Pusher.tamp_final_speed;
+
+ConfigData.Other6_Compress_Home_Offset := GVL_Objects.List_of_Recipes[6].Other.Compress_Home_Offset;
+ConfigData.Other6_Pusher_Home_Offset := GVL_Objects.List_of_Recipes[6].Other.Pusher_Home_Offset;
+ConfigData.Other6_Shield_Home_Offset := GVL_Objects.List_of_Recipes[6].Other.Shield_Home_Offset;
+ConfigData.Other6_Axis_Acceleration := GVL_Objects.List_of_Recipes[6].Other.Axis_Acceleration;
+ConfigData.Other6_Axis_Deceleration :=GVL_Objects.List_of_Recipes[6].Other.Axis_Deceleration;
+ConfigData.Other6_Axis_Jerk := GVL_Objects.List_of_Recipes[6].Other.Axis_Jerk;
+ConfigData.Other6_Memory_Free := BOOL_TO_LREAL(GVL_Objects.List_of_Recipes[6].Memory_Free);
+
+ConfigData.Clamp6_Release_Instance := GVL_Objects.List_of_Recipes[6].Clamp.Release_Instance;
+
+Recipe_mem_7:= List_of_Recipes[7].Name;
+ConfigData.Rec7_Name_1:=Rec7_Name_1;								
+ConfigData.Rec7_Name_2:=Rec7_Name_2;								
+ConfigData.Rec7_Name_3:=Rec7_Name_3;								
+ConfigData.Rec7_Name_4:=Rec7_Name_4;								
+ConfigData.Rec7_Name_5:=Rec7_Name_5;
+
+ConfigData.Rec7_Shield_Retract_Speed := GVL_Objects.List_of_Recipes[7].Shield.Retract_Speed;
+ConfigData.Rec7_Shield_Initial_Speed := GVL_Objects.List_of_Recipes[7].Shield.Initial_Speed;
+ConfigData.Rec7_Shield_Initial_Distance := GVL_Objects.List_of_Recipes[7].Shield.Initial_distance;
+
+ConfigData.Rec7_Compress_Initial_Speed := GVL_Objects.List_of_Recipes[7].Compress.Initial_Speed;
+ConfigData.Rec7_Compress_Initial_Distance := GVL_Objects.List_of_Recipes[7].Compress.Initial_Distance;
+ConfigData.Rec7_Compress_Shield_Dwell := GVL_Objects.List_of_Recipes[7].Compress.Shield_Dwell;
+ConfigData.Rec7_Compress_Relax_Distance := GVL_Objects.List_of_Recipes[7].Compress.Relax_Distance;
+ConfigData.Rec7_Compress_Retract_Speed := GVL_Objects.List_of_Recipes[7].Compress.Retract_Speed;
+
+ConfigData.Rec7_Pusher_Initial_Speed := GVL_Objects.List_of_Recipes[7].Pusher.Initial_Speed;
+ConfigData.Rec7_Pusher_Initial_Distance := GVL_Objects.List_of_Recipes[7].Pusher.Initial_Distance;
+ConfigData.Rec7_Pusher_Eject_Speed := GVL_Objects.List_of_Recipes[7].Pusher.Eject_Speed;
+ConfigData.Rec7_Pusher_Eject_Distance := GVL_Objects.List_of_Recipes[7].Pusher.Eject_Distance;
+ConfigData.Rec7_Pusher_Retract_Speed := GVL_Objects.List_of_Recipes[7].Pusher.Retract_Speed;
+
+ConfigData.Rec7_Pusher_tamp_initial_distance := GVL_Objects.List_of_Recipes[7].Pusher.tamp_initial_distance;
+ConfigData.Rec7_Pusher_tamp_initial_speed := GVL_Objects.List_of_Recipes[7].Pusher.tamp_initial_speed;
+ConfigData.Rec7_Pusher_tamp_final_distance := GVL_Objects.List_of_Recipes[7].Pusher.tamp_final_distance;
+ConfigData.Rec7_Pusher_tamp_final_speed := GVL_Objects.List_of_Recipes[7].Pusher.tamp_final_speed;
+
+ConfigData.Other7_Compress_Home_Offset := GVL_Objects.List_of_Recipes[7].Other.Compress_Home_Offset;
+ConfigData.Other7_Pusher_Home_Offset := GVL_Objects.List_of_Recipes[7].Other.Pusher_Home_Offset;
+ConfigData.Other7_Shield_Home_Offset := GVL_Objects.List_of_Recipes[7].Other.Shield_Home_Offset;
+ConfigData.Other7_Axis_Acceleration := GVL_Objects.List_of_Recipes[7].Other.Axis_Acceleration;
+ConfigData.Other7_Axis_Deceleration :=GVL_Objects.List_of_Recipes[7].Other.Axis_Deceleration;
+ConfigData.Other7_Axis_Jerk := GVL_Objects.List_of_Recipes[7].Other.Axis_Jerk;
+ConfigData.Other7_Memory_Free := BOOL_TO_LREAL(GVL_Objects.List_of_Recipes[7].Memory_Free);
+
+ConfigData.Clamp7_Release_Instance := GVL_Objects.List_of_Recipes[7].Clamp.Release_Instance;
+
+Recipe_mem_8:= List_of_Recipes[8].Name;
+ConfigData.Rec8_Name_1:=Rec8_Name_1;								
+ConfigData.Rec8_Name_2:=Rec8_Name_2;								
+ConfigData.Rec8_Name_3:=Rec8_Name_3;								
+ConfigData.Rec8_Name_4:=Rec8_Name_4;								
+ConfigData.Rec8_Name_5:=Rec8_Name_5;
+
+ConfigData.Rec8_Shield_Retract_Speed := GVL_Objects.List_of_Recipes[8].Shield.Retract_Speed;
+ConfigData.Rec8_Shield_Initial_Speed := GVL_Objects.List_of_Recipes[8].Shield.Initial_Speed;
+ConfigData.Rec8_Shield_Initial_Distance := GVL_Objects.List_of_Recipes[8].Shield.Initial_distance;
+
+ConfigData.Rec8_Compress_Initial_Speed := GVL_Objects.List_of_Recipes[8].Compress.Initial_Speed;
+ConfigData.Rec8_Compress_Initial_Distance := GVL_Objects.List_of_Recipes[8].Compress.Initial_Distance;
+ConfigData.Rec8_Compress_Shield_Dwell := GVL_Objects.List_of_Recipes[8].Compress.Shield_Dwell;
+ConfigData.Rec8_Compress_Relax_Distance := GVL_Objects.List_of_Recipes[8].Compress.Relax_Distance;
+ConfigData.Rec8_Compress_Retract_Speed := GVL_Objects.List_of_Recipes[8].Compress.Retract_Speed;
+
+ConfigData.Rec8_Pusher_Initial_Speed := GVL_Objects.List_of_Recipes[8].Pusher.Initial_Speed;
+ConfigData.Rec8_Pusher_Initial_Distance := GVL_Objects.List_of_Recipes[8].Pusher.Initial_Distance;
+ConfigData.Rec8_Pusher_Eject_Speed := GVL_Objects.List_of_Recipes[8].Pusher.Eject_Speed;
+ConfigData.Rec8_Pusher_Eject_Distance := GVL_Objects.List_of_Recipes[8].Pusher.Eject_Distance;
+ConfigData.Rec8_Pusher_Retract_Speed := GVL_Objects.List_of_Recipes[8].Pusher.Retract_Speed;
+
+ConfigData.Rec8_Pusher_tamp_initial_distance := GVL_Objects.List_of_Recipes[8].Pusher.tamp_initial_distance;
+ConfigData.Rec8_Pusher_tamp_initial_speed := GVL_Objects.List_of_Recipes[8].Pusher.tamp_initial_speed;
+ConfigData.Rec8_Pusher_tamp_final_distance := GVL_Objects.List_of_Recipes[8].Pusher.tamp_final_distance;
+ConfigData.Rec8_Pusher_tamp_final_speed := GVL_Objects.List_of_Recipes[8].Pusher.tamp_final_speed;
+
+ConfigData.Other8_Compress_Home_Offset := GVL_Objects.List_of_Recipes[8].Other.Compress_Home_Offset;
+ConfigData.Other8_Pusher_Home_Offset := GVL_Objects.List_of_Recipes[8].Other.Pusher_Home_Offset;
+ConfigData.Other8_Shield_Home_Offset := GVL_Objects.List_of_Recipes[8].Other.Shield_Home_Offset;
+ConfigData.Other8_Axis_Acceleration := GVL_Objects.List_of_Recipes[8].Other.Axis_Acceleration;
+ConfigData.Other8_Axis_Deceleration :=GVL_Objects.List_of_Recipes[8].Other.Axis_Deceleration;
+ConfigData.Other8_Axis_Jerk := GVL_Objects.List_of_Recipes[8].Other.Axis_Jerk;
+ConfigData.Other8_Memory_Free := BOOL_TO_LREAL(GVL_Objects.List_of_Recipes[8].Memory_Free);
+
+ConfigData.Clamp8_Release_Instance := GVL_Objects.List_of_Recipes[8].Clamp.Release_Instance;
+
+Recipe_mem_9:= List_of_Recipes[9].Name;
+ConfigData.Rec9_Name_1:=Rec9_Name_1;								
+ConfigData.Rec9_Name_2:=Rec9_Name_2;								
+ConfigData.Rec9_Name_3:=Rec9_Name_3;								
+ConfigData.Rec9_Name_4:=Rec9_Name_4;								
+ConfigData.Rec9_Name_5:=Rec9_Name_5;
+
+ConfigData.Rec9_Shield_Retract_Speed := GVL_Objects.List_of_Recipes[9].Shield.Retract_Speed;
+ConfigData.Rec9_Shield_Initial_Speed := GVL_Objects.List_of_Recipes[9].Shield.Initial_Speed;
+ConfigData.Rec9_Shield_Initial_Distance := GVL_Objects.List_of_Recipes[9].Shield.Initial_distance;
+
+ConfigData.Rec9_Compress_Initial_Speed := GVL_Objects.List_of_Recipes[9].Compress.Initial_Speed;
+ConfigData.Rec9_Compress_Initial_Distance := GVL_Objects.List_of_Recipes[9].Compress.Initial_Distance;
+ConfigData.Rec9_Compress_Shield_Dwell := GVL_Objects.List_of_Recipes[9].Compress.Shield_Dwell;
+ConfigData.Rec9_Compress_Relax_Distance := GVL_Objects.List_of_Recipes[9].Compress.Relax_Distance;
+ConfigData.Rec9_Compress_Retract_Speed := GVL_Objects.List_of_Recipes[9].Compress.Retract_Speed;
+
+ConfigData.Rec9_Pusher_Initial_Speed := GVL_Objects.List_of_Recipes[9].Pusher.Initial_Speed;
+ConfigData.Rec9_Pusher_Initial_Distance := GVL_Objects.List_of_Recipes[9].Pusher.Initial_Distance;
+ConfigData.Rec9_Pusher_Eject_Speed := GVL_Objects.List_of_Recipes[9].Pusher.Eject_Speed;
+ConfigData.Rec9_Pusher_Eject_Distance := GVL_Objects.List_of_Recipes[9].Pusher.Eject_Distance;
+ConfigData.Rec9_Pusher_Retract_Speed := GVL_Objects.List_of_Recipes[9].Pusher.Retract_Speed;
+
+ConfigData.Rec9_Pusher_tamp_initial_distance := GVL_Objects.List_of_Recipes[9].Pusher.tamp_initial_distance;
+ConfigData.Rec9_Pusher_tamp_initial_speed := GVL_Objects.List_of_Recipes[9].Pusher.tamp_initial_speed;
+ConfigData.Rec9_Pusher_tamp_final_distance := GVL_Objects.List_of_Recipes[9].Pusher.tamp_final_distance;
+ConfigData.Rec9_Pusher_tamp_final_speed := GVL_Objects.List_of_Recipes[9].Pusher.tamp_final_speed;
+
+ConfigData.Other9_Compress_Home_Offset := GVL_Objects.List_of_Recipes[9].Other.Compress_Home_Offset;
+ConfigData.Other9_Pusher_Home_Offset := GVL_Objects.List_of_Recipes[9].Other.Pusher_Home_Offset;
+ConfigData.Other9_Shield_Home_Offset := GVL_Objects.List_of_Recipes[9].Other.Shield_Home_Offset;
+ConfigData.Other9_Axis_Acceleration := GVL_Objects.List_of_Recipes[9].Other.Axis_Acceleration;
+ConfigData.Other9_Axis_Deceleration :=GVL_Objects.List_of_Recipes[9].Other.Axis_Deceleration;
+ConfigData.Other9_Axis_Jerk := GVL_Objects.List_of_Recipes[9].Other.Axis_Jerk;
+ConfigData.Other9_Memory_Free := BOOL_TO_LREAL(GVL_Objects.List_of_Recipes[9].Memory_Free);
+
+ConfigData.Clamp9_Release_Instance := GVL_Objects.List_of_Recipes[9].Clamp.Release_Instance;
+
+Recipe_mem_10:= List_of_Recipes[10].Name;
+ConfigData.Rec10_Name_1:=Rec10_Name_1;								
+ConfigData.Rec10_Name_2:=Rec10_Name_2;								
+ConfigData.Rec10_Name_3:=Rec10_Name_3;								
+ConfigData.Rec10_Name_4:=Rec10_Name_4;								
+ConfigData.Rec10_Name_5:=Rec10_Name_5;
+
+ConfigData.Rec10_Shield_Retract_Speed := GVL_Objects.List_of_Recipes[10].Shield.Retract_Speed;
+ConfigData.Rec10_Shield_Initial_Speed := GVL_Objects.List_of_Recipes[10].Shield.Initial_Speed;
+ConfigData.Rec10_Shield_Initial_Distance := GVL_Objects.List_of_Recipes[10].Shield.Initial_distance;
+
+ConfigData.Rec10_Compress_Initial_Speed := GVL_Objects.List_of_Recipes[10].Compress.Initial_Speed;
+ConfigData.Rec10_Compress_Initial_Distance := GVL_Objects.List_of_Recipes[10].Compress.Initial_Distance;
+ConfigData.Rec10_Compress_Shield_Dwell := GVL_Objects.List_of_Recipes[10].Compress.Shield_Dwell;
+ConfigData.Rec10_Compress_Relax_Distance := GVL_Objects.List_of_Recipes[10].Compress.Relax_Distance;
+ConfigData.Rec10_Compress_Retract_Speed := GVL_Objects.List_of_Recipes[10].Compress.Retract_Speed;
+
+ConfigData.Rec10_Pusher_Initial_Speed := GVL_Objects.List_of_Recipes[10].Pusher.Initial_Speed;
+ConfigData.Rec10_Pusher_Initial_Distance := GVL_Objects.List_of_Recipes[10].Pusher.Initial_Distance;
+ConfigData.Rec10_Pusher_Eject_Speed := GVL_Objects.List_of_Recipes[10].Pusher.Eject_Speed;
+ConfigData.Rec10_Pusher_Eject_Distance := GVL_Objects.List_of_Recipes[10].Pusher.Eject_Distance;
+ConfigData.Rec10_Pusher_Retract_Speed := GVL_Objects.List_of_Recipes[10].Pusher.Retract_Speed;
+
+ConfigData.Rec10_Pusher_tamp_initial_distance := GVL_Objects.List_of_Recipes[10].Pusher.tamp_initial_distance;
+ConfigData.Rec10_Pusher_tamp_initial_speed := GVL_Objects.List_of_Recipes[10].Pusher.tamp_initial_speed;
+ConfigData.Rec10_Pusher_tamp_final_distance := GVL_Objects.List_of_Recipes[10].Pusher.tamp_final_distance;
+ConfigData.Rec10_Pusher_tamp_final_speed := GVL_Objects.List_of_Recipes[10].Pusher.tamp_final_speed;
+
+ConfigData.Other10_Compress_Home_Offset := GVL_Objects.List_of_Recipes[10].Other.Compress_Home_Offset;
+ConfigData.Other10_Pusher_Home_Offset := GVL_Objects.List_of_Recipes[10].Other.Pusher_Home_Offset;
+ConfigData.Other10_Shield_Home_Offset := GVL_Objects.List_of_Recipes[10].Other.Shield_Home_Offset;
+ConfigData.Other10_Axis_Acceleration := GVL_Objects.List_of_Recipes[10].Other.Axis_Acceleration;
+ConfigData.Other10_Axis_Deceleration :=GVL_Objects.List_of_Recipes[10].Other.Axis_Deceleration;
+ConfigData.Other10_Axis_Jerk := GVL_Objects.List_of_Recipes[10].Other.Axis_Jerk;
+ConfigData.Other10_Memory_Free := BOOL_TO_LREAL(GVL_Objects.List_of_Recipes[10].Memory_Free);
+
+ConfigData.Clamp10_Release_Instance := GVL_Objects.List_of_Recipes[10].Clamp.Release_Instance;
+
+//limits
+ConfigData.con_max_limit_Compress := GVL_Zenon.limits_save.max_limit_Compress; 					
+ConfigData.con_max_limit_Shield	:= GVL_Zenon.limits_save.max_limit_Shield; 					
+ConfigData.con_max_limit_Pusher := GVL_Zenon.limits_save.max_limit_Pusher;					
+ConfigData.con_max_pusher_shield_diff := GVL_Zenon.limits_save.max_pusher_shield_diff;				]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="CopyGlobalSettingsToConfig" Id="{f6833ea0-d554-4083-b03b-44cd89cead07}">
+      <Declaration><![CDATA[METHOD CopyGlobalSettingsToConfig : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="Initialised" Id="{d002e097-bc11-4ad5-bb76-737f95b49dcf}">
+      <Declaration><![CDATA[METHOD Initialised : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[Initialised := ConfigData.Initialised;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="METH" Id="{05c42cc8-49e0-4af7-90b3-41521351f178}">
+      <Declaration><![CDATA[METHOD METH : BOOL
+VAR_INPUT
+	str : STRING(80); 
+	pos : INT; 
+	pt : POINTER TO ARRAY[0..79] OF BYTE; 
+	size : UINT; 
+END_VAR
+VAR
+	ps : POINTER TO BYTE; 
+	i: INT; 
+	end: INT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+
+ps := ADR(str); 
+end := MIN(pos + LEN(str) - 1,UINT_TO_INT(size)); 
+
+FOR i := pos TO end DO 
+	pt^[i] := ps^; 
+	ps := ps + 1; 
+END_FOR; 
+
+]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="TConfig">
+      <LineId Id="39" Count="9" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="TConfig.CopyConfigRecipiesToGlobal">
+      <LineId Id="249" Count="0" />
+      <LineId Id="373" Count="0" />
+      <LineId Id="376" Count="3" />
+      <LineId Id="374" Count="1" />
+      <LineId Id="250" Count="0" />
+      <LineId Id="254" Count="1" />
+      <LineId Id="26" Count="11" />
+      <LineId Id="277" Count="4" />
+      <LineId Id="38" Count="7" />
+      <LineId Id="330" Count="3" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="381" Count="3" />
+      <LineId Id="364" Count="0" />
+      <LineId Id="380" Count="0" />
+      <LineId Id="47" Count="0" />
+      <LineId Id="256" Count="1" />
+      <LineId Id="48" Count="11" />
+      <LineId Id="282" Count="4" />
+      <LineId Id="60" Count="7" />
+      <LineId Id="334" Count="1" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="365" Count="0" />
+      <LineId Id="387" Count="3" />
+      <LineId Id="386" Count="0" />
+      <LineId Id="385" Count="0" />
+      <LineId Id="70" Count="1" />
+      <LineId Id="259" Count="0" />
+      <LineId Id="258" Count="0" />
+      <LineId Id="72" Count="10" />
+      <LineId Id="287" Count="4" />
+      <LineId Id="83" Count="7" />
+      <LineId Id="92" Count="0" />
+      <LineId Id="336" Count="1" />
+      <LineId Id="366" Count="0" />
+      <LineId Id="393" Count="3" />
+      <LineId Id="392" Count="0" />
+      <LineId Id="391" Count="0" />
+      <LineId Id="93" Count="1" />
+      <LineId Id="261" Count="0" />
+      <LineId Id="260" Count="0" />
+      <LineId Id="95" Count="10" />
+      <LineId Id="292" Count="4" />
+      <LineId Id="106" Count="8" />
+      <LineId Id="338" Count="1" />
+      <LineId Id="367" Count="0" />
+      <LineId Id="399" Count="3" />
+      <LineId Id="398" Count="0" />
+      <LineId Id="397" Count="0" />
+      <LineId Id="115" Count="1" />
+      <LineId Id="263" Count="0" />
+      <LineId Id="262" Count="0" />
+      <LineId Id="117" Count="10" />
+      <LineId Id="297" Count="4" />
+      <LineId Id="128" Count="8" />
+      <LineId Id="340" Count="1" />
+      <LineId Id="368" Count="0" />
+      <LineId Id="405" Count="3" />
+      <LineId Id="404" Count="0" />
+      <LineId Id="403" Count="0" />
+      <LineId Id="137" Count="1" />
+      <LineId Id="265" Count="0" />
+      <LineId Id="264" Count="0" />
+      <LineId Id="139" Count="10" />
+      <LineId Id="302" Count="4" />
+      <LineId Id="150" Count="8" />
+      <LineId Id="342" Count="1" />
+      <LineId Id="369" Count="0" />
+      <LineId Id="411" Count="3" />
+      <LineId Id="410" Count="0" />
+      <LineId Id="409" Count="0" />
+      <LineId Id="159" Count="1" />
+      <LineId Id="267" Count="0" />
+      <LineId Id="266" Count="0" />
+      <LineId Id="161" Count="10" />
+      <LineId Id="307" Count="4" />
+      <LineId Id="172" Count="8" />
+      <LineId Id="344" Count="1" />
+      <LineId Id="370" Count="0" />
+      <LineId Id="417" Count="3" />
+      <LineId Id="416" Count="0" />
+      <LineId Id="415" Count="0" />
+      <LineId Id="181" Count="1" />
+      <LineId Id="269" Count="0" />
+      <LineId Id="268" Count="0" />
+      <LineId Id="183" Count="11" />
+      <LineId Id="312" Count="0" />
+      <LineId Id="314" Count="2" />
+      <LineId Id="313" Count="0" />
+      <LineId Id="195" Count="7" />
+      <LineId Id="346" Count="1" />
+      <LineId Id="371" Count="0" />
+      <LineId Id="423" Count="3" />
+      <LineId Id="422" Count="0" />
+      <LineId Id="421" Count="0" />
+      <LineId Id="203" Count="1" />
+      <LineId Id="271" Count="0" />
+      <LineId Id="270" Count="0" />
+      <LineId Id="205" Count="10" />
+      <LineId Id="317" Count="4" />
+      <LineId Id="216" Count="8" />
+      <LineId Id="348" Count="1" />
+      <LineId Id="372" Count="0" />
+      <LineId Id="429" Count="3" />
+      <LineId Id="428" Count="0" />
+      <LineId Id="427" Count="0" />
+      <LineId Id="225" Count="1" />
+      <LineId Id="273" Count="0" />
+      <LineId Id="272" Count="0" />
+      <LineId Id="227" Count="11" />
+      <LineId Id="322" Count="0" />
+      <LineId Id="324" Count="2" />
+      <LineId Id="323" Count="0" />
+      <LineId Id="239" Count="6" />
+      <LineId Id="91" Count="0" />
+      <LineId Id="350" Count="0" />
+      <LineId Id="354" Count="0" />
+      <LineId Id="359" Count="1" />
+      <LineId Id="355" Count="3" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="TConfig.CopyConfigSettingsToGlobal">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="TConfig.CopyGlobalRecipiesToConfig">
+      <LineId Id="363" Count="1" />
+      <LineId Id="252" Count="0" />
+      <LineId Id="374" Count="0" />
+      <LineId Id="382" Count="0" />
+      <LineId Id="381" Count="0" />
+      <LineId Id="378" Count="2" />
+      <LineId Id="375" Count="0" />
+      <LineId Id="251" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="257" Count="0" />
+      <LineId Id="256" Count="0" />
+      <LineId Id="28" Count="5" />
+      <LineId Id="279" Count="0" />
+      <LineId Id="34" Count="4" />
+      <LineId Id="284" Count="0" />
+      <LineId Id="280" Count="3" />
+      <LineId Id="39" Count="7" />
+      <LineId Id="333" Count="1" />
+      <LineId Id="47" Count="0" />
+      <LineId Id="365" Count="0" />
+      <LineId Id="383" Count="0" />
+      <LineId Id="385" Count="3" />
+      <LineId Id="384" Count="0" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="258" Count="1" />
+      <LineId Id="49" Count="11" />
+      <LineId Id="285" Count="4" />
+      <LineId Id="61" Count="7" />
+      <LineId Id="335" Count="1" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="366" Count="0" />
+      <LineId Id="389" Count="0" />
+      <LineId Id="391" Count="3" />
+      <LineId Id="390" Count="0" />
+      <LineId Id="70" Count="0" />
+      <LineId Id="260" Count="1" />
+      <LineId Id="71" Count="11" />
+      <LineId Id="290" Count="4" />
+      <LineId Id="83" Count="7" />
+      <LineId Id="337" Count="1" />
+      <LineId Id="91" Count="0" />
+      <LineId Id="367" Count="0" />
+      <LineId Id="395" Count="0" />
+      <LineId Id="397" Count="3" />
+      <LineId Id="396" Count="0" />
+      <LineId Id="92" Count="0" />
+      <LineId Id="262" Count="1" />
+      <LineId Id="93" Count="11" />
+      <LineId Id="295" Count="4" />
+      <LineId Id="105" Count="8" />
+      <LineId Id="339" Count="1" />
+      <LineId Id="368" Count="0" />
+      <LineId Id="401" Count="5" />
+      <LineId Id="114" Count="0" />
+      <LineId Id="264" Count="1" />
+      <LineId Id="115" Count="11" />
+      <LineId Id="300" Count="4" />
+      <LineId Id="127" Count="8" />
+      <LineId Id="341" Count="1" />
+      <LineId Id="369" Count="0" />
+      <LineId Id="407" Count="0" />
+      <LineId Id="409" Count="3" />
+      <LineId Id="408" Count="0" />
+      <LineId Id="136" Count="0" />
+      <LineId Id="266" Count="1" />
+      <LineId Id="137" Count="11" />
+      <LineId Id="305" Count="4" />
+      <LineId Id="149" Count="8" />
+      <LineId Id="343" Count="1" />
+      <LineId Id="370" Count="0" />
+      <LineId Id="413" Count="0" />
+      <LineId Id="415" Count="3" />
+      <LineId Id="414" Count="0" />
+      <LineId Id="158" Count="0" />
+      <LineId Id="268" Count="1" />
+      <LineId Id="159" Count="11" />
+      <LineId Id="315" Count="4" />
+      <LineId Id="171" Count="8" />
+      <LineId Id="345" Count="1" />
+      <LineId Id="371" Count="0" />
+      <LineId Id="419" Count="0" />
+      <LineId Id="421" Count="3" />
+      <LineId Id="420" Count="0" />
+      <LineId Id="180" Count="0" />
+      <LineId Id="270" Count="1" />
+      <LineId Id="181" Count="11" />
+      <LineId Id="310" Count="4" />
+      <LineId Id="193" Count="8" />
+      <LineId Id="347" Count="1" />
+      <LineId Id="372" Count="0" />
+      <LineId Id="425" Count="0" />
+      <LineId Id="427" Count="3" />
+      <LineId Id="426" Count="0" />
+      <LineId Id="202" Count="0" />
+      <LineId Id="272" Count="1" />
+      <LineId Id="203" Count="11" />
+      <LineId Id="320" Count="4" />
+      <LineId Id="215" Count="8" />
+      <LineId Id="349" Count="1" />
+      <LineId Id="373" Count="0" />
+      <LineId Id="431" Count="0" />
+      <LineId Id="433" Count="3" />
+      <LineId Id="432" Count="0" />
+      <LineId Id="224" Count="0" />
+      <LineId Id="274" Count="1" />
+      <LineId Id="225" Count="11" />
+      <LineId Id="325" Count="4" />
+      <LineId Id="237" Count="9" />
+      <LineId Id="354" Count="0" />
+      <LineId Id="359" Count="0" />
+      <LineId Id="355" Count="3" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="TConfig.CopyGlobalSettingsToConfig">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="TConfig.Initialised">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="TConfig.METH">
+      <LineId Id="6" Count="0" />
+      <LineId Id="18" Count="8" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

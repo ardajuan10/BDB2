@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4020.12">
+  <DUT Name="Limits" Id="{e4bc8cbd-7ac3-454d-98f0-e211952cab08}">
+    <Declaration><![CDATA[TYPE Limits :
+	STRUCT
+		max_limit_Compress				:LREAL;
+		max_limit_Shield				:LREAL;
+		max_limit_Pusher 				:LREAL;
+		max_pusher_shield_diff			:LREAL;
+		max_torque						:LREAL;
+	END_STRUCT
+END_TYPE
+]]></Declaration>
+  </DUT>
+</TcPlcObject>
